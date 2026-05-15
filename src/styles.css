@@ -1,0 +1,167 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-teal: var(--teal);
+  --color-teal-deep: var(--teal-deep);
+  --color-blue: var(--blue);
+  --color-blue-deep: var(--blue-deep);
+  --color-yellow: var(--teal);
+  --color-yellow-deep: var(--teal-deep);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-grid: var(--grid);
+
+  --font-display: "Orbitron", "Archivo Black", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --shadow-brutal: 0 0 0 2px var(--teal), 6px 6px 0 0 var(--blue-deep);
+  --shadow-brutal-sm: 0 0 0 1px var(--teal), 3px 3px 0 0 var(--blue-deep);
+  --shadow-brutal-lg: 0 0 0 2px var(--teal), 10px 10px 0 0 var(--blue-deep);
+  --shadow-glow-teal: 0 0 18px 0 color-mix(in oklab, var(--teal) 70%, transparent);
+  --shadow-glow-blue: 0 0 18px 0 color-mix(in oklab, var(--blue) 70%, transparent);
+}
+
+:root {
+  --radius: 0px;
+
+  /* Cyberpunk palette */
+  --ink: oklch(0.08 0.02 240);
+  --paper: oklch(0.12 0.03 240);
+  --surface: oklch(0.16 0.04 245);
+  --surface-2: oklch(0.21 0.05 250);
+  --grid: oklch(0.28 0.08 220);
+
+  --teal: oklch(0.86 0.16 195);
+  --teal-deep: oklch(0.62 0.16 195);
+  --blue: oklch(0.66 0.22 255);
+  --blue-deep: oklch(0.42 0.24 265);
+
+  --background: var(--paper);
+  --foreground: var(--teal);
+  --card: var(--surface);
+  --card-foreground: var(--teal);
+  --popover: var(--surface);
+  --popover-foreground: var(--teal);
+  --primary: var(--blue);
+  --primary-foreground: oklch(0.08 0.02 240);
+  --secondary: var(--teal);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-2);
+  --muted-foreground: oklch(0.62 0.07 220);
+  --accent: var(--teal);
+  --accent-foreground: var(--ink);
+  --destructive: oklch(0.65 0.27 18);
+  --destructive-foreground: oklch(1 0 0);
+  --border: var(--teal);
+  --input: var(--teal-deep);
+  --ring: var(--blue);
+}
+
+@layer base {
+  * {
+    border-color: color-mix(in oklab, var(--teal) 30%, transparent);
+  }
+  html, body {
+    background-color: var(--ink);
+    color: var(--teal);
+    font-family: "JetBrains Mono", "Inter", system-ui, monospace;
+    background-image:
+      linear-gradient(color-mix(in oklab, var(--teal) 12%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in oklab, var(--blue) 12%, transparent) 1px, transparent 1px),
+      radial-gradient(ellipse at 20% 10%, color-mix(in oklab, var(--blue) 22%, transparent), transparent 60%),
+      radial-gradient(ellipse at 80% 90%, color-mix(in oklab, var(--teal) 18%, transparent), transparent 60%);
+    background-size: 40px 40px, 40px 40px, 100% 100%, 100% 100%;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  ::selection {
+    background: var(--teal);
+    color: var(--ink);
+  }
+}
+
+@layer utilities {
+  .brutal-border { border: 2px solid var(--teal); }
+  .brutal-border-2 { border: 1px solid color-mix(in oklab, var(--teal) 60%, transparent); }
+  .brutal-shadow { box-shadow: 0 0 0 2px var(--teal), 6px 6px 0 0 var(--blue-deep); }
+  .brutal-shadow-sm { box-shadow: 0 0 0 1px var(--teal), 3px 3px 0 0 var(--blue-deep); }
+  .brutal-shadow-lg { box-shadow: 0 0 0 2px var(--teal), 12px 12px 0 0 var(--blue-deep), var(--shadow-glow-blue); }
+  .glow-teal { box-shadow: var(--shadow-glow-teal); }
+  .glow-blue { box-shadow: var(--shadow-glow-blue); }
+  .text-glow {
+    text-shadow:
+      0 0 6px color-mix(in oklab, var(--teal) 60%, transparent),
+      0 0 18px color-mix(in oklab, var(--teal) 30%, transparent);
+  }
+  .text-glow-blue {
+    text-shadow:
+      0 0 6px color-mix(in oklab, var(--blue) 70%, transparent),
+      0 0 18px color-mix(in oklab, var(--blue) 35%, transparent);
+  }
+  .brutal-press {
+    transition: transform 90ms ease, box-shadow 90ms ease, filter 120ms ease;
+  }
+  .brutal-press:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 0 0 0 2px var(--teal), 8px 8px 0 0 var(--blue-deep), var(--shadow-glow-teal);
+    filter: brightness(1.05);
+  }
+  .brutal-press:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 2px var(--teal), 2px 2px 0 0 var(--blue-deep);
+  }
+  .scanlines {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 2px,
+      color-mix(in oklab, var(--teal) 6%, transparent) 2px,
+      color-mix(in oklab, var(--teal) 6%, transparent) 3px
+    );
+  }
+  .neon-divider {
+    background: linear-gradient(90deg, transparent, var(--teal), var(--blue), transparent);
+    height: 2px;
+    width: 100%;
+  }
+}
+
+@keyframes positron-spin3d {
+  from { transform: rotateX(var(--tx, -20deg)) rotateY(0deg); }
+  to { transform: rotateX(var(--tx, -20deg)) rotateY(360deg); }
+}

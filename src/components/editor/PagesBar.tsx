@@ -1,0 +1,73 @@
+import { useEditor } from "@/store/editor";
+import { Plus, Copy, Trash2 } from "lucide-react";
+
+export function PagesBar() {
+  const { pages, currentIndex, setCurrentPage, addPage, duplicatePage, removePage, canvasW, canvasH } =
+    useEditor();
+  const ratio = canvasW / canvasH;
+  const thumbW = ratio >= 1 ? 96 : 96 * ratio;
+  const thumbH = ratio >= 1 ? 96 / ratio : 96;
+
+  return (
+    <div className="flex items-center gap-2 border-t border-teal/30 bg-ink px-3 py-2">
+      <span className="font-display text-[10px] tracking-[0.2em] text-teal/70">PAGES</span>
+      <div className="flex flex-1 items-center gap-2 overflow-x-auto py-1">
+        {pages.map((p, i) => {
+          const active = i === currentIndex;
+          return (
+            <div key={p.id} className="group relative shrink-0">
+              <button
+                onClick={() => setCurrentPage(i)}
+                className={`brutal-border-2 relative overflow-hidden transition-all ${
+                  active ? "border-teal glow-teal" : "border-teal/30 hover:border-teal/70"
+                }`}
+                style={{ width: thumbW + 6, height: thumbH + 6, background: p.bgColor }}
+              >
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px)",
+                    backgroundSize: "12px 12px",
+                    opacity: 0.15,
+                  }}
+                />
+                <span className="absolute bottom-0.5 left-1 font-mono text-[9px] text-ink mix-blend-difference">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+              </button>
+              <div className="absolute -right-1 -top-1 flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                <button
+                  onClick={() => duplicatePage(i)}
+                  title="Duplicate"
+                  className="grid h-5 w-5 place-items-center bg-blue text-ink"
+                >
+                  <Copy className="h-3 w-3" strokeWidth={3} />
+                </button>
+                {pages.length > 1 && (
+                  <button
+                    onClick={() => removePage(i)}
+                    title="Delete"
+                    className="grid h-5 w-5 place-items-center bg-[#ff0080] text-ink"
+                  >
+                    <Trash2 className="h-3 w-3" strokeWidth={3} />
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+        <button
+          onClick={addPage}
+          className="brutal-border-2 brutal-press flex shrink-0 items-center gap-1 bg-surface px-3 font-display text-[10px] tracking-[0.2em] text-teal hover:bg-surface-2"
+          style={{ height: thumbH + 6 }}
+        >
+          <Plus className="h-3.5 w-3.5" strokeWidth={3} /> ADD
+        </button>
+      </div>
+      <span className="font-mono text-[10px] text-teal/60">
+        {currentIndex + 1}/{pages.length}
+      </span>
+    </div>
+  );
+}
