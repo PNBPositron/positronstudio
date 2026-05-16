@@ -392,6 +392,7 @@ const TEMPLATES: TemplateDef[] = [
 ];
 
 const STYLE_OPTIONS: { id: AiStyle; label: string }[] = [
+  { id: "auto", label: "Auto (detect from prompt)" },
   { id: "cyberpunk", label: "Cyberpunk" },
   { id: "liquid_glass", label: "Liquid Glass" },
   { id: "minimal", label: "Minimal" },
@@ -408,7 +409,7 @@ export function TemplatesPanel() {
   const { loadTemplate, canvasW, canvasH } = useEditor();
   const generate = useServerFn(generateAiTemplate);
   const [prompt, setPrompt] = useState("");
-  const [style, setStyle] = useState<AiStyle>("cyberpunk");
+  const [style, setStyle] = useState<AiStyle>("auto");
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
