@@ -64,15 +64,87 @@ export function CanvasElement({ element, scale }: { element: AnyElement; scale: 
     const startY = e.clientY;
     const ox = element.x;
     const oy = element.y;
+    const st = useEditor.getState();
+    const W = st.canvasW;
+    const H = st.canvasH;
+    const w = element.width;
+    const h = element.height;
+    // collect snap targets from other elements + canvas
+    const others = st.elements.filter((o) => o.id !== element.id);
+    const vTargets: number[] = [0, W / 2, W];
+    const hTargets: number[] = [0, H / 2, H];
+    for (const o of others) {
+      vTargets.push(o.x, o.x + o.width / 2, o.x + o.width);
+      hTargets.push(o.y, o.y + o.height / 2, o.y + o.height);
+    }
+    const THRESH = 6 / scale;
+    const snap = (val: number, targets: number[]): { v: number; hit: number | null } => {
+      let best: { v: number; hit: number | null; d: number } = { v: val, hit: null, d: THRESH };
+      for (const t of targets) {
+        const d = Math.abs(val - t);
+        if (d < best.d) best = { v: t, hit: t, d };
+      }
+      return { v: best.v, hit: best.hit };
+    };
     const onMove = (m: MouseEvent) => {
-      update(element.id, {
-        x: ox + (m.clientX - startX) / scale,
-        y: oy + (m.clientY - startY) / scale,
-      });
+      let nx = ox + (m.clientX - startX) / scale;
+      let ny = oy + (m.clientY - startY) / scale;
+      // try snap on each anchor: left, center, right (vertical lines) and top, mid, bottom (horizontal)
+      const vHits = new Set<number>();
+      const hHits = new Set<number>();
+      const candidates: Array<{ anchor: number; kind: "v" | "h" }> = [
+        { anchor: nx, kind: "v" },
+        { anchor: nx + w / 2, kind: "v" },
+        { anchor: nx + w, kind: "v" },
+        { anchor: ny, kind: "h" },
+        { anchor: ny + h / 2, kind: "h" },
+        { anchor: ny + h, kind: "h" },
+      ];
+      // x snap
+      let xShift = 0;
+      let xDist = THRESH;
+      for (const c of candidates.filter((c) => c.kind === "v")) {
+        const s = snap(c.anchor, vTargets);
+        if (s.hit !== null) {
+          const d = Math.abs(s.v - c.anchor);
+          if (d < xDist) { xDist = d; xShift = s.v - c.anchor; }
+        }
+      }
+      nx += xShift;
+      let yShift = 0;
+      let yDist = THRESH;
+      for (const c of candidates.filter((c) => c.kind === "h")) {
+        const s = snap(c.anchor, hTargets);
+        if (s.hit !== null) {
+          const d = Math.abs(s.v - c.anchor);
+          if (d < yDist) { yDist = d; yShift = s.v - c.anchor; }
+        }
+      }
+      ny += yShift;
+      // collect active guide lines for rendering
+      const anchorsAfter = [
+        { v: nx, k: "v" as const },
+        { v: nx + w / 2, k: "v" as const },
+        { v: nx + w, k: "v" as const },
+        { v: ny, k: "h" as const },
+        { v: ny + h / 2, k: "h" as const },
+        { v: ny + h, k: "h" as const },
+      ];
+      for (const a of anchorsAfter) {
+        const targets = a.k === "v" ? vTargets : hTargets;
+        for (const t of targets) {
+          if (Math.abs(a.v - t) < 0.5) {
+            if (a.k === "v") vHits.add(t); else hHits.add(t);
+          }
+        }
+      }
+      useEditor.getState().setGuides({ v: [...vHits], h: [...hHits] });
+      update(element.id, { x: nx, y: ny });
     };
     const onUp = () => {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
+      useEditor.getState().setGuides({ v: [], h: [] });
     };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);

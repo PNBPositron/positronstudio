@@ -3,7 +3,7 @@ import { useEditor } from "@/store/editor";
 import { CanvasElement } from "./CanvasElement";
 
 export function Canvas() {
-  const { elements, bgColor, select, selectedId, remove, canvasW, canvasH } = useEditor();
+  const { elements, bgColor, select, selectedId, remove, canvasW, canvasH, guides } = useEditor();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
 
@@ -69,6 +69,38 @@ export function Canvas() {
           {elements.map((el) => (
             <CanvasElement key={el.id} element={el} scale={scale} />
           ))}
+          {(guides.v.length > 0 || guides.h.length > 0) && (
+            <div className="pointer-events-none absolute inset-0 z-50">
+              {guides.v.map((x, i) => (
+                <div
+                  key={`v${i}-${x}`}
+                  style={{
+                    position: "absolute",
+                    left: x,
+                    top: 0,
+                    width: 1 / scale,
+                    height: canvasH,
+                    background: "#ff0080",
+                    boxShadow: `0 0 ${4 / scale}px #ff0080`,
+                  }}
+                />
+              ))}
+              {guides.h.map((y, i) => (
+                <div
+                  key={`h${i}-${y}`}
+                  style={{
+                    position: "absolute",
+                    top: y,
+                    left: 0,
+                    height: 1 / scale,
+                    width: canvasW,
+                    background: "#ff0080",
+                    boxShadow: `0 0 ${4 / scale}px #ff0080`,
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

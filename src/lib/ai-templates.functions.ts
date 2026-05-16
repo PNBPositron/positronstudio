@@ -62,6 +62,7 @@ export type AiTemplate = {
 };
 
 export type AiStyle =
+  | "auto"
   | "cyberpunk"
   | "liquid_glass"
   | "minimal"
@@ -74,6 +75,8 @@ export type AiStyle =
   | "y2k";
 
 const STYLE_GUIDES: Record<AiStyle, string> = {
+  auto:
+    "AUTO-DETECT STYLE. Read the user's prompt (and reference image if provided) carefully, then pick the single most appropriate visual style from this list: cyberpunk, liquid_glass, minimal, editorial, brutalist, retro_80s, organic, art_deco, memphis, y2k — or invent a closely related one if none fits. Treat keywords as required signals: 'corporate/clean/SaaS' → minimal; 'magazine/editorial/serif' → editorial; 'rave/neon/synthwave/cyber' → cyberpunk or retro_80s; 'glass/translucent/dreamy/iOS' → liquid_glass; 'raw/print/zine/punk' → brutalist; 'nature/wellness/calm/earth' → organic; 'luxury/gold/gatsby' → art_deco; 'playful/90s/squiggle/kids' → memphis; 'chrome/holographic/bubblegum/futuristic 2000s' → y2k. Commit to one direction with conviction — palette, type, shapes must all reinforce it. Use real hex codes and at least one shape effect (liquid_glass/neon/soft_shadow/inner_glow) appropriate to the chosen style. State the chosen style implicitly through the design — do NOT mention it in any text element.",
   cyberpunk:
     "CYBERPUNK / NEOBRUTALIST. Palette: ink #0a0f1f, surface #101a2e, neon teal #7df9ff, electric blue #4d7cff, hot magenta #ff0080. Heavy display type, dramatic scale contrast, geometric shapes, mono labels. Use shape effect 'neon' on key shapes.",
   liquid_glass:
@@ -134,10 +137,10 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
       return Math.max(320, Math.min(4096, v));
     };
     const validStyles: AiStyle[] = [
-      "cyberpunk", "liquid_glass", "minimal", "editorial", "brutalist",
+      "auto", "cyberpunk", "liquid_glass", "minimal", "editorial", "brutalist",
       "retro_80s", "organic", "art_deco", "memphis", "y2k",
     ];
-    const style: AiStyle = (data.style && validStyles.includes(data.style)) ? data.style : "cyberpunk";
+    const style: AiStyle = (data.style && validStyles.includes(data.style)) ? data.style : "auto";
     const img = typeof data.imageDataUrl === "string" && data.imageDataUrl.startsWith("data:image/")
       ? data.imageDataUrl.slice(0, 8_000_000)
       : undefined;
