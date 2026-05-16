@@ -130,6 +130,8 @@ type State = {
   // cloud-saved design metadata
   designId: string | null;
   designName: string;
+  // alignment guides shown while dragging
+  guides: { v: number[]; h: number[] };
   setTool: (t: Tool) => void;
   select: (id: string | null) => void;
   add: (el: AnyElement) => void;
@@ -141,6 +143,7 @@ type State = {
   setBg: (c: string) => void;
   setCanvasSize: (w: number, h: number) => void;
   setPresenting: (v: boolean) => void;
+  setGuides: (g: { v: number[]; h: number[] }) => void;
   undo: () => void;
   redo: () => void;
   clear: () => void;
@@ -283,10 +286,12 @@ export const useEditor = create<State>((set, get) => {
     presenting: false,
     designId: null,
     designName: "untitled.design",
+    guides: { v: [], h: [] },
 
     setTool: (tool) => set({ tool }),
     setCanvasSize: (canvasW, canvasH) => set({ canvasW, canvasH }),
     setPresenting: (presenting) => set({ presenting }),
+    setGuides: (guides) => set({ guides }),
     select: (selectedId) => set({ selectedId }),
 
     add: (el) => {
