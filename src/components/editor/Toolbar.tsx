@@ -8,7 +8,7 @@ import {
 import { useAuth, signOut } from "@/hooks/use-auth";
 import { saveDesign } from "@/lib/designs";
 import { MyDesignsDialog } from "./MyDesignsDialog";
-import { exportPNG, exportPDF, exportPPTX, exportVideo } from "@/lib/export";
+import { exportPNG, exportPDF, exportPPTX, exportVideo, exportHTML } from "@/lib/export";
 
 export function Toolbar() {
   const {
@@ -26,7 +26,7 @@ export function Toolbar() {
     return () => clearTimeout(t);
   }, [savedAt]);
 
-  const [exporting, setExporting] = useState<null | "png" | "pdf" | "pptx" | "mp4">(null);
+  const [exporting, setExporting] = useState<null | "png" | "pdf" | "pptx" | "mp4" | "html">(null);
   const [exportOpen, setExportOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
@@ -38,7 +38,7 @@ export function Toolbar() {
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  const runExport = async (kind: "png" | "pdf" | "pptx" | "mp4") => {
+  const runExport = async (kind: "png" | "pdf" | "pptx" | "mp4" | "html") => {
     setExportOpen(false);
     setExporting(kind);
     try {
@@ -46,6 +46,7 @@ export function Toolbar() {
       if (kind === "png") await exportPNG(n);
       else if (kind === "pdf") await exportPDF(n);
       else if (kind === "pptx") await exportPPTX(n);
+      else if (kind === "html") await exportHTML(n);
       else {
         const { ext } = await exportVideo(n);
         if (ext === "webm") {
@@ -175,7 +176,7 @@ export function Toolbar() {
           </button>
           {exportOpen && (
             <div className="brutal-border-2 absolute right-0 top-12 z-50 w-52 bg-ink p-1">
-              {(["png", "pdf", "pptx", "mp4"] as const).map((k) => (
+              {(["png", "pdf", "pptx", "html", "mp4"] as const).map((k) => (
                 <button
                   key={k}
                   onClick={() => runExport(k)}
@@ -183,7 +184,7 @@ export function Toolbar() {
                 >
                   <span>EXPORT .{k.toUpperCase()}</span>
                   <span className="font-mono text-[9px] text-teal/60">
-                    {k === "png" ? "current" : k === "mp4" ? "video" : "all pages"}
+                    {k === "png" ? "current" : k === "mp4" ? "video" : k === "html" ? "interactive" : "all pages"}
                   </span>
                 </button>
               ))}
