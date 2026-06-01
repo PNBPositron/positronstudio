@@ -1,17 +1,20 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Loader2, ImagePlus, X } from "lucide-react";
+import { Sparkles, Loader2, ImagePlus, X, Users } from "lucide-react";
 import {
   useEditor,
   newText,
   newShape,
   newIcon,
   newModel3D,
+  DEFAULT_PAGE_DURATION,
   type AnyElement,
   type ShapeElement,
+  type Page,
 } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
 import { generateAiTemplate, type AiElementInput, type AiStyle } from "@/lib/ai-templates.functions";
+import { listPublicTemplates, type PublicTemplate } from "@/lib/designs";
 
 function buildFromAi(els: AiElementInput[]): AnyElement[] {
   return els
@@ -439,7 +442,14 @@ export function TemplatesPanel() {
           imageDataUrl: imageDataUrl ?? undefined,
         },
       });
-      loadTemplate(buildFromAi(res.elements), res.bg);
+      // Multi-page deck: replace pages entirely
+      const newPages: Page[] = res.pages.map((p) => ({
+        id: Math.random().toString(36).slice(2, 10),
+        bgColor: p.bg,
+        elements: buildFromAi(p.elements),
+        duration: DEFAULT_PAGE_DURATION,
+      }));
+      useEditor.getState().loadPages(newPages);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Generation failed");
     } finally {
