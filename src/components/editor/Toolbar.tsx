@@ -84,6 +84,28 @@ export function Toolbar() {
     }
   };
 
+  const handlePublish = async () => {
+    if (!user || publishing) return;
+    const name = window.prompt("Template name?", designName || "Untitled template");
+    if (!name) return;
+    setPublishing(true);
+    try {
+      const { pages, canvasW, canvasH } = useEditor.getState();
+      await publishAsTemplate({
+        name,
+        canvas_w: canvasW,
+        canvas_h: canvasH,
+        pages,
+      });
+      alert("✓ Published as a public template");
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : "Failed to publish");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   return (
     <header className="relative flex items-center justify-between gap-4 border-b border-teal/40 bg-ink px-5 py-3">
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-teal to-transparent opacity-80" />
