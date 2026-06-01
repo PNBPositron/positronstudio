@@ -1,5 +1,42 @@
 import { toPng } from "html-to-image";
-import { useEditor } from "@/store/editor";
+import { useEditor, type Page } from "@/store/editor";
+
+export function exportJSON(name: string) {
+  const { pages, canvasW, canvasH, designName } = useEditor.getState();
+  const payload = {
+    type: "positron.design",
+    version: 1,
+    name: designName,
+    canvas_w: canvasW,
+    canvas_h: canvasH,
+    pages,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${name || "positron"}-${Date.now()}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export async function importJSONFile(file: File): Promise<void> {
+  const txt = await file.text();
+  const data = JSON.parse(txt) as {
+    type?: string;
+    name?: string;
+    canvas_w?: number;
+    canvas_h?: number;
+    pages?: Page[];
+  };
+  if (!data || !Array.isArray(data.pages) || data.pages.length === 0) {
+    throw new Error("Invalid design file");
+  }
+  const s = useEditor.getState();
+  if (data.canvas_w && data.canvas_h) s.setCanvasSize(data.canvas_w, data.canvas_h);
+  s.loadPages(data.pages);
+  if (data.name) s.setDesignName(data.name);
+}
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
