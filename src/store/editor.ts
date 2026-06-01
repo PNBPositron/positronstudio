@@ -7,7 +7,12 @@ export type ElementBase = {
   width: number;
   height: number;
   rotation: number;
+  animation?: ElementAnimation;
 };
+
+export type ElementAnimation = "none" | "fade-up" | "pop" | "glitch";
+export type SlideTransition = "none" | "fade" | "slide" | "glitch" | "zoom" | "flip";
+export type BgFit = "cover" | "contain";
 
 export type TextElement = ElementBase & {
   type: "text";
@@ -94,6 +99,9 @@ export type Page = {
   elements: AnyElement[];
   bgColor: string;
   duration: number; // seconds
+  bgImage?: string; // data URL or http URL
+  bgFit?: BgFit;
+  transition?: SlideTransition;
 };
 
 export const DEFAULT_W = 1920;
@@ -141,6 +149,8 @@ type State = {
   bringForward: (id: string) => void;
   sendBackward: (id: string) => void;
   setBg: (c: string) => void;
+  setBgImage: (src: string | undefined, fit?: BgFit) => void;
+  setTransition: (t: SlideTransition) => void;
   setCanvasSize: (w: number, h: number) => void;
   setPresenting: (v: boolean) => void;
   setGuides: (g: { v: number[]; h: number[] }) => void;
@@ -148,6 +158,7 @@ type State = {
   redo: () => void;
   clear: () => void;
   loadTemplate: (els: AnyElement[], bg?: string) => void;
+  loadPages: (pages: Page[]) => void;
   // pages
   addPage: () => void;
   removePage: (index: number) => void;
@@ -339,6 +350,14 @@ export const useEditor = create<State>((set, get) => {
       pushHistory();
       updateCurrentPage((p) => ({ ...p, bgColor }));
     },
+    setBgImage: (src, fit) => {
+      pushHistory();
+      updateCurrentPage((p) => ({ ...p, bgImage: src, bgFit: fit ?? p.bgFit ?? "cover" }));
+    },
+    setTransition: (t) => {
+      pushHistory();
+      updateCurrentPage((p) => ({ ...p, transition: t }));
+    },
     undo: () => {
       const { history, future } = get();
       if (history.length === 0) return;
@@ -370,6 +389,16 @@ export const useEditor = create<State>((set, get) => {
       pushHistory();
       updateCurrentPage((p) => ({ ...p, elements: els, bgColor: bg ?? p.bgColor }));
       set({ selectedId: null });
+    },
+    loadPages: (incoming) => {
+      if (!incoming || incoming.length === 0) return;
+      pushHistory();
+      const safe = incoming.map((p) => ({
+        ...p,
+        id: p.id ?? uid(),
+        duration: p.duration ?? DEFAULT_PAGE_DURATION,
+      }));
+      set({ ...syncCurrent(safe, 0), selectedId: null });
     },
 
     addPage: () => {

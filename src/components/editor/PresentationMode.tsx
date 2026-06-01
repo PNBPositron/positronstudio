@@ -10,6 +10,8 @@ export function PresentationMode() {
   const [scale, setScale] = useState(1);
 
   const page = pages[currentIndex];
+  const [strip, setStrip] = useState(true);
+  const idleRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!presenting) return;
@@ -36,8 +38,21 @@ export function PresentationMode() {
         const { currentIndex: i, setCurrentPage: go } = useEditor.getState();
         if (i > 0) go(i - 1);
       }
+      // numeric jump 1-9
+      if (/^[1-9]$/.test(e.key)) {
+        const n = parseInt(e.key, 10) - 1;
+        const st = useEditor.getState();
+        if (n < st.pages.length) st.setCurrentPage(n);
+      }
     };
     window.addEventListener("keydown", onKey);
+
+    const onMove = () => {
+      setStrip(true);
+      if (idleRef.current) window.clearTimeout(idleRef.current);
+      idleRef.current = window.setTimeout(() => setStrip(false), 2200);
+    };
+    window.addEventListener("mousemove", onMove);
 
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -45,11 +60,20 @@ export function PresentationMode() {
     return () => {
       obs.disconnect();
       window.removeEventListener("keydown", onKey);
+      window.removeEventListener("mousemove", onMove);
+      if (idleRef.current) window.clearTimeout(idleRef.current);
       document.body.style.overflow = prev;
     };
   }, [presenting, canvasW, canvasH, setPresenting]);
 
   if (!presenting) return null;
+
+  const transition = page.transition && page.transition !== "none"
+    ? `slide-transition-${page.transition}`
+    : "";
+  const ratio = canvasW / canvasH;
+  const tW = ratio >= 1 ? 96 : 96 * ratio;
+  const tH = ratio >= 1 ? 96 / ratio : 96;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-ink scanlines">
@@ -90,11 +114,16 @@ export function PresentationMode() {
           className="brutal-shadow-lg relative shrink-0"
         >
           <div
-            className="absolute left-0 top-0 overflow-hidden border border-teal"
+            key={`slide-${currentIndex}`}
+            className={`absolute left-0 top-0 overflow-hidden border border-teal ${transition}`}
             style={{
               width: canvasW,
               height: canvasH,
               backgroundColor: page.bgColor,
+              backgroundImage: page.bgImage ? `url(${page.bgImage})` : undefined,
+              backgroundSize: page.bgFit ?? "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
               transform: `scale(${scale})`,
               transformOrigin: "top left",
             }}
@@ -103,6 +132,41 @@ export function PresentationMode() {
               <CanvasElement key={el.id} element={el} scale={scale} />
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Jump-to-slide strip */}
+      <div
+        className={`pointer-events-none absolute bottom-4 left-1/2 z-20 -translate-x-1/2 transition-opacity ${
+          strip ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <div className="brutal-border-2 pointer-events-auto flex max-w-[80vw] items-center gap-1.5 overflow-x-auto bg-ink/85 p-2 backdrop-blur">
+          {pages.map((p, i) => {
+            const active = i === currentIndex;
+            return (
+              <button
+                key={p.id}
+                onClick={() => setCurrentPage(i)}
+                title={`Go to slide ${i + 1}`}
+                className={`brutal-border-2 relative shrink-0 overflow-hidden transition-all ${
+                  active ? "border-teal glow-teal" : "border-teal/30 hover:border-teal"
+                }`}
+                style={{
+                  width: tW,
+                  height: tH,
+                  background: p.bgColor,
+                  backgroundImage: p.bgImage ? `url(${p.bgImage})` : undefined,
+                  backgroundSize: p.bgFit ?? "cover",
+                  backgroundPosition: "center",
+                }}
+              >
+                <span className="absolute bottom-0.5 left-1 font-mono text-[9px] text-ink mix-blend-difference">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

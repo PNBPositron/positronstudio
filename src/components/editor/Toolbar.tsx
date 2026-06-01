@@ -3,10 +3,10 @@ import { Link } from "@tanstack/react-router";
 import { useEditor } from "@/store/editor";
 import {
   Undo2, Redo2, Trash2, Download, Play, Zap, Save, Cloud,
-  FolderOpen, LogOut, FilePlus, Loader2, User as UserIcon, ChevronDown,
+  FolderOpen, LogOut, FilePlus, Loader2, User as UserIcon, ChevronDown, Share2,
 } from "lucide-react";
 import { useAuth, signOut } from "@/hooks/use-auth";
-import { saveDesign } from "@/lib/designs";
+import { saveDesign, publishAsTemplate } from "@/lib/designs";
 import { MyDesignsDialog } from "./MyDesignsDialog";
 import { exportPNG, exportPDF, exportPPTX, exportVideo, exportHTML } from "@/lib/export";
 
@@ -17,6 +17,7 @@ export function Toolbar() {
   } = useEditor();
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -83,6 +84,28 @@ export function Toolbar() {
     }
   };
 
+  const handlePublish = async () => {
+    if (!user || publishing) return;
+    const name = window.prompt("Template name?", designName || "Untitled template");
+    if (!name) return;
+    setPublishing(true);
+    try {
+      const { pages, canvasW, canvasH } = useEditor.getState();
+      await publishAsTemplate({
+        name,
+        canvas_w: canvasW,
+        canvas_h: canvasH,
+        pages,
+      });
+      alert("✓ Published as a public template");
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : "Failed to publish");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   return (
     <header className="relative flex items-center justify-between gap-4 border-b border-teal/40 bg-ink px-5 py-3">
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-teal to-transparent opacity-80" />
@@ -128,6 +151,13 @@ export function Toolbar() {
             </IconBtn>
             <IconBtn onClick={() => setOpen(true)} title="My designs">
               <FolderOpen className="h-4 w-4" strokeWidth={2.5} />
+            </IconBtn>
+            <IconBtn onClick={handlePublish} title="Publish as public template">
+              {publishing ? (
+                <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2.5} />
+              ) : (
+                <Share2 className="h-4 w-4" strokeWidth={2.5} />
+              )}
             </IconBtn>
             <button
               onClick={handleSave}

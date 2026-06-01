@@ -23,11 +23,9 @@ const groundShadow: React.CSSProperties = {
 };
 
 export function Model3DRender({ element }: { element: Model3DElement }) {
-  const { color, spinSpeed } = element;
-  const animStyle: React.CSSProperties =
-    spinSpeed > 0
-      ? { animation: `positron-spin3d ${spinSpeed}s linear infinite` }
-      : {};
+  const { color } = element;
+  // Spin removed — spheres are static; spinSpeed kept on the type for back-compat.
+  const animStyle: React.CSSProperties = {};
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>

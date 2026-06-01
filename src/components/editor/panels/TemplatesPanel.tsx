@@ -1,17 +1,20 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Loader2, ImagePlus, X } from "lucide-react";
+import { Sparkles, Loader2, ImagePlus, X, Users } from "lucide-react";
 import {
   useEditor,
   newText,
   newShape,
   newIcon,
   newModel3D,
+  DEFAULT_PAGE_DURATION,
   type AnyElement,
   type ShapeElement,
+  type Page,
 } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
 import { generateAiTemplate, type AiElementInput, type AiStyle } from "@/lib/ai-templates.functions";
+import { listPublicTemplates, type PublicTemplate } from "@/lib/designs";
 
 function buildFromAi(els: AiElementInput[]): AnyElement[] {
   return els
@@ -414,6 +417,18 @@ export function TemplatesPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [tab, setTab] = useState<"built-in" | "community">("built-in");
+  const [community, setCommunity] = useState<PublicTemplate[]>([]);
+  const [communityLoading, setCommunityLoading] = useState(false);
+
+  useEffect(() => {
+    if (tab !== "community") return;
+    setCommunityLoading(true);
+    listPublicTemplates()
+      .then(setCommunity)
+      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"))
+      .finally(() => setCommunityLoading(false));
+  }, [tab]);
 
   const onPickImage = (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
@@ -439,7 +454,14 @@ export function TemplatesPanel() {
           imageDataUrl: imageDataUrl ?? undefined,
         },
       });
-      loadTemplate(buildFromAi(res.elements), res.bg);
+      // Multi-page deck: replace pages entirely
+      const newPages: Page[] = res.pages.map((p) => ({
+        id: Math.random().toString(36).slice(2, 10),
+        bgColor: p.bg,
+        elements: buildFromAi(p.elements),
+        duration: DEFAULT_PAGE_DURATION,
+      }));
+      useEditor.getState().loadPages(newPages);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Generation failed");
     } finally {
@@ -450,6 +472,63 @@ export function TemplatesPanel() {
   return (
     <div className="space-y-4">
       <PanelHeader title="Templates" />
+
+      <div className="flex gap-1">
+        {(["built-in", "community"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`brutal-border-2 flex-1 py-1.5 font-display text-[10px] uppercase tracking-[0.2em] ${
+              tab === t ? "bg-blue text-ink border-teal" : "bg-surface text-teal hover:border-teal"
+            }`}
+          >
+            {t === "community" ? <><Users className="inline h-3 w-3 mr-1" />Community</> : "Built-in"}
+          </button>
+        ))}
+      </div>
+
+      {tab === "community" && (
+        <div>
+          {communityLoading ? (
+            <div className="flex items-center gap-2 font-mono text-[11px] text-teal/70">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> loading…
+            </div>
+          ) : community.length === 0 ? (
+            <p className="font-mono text-[10px] text-teal/50">&gt; no community templates yet. Be the first — sign in and click the share icon in the toolbar.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {community.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    if (!window.confirm(`Load "${c.name}" — this replaces your current pages.`)) return;
+                    useEditor.getState().loadPages(c.pages as Page[]);
+                    useEditor.getState().setCanvasSize(c.canvas_w, c.canvas_h);
+                  }}
+                  className="brutal-border-2 brutal-press overflow-hidden bg-surface text-left hover:border-teal"
+                >
+                  <div
+                    className="w-full overflow-hidden border-b border-teal/30"
+                    style={{
+                      aspectRatio: `${c.canvas_w} / ${c.canvas_h}`,
+                      background: (c.pages?.[0] as Page | undefined)?.bgColor ?? "#0a0f1f",
+                    }}
+                  />
+                  <div className="bg-ink px-2 py-1 font-display text-[10px] uppercase tracking-[0.15em] text-teal truncate">
+                    {c.name}
+                  </div>
+                  <div className="bg-ink px-2 pb-1 font-mono text-[9px] text-teal/50">
+                    {c.pages?.length ?? 0} slides
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "built-in" && (
+        <>
 
       <div className="brutal-border-2 space-y-2 bg-surface p-3">
         <div className="flex items-center gap-2 font-display text-[11px] tracking-[0.2em] text-teal">
@@ -538,6 +617,8 @@ export function TemplatesPanel() {
           </button>
         ))}
       </div>
+      </>
+      )}
     </div>
   );
 }
