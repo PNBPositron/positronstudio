@@ -417,6 +417,18 @@ export function TemplatesPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [tab, setTab] = useState<"built-in" | "community">("built-in");
+  const [community, setCommunity] = useState<PublicTemplate[]>([]);
+  const [communityLoading, setCommunityLoading] = useState(false);
+
+  useEffect(() => {
+    if (tab !== "community") return;
+    setCommunityLoading(true);
+    listPublicTemplates()
+      .then(setCommunity)
+      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"))
+      .finally(() => setCommunityLoading(false));
+  }, [tab]);
 
   const onPickImage = (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
