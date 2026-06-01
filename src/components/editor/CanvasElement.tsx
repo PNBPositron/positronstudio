@@ -188,6 +188,11 @@ export function CanvasElement({ element, scale }: { element: AnyElement; scale: 
           setEditing(true);
         }
       }}
+      className={
+        useEditor.getState().presenting && element.animation && element.animation !== "none"
+          ? `el-anim-${element.animation}`
+          : undefined
+      }
       style={{
         position: "absolute",
         left: element.x,
