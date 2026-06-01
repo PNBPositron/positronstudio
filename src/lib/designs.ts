@@ -64,3 +64,52 @@ export async function deleteDesign(id: string) {
   const { error } = await supabase.from("designs").delete().eq("id", id);
   if (error) throw error;
 }
+
+/* ---------------- Public templates ---------------- */
+
+export type PublicTemplate = {
+  id: string;
+  user_id: string;
+  name: string;
+  canvas_w: number;
+  canvas_h: number;
+  pages: Page[];
+  thumbnail: string | null;
+  created_at: string;
+};
+
+export async function listPublicTemplates(): Promise<PublicTemplate[]> {
+  const { data, error } = await supabase
+    .from("public_templates")
+    .select("id, user_id, name, canvas_w, canvas_h, pages, thumbnail, created_at")
+    .order("created_at", { ascending: false })
+    .limit(60);
+  if (error) throw error;
+  return (data ?? []) as unknown as PublicTemplate[];
+}
+
+export async function publishAsTemplate(input: {
+  name: string;
+  canvas_w: number;
+  canvas_h: number;
+  pages: Page[];
+  thumbnail?: string | null;
+}): Promise<PublicTemplate> {
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData.user;
+  if (!user) throw new Error("Not signed in");
+  const { data, error } = await supabase
+    .from("public_templates")
+    .insert({
+      user_id: user.id,
+      name: input.name,
+      canvas_w: input.canvas_w,
+      canvas_h: input.canvas_h,
+      pages: input.pages as unknown as never,
+      thumbnail: input.thumbnail ?? null,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as unknown as PublicTemplate;
+}
