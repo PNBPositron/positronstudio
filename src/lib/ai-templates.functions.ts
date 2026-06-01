@@ -61,6 +61,9 @@ export type AiTemplate = {
   elements: AiElementInput[];
 };
 
+export type AiPage = { bg: string; elements: AiElementInput[] };
+export type AiDeck = { pages: AiPage[] };
+
 export type AiStyle =
   | "auto"
   | "cyberpunk"
@@ -99,8 +102,14 @@ const STYLE_GUIDES: Record<AiStyle, string> = {
     "Y2K FUTURISM. Palette: chrome silver, holographic pastels (#c4b5fd, #67e8f9, #f0abfc), candy pink. Translucent bubble shapes — use 'liquid_glass' effect heavily — glossy feel, futuristic display.",
 };
 
-const buildSystem = (W: number, H: number, style: AiStyle, hasImage: boolean) => `You are an elite graphic designer generating a layout for a ${W}×${H}px canvas.
-Aspect ratio: ${(W / H).toFixed(3)} (${W >= H ? "landscape/wide" : "portrait/tall"}). Compose for this exact shape — fill the full ${W}px width and ${H}px height.
+const buildSystem = (W: number, H: number, style: AiStyle, hasImage: boolean) => `You are an elite graphic designer generating a MULTI-SLIDE deck for a ${W}×${H}px canvas.
+Aspect ratio: ${(W / H).toFixed(3)} (${W >= H ? "landscape/wide" : "portrait/tall"}). Compose every slide for this exact shape — fill the full ${W}px width and ${H}px height.
+
+DECK STRUCTURE — output 4-6 cohesive slides in this order:
+  1. TITLE slide — huge headline + short subtitle/byline. Bold, no body copy.
+  2-4. CONTENT slides — each one has a clear role (intro / point / example / data). Use distinct layouts; never repeat the title slide format.
+  5. SUMMARY slide — recap of key points (bulleted or numbered) OR a closing call-to-action.
+All slides MUST share the same palette, typographic system, and visual motifs so the deck feels like ONE designed artifact.
 
 STYLE BRIEF: ${STYLE_GUIDES[style]}
 
@@ -122,11 +131,10 @@ Coordinates are absolute pixels within ${W}×${H}. Keep all elements inside boun
 
 Return ONLY valid JSON, no markdown, no commentary:
 {
-  "bg": "#hex",
-  "elements": Array<element>
+  "pages": Array<{ "bg": "#hex", "elements": Array<element> }>
 }
 
-Aim for 5-12 elements. Include at least one shape with an effect (liquid_glass or neon) when the style supports it. Make it visually striking, deliberate, and unmistakably in the requested style.`;
+Each slide aims for 5-12 elements. Across the deck, include at least one shape with an effect (liquid_glass or neon) when the style supports it. Make it visually striking, deliberate, and unmistakably in the requested style.`;
 
 export const generateAiTemplate = createServerFn({ method: "POST" })
   .inputValidator((data: { prompt: string; width?: number; height?: number; style?: AiStyle; imageDataUrl?: string }) => {
@@ -152,7 +160,7 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
       imageDataUrl: img,
     };
   })
-  .handler(async ({ data }): Promise<AiTemplate> => {
+  .handler(async ({ data }): Promise<AiDeck> => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
@@ -184,18 +192,25 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
     const content = json.choices?.[0]?.message?.content;
     if (!content) throw new Error("Empty AI response");
 
-    let parsed: AiTemplate;
+    let parsed: AiDeck | AiTemplate;
     try {
-      parsed = JSON.parse(content) as AiTemplate;
+      parsed = JSON.parse(content);
     } catch {
       const match = content.match(/\{[\s\S]*\}/);
       if (!match) throw new Error("AI returned invalid JSON");
-      parsed = JSON.parse(match[0]) as AiTemplate;
+      parsed = JSON.parse(match[0]);
     }
-    if (!parsed.elements || !Array.isArray(parsed.elements)) {
-      throw new Error("AI response missing elements array");
+    // Normalize: accept either { pages: [...] } or legacy { bg, elements }
+    let pages: AiPage[];
+    if ("pages" in parsed && Array.isArray(parsed.pages)) {
+      pages = parsed.pages.filter((p) => p && Array.isArray(p.elements));
+    } else if ("elements" in parsed && Array.isArray(parsed.elements)) {
+      pages = [{ bg: parsed.bg ?? "#0a0f1f", elements: parsed.elements }];
+    } else {
+      throw new Error("AI response missing pages/elements");
     }
-    return parsed;
+    if (pages.length === 0) throw new Error("AI returned an empty deck");
+    return { pages };
   });
 
 // ---------------- Icon set generator ----------------
