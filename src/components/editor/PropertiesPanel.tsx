@@ -194,18 +194,6 @@ export function PropertiesPanel() {
             <Field label="Color">
               <ColorRow value={el.color} onChange={(c) => update(el.id, { color: c })} />
             </Field>
-            <Field label="Spin (s/rev, 0=off)">
-              <input
-                type="range"
-                min={0}
-                max={30}
-                step={0.5}
-                value={el.spinSpeed}
-                onChange={(e) => update(el.id, { spinSpeed: +e.target.value })}
-                className="w-full accent-teal"
-              />
-              <div className="font-mono text-[11px] text-teal/70">{el.spinSpeed}s</div>
-            </Field>
             <Field label="Tilt X">
               <input
                 type="range"
@@ -291,6 +279,21 @@ export function PropertiesPanel() {
             className="w-full accent-teal"
           />
           <div className="font-mono text-[11px] text-teal/70">{el.rotation}°</div>
+        </Field>
+
+        <Field label="Entrance animation (present mode)">
+          <select
+            value={el.animation ?? "none"}
+            onChange={(e) =>
+              update(el.id, { animation: e.target.value as NonNullable<typeof el.animation> })
+            }
+            className="brutal-border-2 w-full bg-surface px-2 py-1.5 font-mono text-xs text-teal focus:outline-none focus:border-teal"
+          >
+            <option value="none">none</option>
+            <option value="fade-up">fade up</option>
+            <option value="pop">pop</option>
+            <option value="glitch">glitch</option>
+          </select>
         </Field>
 
         <div className="grid grid-cols-2 gap-2 pt-2">
