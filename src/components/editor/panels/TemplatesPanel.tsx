@@ -473,6 +473,63 @@ export function TemplatesPanel() {
     <div className="space-y-4">
       <PanelHeader title="Templates" />
 
+      <div className="flex gap-1">
+        {(["built-in", "community"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`brutal-border-2 flex-1 py-1.5 font-display text-[10px] uppercase tracking-[0.2em] ${
+              tab === t ? "bg-blue text-ink border-teal" : "bg-surface text-teal hover:border-teal"
+            }`}
+          >
+            {t === "community" ? <><Users className="inline h-3 w-3 mr-1" />Community</> : "Built-in"}
+          </button>
+        ))}
+      </div>
+
+      {tab === "community" && (
+        <div>
+          {communityLoading ? (
+            <div className="flex items-center gap-2 font-mono text-[11px] text-teal/70">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> loading…
+            </div>
+          ) : community.length === 0 ? (
+            <p className="font-mono text-[10px] text-teal/50">&gt; no community templates yet. Be the first — sign in and click the share icon in the toolbar.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {community.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    if (!window.confirm(`Load "${c.name}" — this replaces your current pages.`)) return;
+                    useEditor.getState().loadPages(c.pages as Page[]);
+                    useEditor.getState().setCanvasSize(c.canvas_w, c.canvas_h);
+                  }}
+                  className="brutal-border-2 brutal-press overflow-hidden bg-surface text-left hover:border-teal"
+                >
+                  <div
+                    className="w-full overflow-hidden border-b border-teal/30"
+                    style={{
+                      aspectRatio: `${c.canvas_w} / ${c.canvas_h}`,
+                      background: (c.pages?.[0] as Page | undefined)?.bgColor ?? "#0a0f1f",
+                    }}
+                  />
+                  <div className="bg-ink px-2 py-1 font-display text-[10px] uppercase tracking-[0.15em] text-teal truncate">
+                    {c.name}
+                  </div>
+                  <div className="bg-ink px-2 pb-1 font-mono text-[9px] text-teal/50">
+                    {c.pages?.length ?? 0} slides
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "built-in" && (
+        <>
+
       <div className="brutal-border-2 space-y-2 bg-surface p-3">
         <div className="flex items-center gap-2 font-display text-[11px] tracking-[0.2em] text-teal">
           <Sparkles className="h-3.5 w-3.5" /> AI_GENERATOR
