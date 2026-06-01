@@ -17,6 +17,7 @@ export function Toolbar() {
   } = useEditor();
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
 
