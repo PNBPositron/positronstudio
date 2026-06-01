@@ -74,6 +74,42 @@ export type Database = {
         }
         Relationships: []
       }
+      public_templates: {
+        Row: {
+          canvas_h: number
+          canvas_w: number
+          created_at: string
+          id: string
+          name: string
+          pages: Json
+          thumbnail: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          canvas_h?: number
+          canvas_w?: number
+          created_at?: string
+          id?: string
+          name?: string
+          pages?: Json
+          thumbnail?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          canvas_h?: number
+          canvas_w?: number
+          created_at?: string
+          id?: string
+          name?: string
+          pages?: Json
+          thumbnail?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
