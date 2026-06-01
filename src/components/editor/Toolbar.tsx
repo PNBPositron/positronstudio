@@ -3,10 +3,10 @@ import { Link } from "@tanstack/react-router";
 import { useEditor } from "@/store/editor";
 import {
   Undo2, Redo2, Trash2, Download, Play, Zap, Save, Cloud,
-  FolderOpen, LogOut, FilePlus, Loader2, User as UserIcon, ChevronDown,
+  FolderOpen, LogOut, FilePlus, Loader2, User as UserIcon, ChevronDown, Share2,
 } from "lucide-react";
 import { useAuth, signOut } from "@/hooks/use-auth";
-import { saveDesign } from "@/lib/designs";
+import { saveDesign, publishAsTemplate } from "@/lib/designs";
 import { MyDesignsDialog } from "./MyDesignsDialog";
 import { exportPNG, exportPDF, exportPPTX, exportVideo, exportHTML } from "@/lib/export";
 
