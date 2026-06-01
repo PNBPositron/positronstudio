@@ -1,5 +1,7 @@
+import { useRef } from "react";
 import { useEditor } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
+import { ImagePlus, X } from "lucide-react";
 
 const PALETTES: { name: string; colors: string[] }[] = [
   {
@@ -29,10 +31,86 @@ const PALETTES: { name: string; colors: string[] }[] = [
 ];
 
 export function ColorPanel() {
-  const { bgColor, setBg } = useEditor();
+  const { bgColor, setBg, pages, currentIndex, setBgImage } = useEditor();
+  const page = pages[currentIndex];
+  const bgImage = page.bgImage;
+  const bgFit = page.bgFit ?? "cover";
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const onPickImage = (file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image too large (max 5MB)");
+      return;
+    }
+    const r = new FileReader();
+    r.onload = () => setBgImage(r.result as string, bgFit);
+    r.readAsDataURL(file);
+  };
+
   return (
     <div className="space-y-4">
       <PanelHeader title="Background" />
+
+      <div className="brutal-border-2 space-y-2 bg-surface p-3">
+        <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">
+          ▸ Background image
+        </div>
+        {bgImage ? (
+          <div className="relative">
+            <img src={bgImage} alt="bg" className="h-20 w-full border border-teal/40 object-cover" />
+            <button
+              onClick={() => setBgImage(undefined)}
+              className="absolute right-1 top-1 grid h-5 w-5 place-items-center bg-ink/90 text-teal hover:text-[#ff0080]"
+              title="Remove"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => fileRef.current?.click()}
+            className="flex w-full items-center justify-center gap-2 border border-dashed border-teal/40 bg-ink px-2 py-2 font-mono text-[10px] text-teal/70 hover:border-teal hover:text-teal"
+          >
+            <ImagePlus className="h-3.5 w-3.5" /> upload image
+          </button>
+        )}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) onPickImage(f);
+            e.target.value = "";
+          }}
+        />
+        <input
+          type="url"
+          placeholder="…or paste image URL"
+          defaultValue={bgImage?.startsWith("http") ? bgImage : ""}
+          onBlur={(e) => {
+            const v = e.target.value.trim();
+            if (v) setBgImage(v, bgFit);
+          }}
+          className="w-full border border-teal/40 bg-ink px-2 py-1.5 font-mono text-[10px] text-teal placeholder:text-teal/30 focus:border-teal focus:outline-none"
+        />
+        {bgImage && (
+          <div className="flex gap-1">
+            {(["cover", "contain"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setBgImage(bgImage, f)}
+                className={`brutal-border-2 flex-1 py-1 font-mono text-[10px] uppercase ${
+                  bgFit === f ? "bg-blue text-ink border-teal" : "bg-surface text-teal hover:border-teal"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {PALETTES.map((p) => (
         <div key={p.name}>
