@@ -617,6 +617,8 @@ export function TemplatesPanel() {
           </button>
         ))}
       </div>
+      </>
+      )}
     </div>
   );
 }
