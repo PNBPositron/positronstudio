@@ -1,9 +1,10 @@
-import { useEditor } from "@/store/editor";
+import { useEditor, type SlideTransition } from "@/store/editor";
 import { Plus, Copy, Trash2 } from "lucide-react";
 
 export function PagesBar() {
-  const { pages, currentIndex, setCurrentPage, addPage, duplicatePage, removePage, canvasW, canvasH } =
+  const { pages, currentIndex, setCurrentPage, addPage, duplicatePage, removePage, canvasW, canvasH, setTransition } =
     useEditor();
+  const currentTransition: SlideTransition = pages[currentIndex]?.transition ?? "none";
   const ratio = canvasW / canvasH;
   const thumbW = ratio >= 1 ? 96 : 96 * ratio;
   const thumbH = ratio >= 1 ? 96 / ratio : 96;
@@ -64,6 +65,21 @@ export function PagesBar() {
         >
           <Plus className="h-3.5 w-3.5" strokeWidth={3} /> ADD
         </button>
+      </div>
+      <div className="flex items-center gap-1">
+        <span className="font-mono text-[10px] text-teal/60">TRANS</span>
+        <select
+          value={currentTransition}
+          onChange={(e) => setTransition(e.target.value as SlideTransition)}
+          className="border border-teal/40 bg-surface px-1.5 py-1 font-mono text-[10px] text-teal focus:border-teal focus:outline-none"
+        >
+          <option value="none">none</option>
+          <option value="fade">fade</option>
+          <option value="slide">slide</option>
+          <option value="zoom">zoom</option>
+          <option value="flip">flip</option>
+          <option value="glitch">glitch</option>
+        </select>
       </div>
       <span className="font-mono text-[10px] text-teal/60">
         {currentIndex + 1}/{pages.length}
