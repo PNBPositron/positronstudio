@@ -152,6 +152,13 @@ export function Toolbar() {
             <IconBtn onClick={() => setOpen(true)} title="My designs">
               <FolderOpen className="h-4 w-4" strokeWidth={2.5} />
             </IconBtn>
+            <IconBtn onClick={handlePublish} title="Publish as public template">
+              {publishing ? (
+                <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2.5} />
+              ) : (
+                <Share2 className="h-4 w-4" strokeWidth={2.5} />
+              )}
+            </IconBtn>
             <button
               onClick={handleSave}
               disabled={saving}
