@@ -3,12 +3,12 @@ import { Link } from "@tanstack/react-router";
 import { useEditor } from "@/store/editor";
 import {
   Undo2, Redo2, Trash2, Download, Play, Zap, Save, Cloud,
-  FolderOpen, LogOut, FilePlus, Loader2, User as UserIcon, ChevronDown, Share2,
+  FolderOpen, LogOut, FilePlus, Loader2, User as UserIcon, ChevronDown, Share2, Upload,
 } from "lucide-react";
 import { useAuth, signOut } from "@/hooks/use-auth";
 import { saveDesign, publishAsTemplate } from "@/lib/designs";
 import { MyDesignsDialog } from "./MyDesignsDialog";
-import { exportPNG, exportPDF, exportPPTX, exportVideo, exportHTML } from "@/lib/export";
+import { exportPNG, exportPDF, exportPPTX, exportVideo, exportHTML, exportJSON, importJSONFile } from "@/lib/export";
 
 export function Toolbar() {
   const {
@@ -27,9 +27,10 @@ export function Toolbar() {
     return () => clearTimeout(t);
   }, [savedAt]);
 
-  const [exporting, setExporting] = useState<null | "png" | "pdf" | "pptx" | "mp4" | "html">(null);
+  const [exporting, setExporting] = useState<null | "png" | "pdf" | "pptx" | "mp4" | "html" | "json">(null);
   const [exportOpen, setExportOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
+  const importRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -39,7 +40,7 @@ export function Toolbar() {
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  const runExport = async (kind: "png" | "pdf" | "pptx" | "mp4" | "html") => {
+  const runExport = async (kind: "png" | "pdf" | "pptx" | "mp4" | "html" | "json") => {
     setExportOpen(false);
     setExporting(kind);
     try {
@@ -48,6 +49,7 @@ export function Toolbar() {
       else if (kind === "pdf") await exportPDF(n);
       else if (kind === "pptx") await exportPPTX(n);
       else if (kind === "html") await exportHTML(n);
+      else if (kind === "json") exportJSON(n);
       else {
         const { ext } = await exportVideo(n);
         if (ext === "webm") {
@@ -59,6 +61,14 @@ export function Toolbar() {
       alert(e instanceof Error ? e.message : "Export failed");
     } finally {
       setExporting(null);
+    }
+  };
+
+  const handleImport = async (file: File) => {
+    try {
+      await importJSONFile(file);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Import failed");
     }
   };
 
@@ -143,6 +153,20 @@ export function Toolbar() {
         <IconBtn onClick={clear} title="Clear">
           <Trash2 className="h-4 w-4" strokeWidth={2.5} />
         </IconBtn>
+        <IconBtn onClick={() => importRef.current?.click()} title="Import .json design">
+          <Upload className="h-4 w-4" strokeWidth={2.5} />
+        </IconBtn>
+        <input
+          ref={importRef}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleImport(f);
+            e.target.value = "";
+          }}
+        />
 
         {user ? (
           <>
@@ -206,7 +230,7 @@ export function Toolbar() {
           </button>
           {exportOpen && (
             <div className="brutal-border-2 absolute right-0 top-12 z-50 w-52 bg-ink p-1">
-              {(["png", "pdf", "pptx", "html", "mp4"] as const).map((k) => (
+              {(["png", "pdf", "pptx", "html", "json", "mp4"] as const).map((k) => (
                 <button
                   key={k}
                   onClick={() => runExport(k)}
@@ -214,7 +238,7 @@ export function Toolbar() {
                 >
                   <span>EXPORT .{k.toUpperCase()}</span>
                   <span className="font-mono text-[9px] text-teal/60">
-                    {k === "png" ? "current" : k === "mp4" ? "video" : k === "html" ? "interactive" : "all pages"}
+                    {k === "png" ? "current" : k === "mp4" ? "video" : k === "html" ? "interactive" : k === "json" ? "editable" : "all pages"}
                   </span>
                 </button>
               ))}

@@ -36,6 +36,22 @@ export function Canvas() {
         if (e.shiftKey) useEditor.getState().redo();
         else useEditor.getState().undo();
       }
+      if ((e.metaKey || e.ctrlKey) && (e.key === "c" || e.key === "C")) {
+        if (selectedId) {
+          e.preventDefault();
+          useEditor.getState().copySelected();
+        }
+      }
+      if ((e.metaKey || e.ctrlKey) && (e.key === "v" || e.key === "V")) {
+        e.preventDefault();
+        useEditor.getState().paste();
+      }
+      if ((e.metaKey || e.ctrlKey) && (e.key === "d" || e.key === "D")) {
+        if (selectedId) {
+          e.preventDefault();
+          useEditor.getState().duplicate(selectedId);
+        }
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
