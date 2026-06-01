@@ -118,7 +118,7 @@ export const CANVAS_PRESETS = [
   { name: "Slide 16:9", w: 1920, h: 1080 },
 ] as const;
 
-type Tool = "templates" | "text" | "shapes" | "uploads" | "color" | "size" | "icons" | "3d";
+type Tool = "templates" | "text" | "shapes" | "uploads" | "design" | "icons";
 
 type HistorySnap = { pages: Page[]; currentIndex: number };
 
@@ -140,6 +140,8 @@ type State = {
   designName: string;
   // alignment guides shown while dragging
   guides: { v: number[]; h: number[] };
+  // copy/paste clipboard (single element)
+  clipboard: AnyElement | null;
   setTool: (t: Tool) => void;
   select: (id: string | null) => void;
   add: (el: AnyElement) => void;
@@ -154,6 +156,8 @@ type State = {
   setCanvasSize: (w: number, h: number) => void;
   setPresenting: (v: boolean) => void;
   setGuides: (g: { v: number[]; h: number[] }) => void;
+  copySelected: () => void;
+  paste: () => void;
   undo: () => void;
   redo: () => void;
   clear: () => void;
@@ -298,11 +302,26 @@ export const useEditor = create<State>((set, get) => {
     designId: null,
     designName: "untitled.design",
     guides: { v: [], h: [] },
+    clipboard: null,
 
     setTool: (tool) => set({ tool }),
     setCanvasSize: (canvasW, canvasH) => set({ canvasW, canvasH }),
     setPresenting: (presenting) => set({ presenting }),
     setGuides: (guides) => set({ guides }),
+    copySelected: () => {
+      const { selectedId, elements } = get();
+      if (!selectedId) return;
+      const el = elements.find((e) => e.id === selectedId);
+      if (el) set({ clipboard: JSON.parse(JSON.stringify(el)) as AnyElement });
+    },
+    paste: () => {
+      const { clipboard } = get();
+      if (!clipboard) return;
+      pushHistory();
+      const clone = { ...clipboard, id: uid(), x: clipboard.x + 30, y: clipboard.y + 30 } as AnyElement;
+      updateCurrentPage((p) => ({ ...p, elements: [...p.elements, clone] }));
+      set({ selectedId: clone.id });
+    },
     select: (selectedId) => set({ selectedId }),
 
     add: (el) => {
