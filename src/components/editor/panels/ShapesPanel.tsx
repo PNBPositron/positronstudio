@@ -4,6 +4,7 @@ import { Sparkles, Loader2 } from "lucide-react";
 import { useEditor, newShape, newModel3D, type ShapeKind, type AnyElement } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
 import { Model3DRender } from "../Model3DRender";
+import { shapePathD } from "../ShapeRender";
 import { generate3DScene } from "@/lib/ai-templates.functions";
 
 const SHAPES: { kind: ShapeKind; label: string }[] = [
@@ -12,9 +13,19 @@ const SHAPES: { kind: ShapeKind; label: string }[] = [
   { kind: "triangle", label: "Triangle" },
   { kind: "star", label: "Star" },
   { kind: "arrow", label: "Arrow" },
+  { kind: "heart", label: "Heart" },
+  { kind: "diamond", label: "Diamond" },
+  { kind: "hexagon", label: "Hexagon" },
+  { kind: "pentagon", label: "Pentagon" },
+  { kind: "parallelogram", label: "Parallelogram" },
+  { kind: "trapezoid", label: "Trapezoid" },
+  { kind: "cross", label: "Cross" },
+  { kind: "lightning", label: "Lightning" },
+  { kind: "cloud", label: "Cloud" },
+  { kind: "speech", label: "Speech" },
 ];
 
-const FILLS = ["#7df9ff", "#4d7cff", "#0a0f1f"];
+const FILLS = ["#7df9ff", "#ff0080"];
 
 const SPHERE_PRESETS: Array<{ label: string; color: string }> = [
   { label: "Plasma", color: "#ff0080" },
@@ -166,14 +177,22 @@ function ShapePreview({ kind, fill }: { kind: ShapeKind; fill: string }) {
         />
       </svg>
     );
+  if (kind === "arrow")
+    return (
+      <svg width="44" height="44" viewBox="0 0 44 44">
+        <polygon
+          points="3,17 28,17 28,8 41,22 28,36 28,27 3,27"
+          fill={fill}
+          stroke={stroke}
+          strokeWidth={sw}
+        />
+      </svg>
+    );
+  const d = shapePathD(kind);
+  if (!d) return null;
   return (
-    <svg width="44" height="44" viewBox="0 0 44 44">
-      <polygon
-        points="3,17 28,17 28,8 41,22 28,36 28,27 3,27"
-        fill={fill}
-        stroke={stroke}
-        strokeWidth={sw}
-      />
+    <svg width="44" height="44" viewBox="0 0 100 100">
+      <path d={d} fill={fill} stroke={stroke} strokeWidth={sw} />
     </svg>
   );
 }
