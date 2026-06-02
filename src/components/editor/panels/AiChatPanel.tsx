@@ -54,7 +54,7 @@ function buildFromAi(els: AiElementInput[]): AnyElement[] {
 
 // Convert current page elements back to AI shape for context
 function toAi(els: AnyElement[]): AiElementInput[] {
-  return els.map((e) => {
+  return els.map((e): AiElementInput | null => {
     if (e.type === "text") return {
       type: "text", text: e.text, x: e.x, y: e.y, width: e.width, height: e.height,
       fontSize: e.fontSize, color: e.color, fontFamily: e.fontFamily,
