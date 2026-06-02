@@ -105,10 +105,16 @@ const STYLE_GUIDES: Record<AiStyle, string> = {
 const buildSystem = (W: number, H: number, style: AiStyle, hasImage: boolean) => `You are an elite graphic designer generating a MULTI-SLIDE deck for a ${W}×${H}px canvas.
 Aspect ratio: ${(W / H).toFixed(3)} (${W >= H ? "landscape/wide" : "portrait/tall"}). Compose every slide for this exact shape — fill the full ${W}px width and ${H}px height.
 
-DECK STRUCTURE — output 4-6 cohesive slides in this order:
+THINK BEFORE YOU DESIGN (do this silently, do NOT emit it):
+  • Choose the palette (3-5 hex codes) and ONE typographic system.
+  • Decide one repeating visual motif (a shape, an icon, a stroke pattern) that recurs across slides.
+  • Sketch each slide's role and dominant element BEFORE filling coordinates.
+  • For every slide, mentally check: does each element fit inside ${W}×${H}? Do text boxes have enough height for the fontSize? Does the layout feel deliberate, not centered-by-default?
+
+DECK STRUCTURE — output the requested number of cohesive slides in this order:
   1. TITLE slide — huge headline + short subtitle/byline. Bold, no body copy.
-  2-4. CONTENT slides — each one has a clear role (intro / point / example / data). Use distinct layouts; never repeat the title slide format.
-  5. SUMMARY slide — recap of key points (bulleted or numbered) OR a closing call-to-action.
+  middle. CONTENT slides — each one has a clear role (intro / point / example / data / quote). Use DISTINCT layouts; never repeat the title format or each other.
+  last. SUMMARY slide — recap of key points (bulleted or numbered) OR a closing call-to-action.
 All slides MUST share the same palette, typographic system, and visual motifs so the deck feels like ONE designed artifact.
 
 STYLE BRIEF: ${STYLE_GUIDES[style]}
@@ -137,7 +143,7 @@ Return ONLY valid JSON, no markdown, no commentary:
 Each slide aims for 5-12 elements. Across the deck, include at least one shape with an effect (liquid_glass or neon) when the style supports it. Make it visually striking, deliberate, and unmistakably in the requested style.`;
 
 export const generateAiTemplate = createServerFn({ method: "POST" })
-  .inputValidator((data: { prompt: string; width?: number; height?: number; style?: AiStyle; imageDataUrl?: string }) => {
+  .inputValidator((data: { prompt: string; width?: number; height?: number; style?: AiStyle; imageDataUrl?: string; slideCount?: number }) => {
     if (!data || typeof data.prompt !== "string") throw new Error("Prompt is required");
     if (!data.prompt.trim() && !data.imageDataUrl) throw new Error("Provide a prompt or an image");
     const clamp = (n: unknown, def: number) => {
@@ -152,12 +158,16 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
     const img = typeof data.imageDataUrl === "string" && data.imageDataUrl.startsWith("data:image/")
       ? data.imageDataUrl.slice(0, 8_000_000)
       : undefined;
+    const slideCount = Math.max(1, Math.min(10,
+      typeof data.slideCount === "number" && Number.isFinite(data.slideCount) ? Math.round(data.slideCount) : 5
+    ));
     return {
       prompt: data.prompt.slice(0, 1000),
       width: clamp(data.width, 1920),
       height: clamp(data.height, 1080),
       style,
       imageDataUrl: img,
+      slideCount,
     };
   })
   .handler(async ({ data }): Promise<AiDeck> => {
@@ -165,7 +175,7 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
     const userContent: Array<Record<string, unknown>> = [
-      { type: "text", text: `Design concept: ${data.prompt || "(use the attached image as the brief)"}` },
+      { type: "text", text: `Design concept: ${data.prompt || "(use the attached image as the brief)"}\n\nProduce exactly ${data.slideCount} slides.` },
     ];
     if (data.imageDataUrl) {
       userContent.push({ type: "image_url", image_url: { url: data.imageDataUrl } });
@@ -175,7 +185,7 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
       method: "POST",
       headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: buildSystem(data.width, data.height, data.style, !!data.imageDataUrl) },
           { role: "user", content: userContent },
