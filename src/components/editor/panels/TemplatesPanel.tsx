@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Loader2, ImagePlus, X } from "lucide-react";
+import { Sparkles, Loader2, ImagePlus, X, Heart } from "lucide-react";
 import {
   useEditor,
   newText,
@@ -13,7 +13,16 @@ import {
 } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
 import { generateAiTemplate, type AiElementInput, type AiStyle } from "@/lib/ai-templates.functions";
-import { listPublicTemplates, type PublicTemplate } from "@/lib/designs";
+import {
+  listPublicTemplates,
+  listTemplateLikeCounts,
+  listMyLikedTemplateIds,
+  likeTemplate,
+  unlikeTemplate,
+  type PublicTemplate,
+} from "@/lib/designs";
+import { SlideThumbnail } from "../SlideThumbnail";
+import { useAuth } from "@/hooks/use-auth";
 
 function buildFromAi(els: AiElementInput[]): AnyElement[] {
   return els
@@ -82,14 +91,54 @@ export function TemplatesPanel() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [community, setCommunity] = useState<PublicTemplate[]>([]);
   const [communityLoading, setCommunityLoading] = useState(false);
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const { user } = useAuth();
 
   useEffect(() => {
     setCommunityLoading(true);
     listPublicTemplates()
-      .then(setCommunity)
+      .then(async (tpls) => {
+        setCommunity(tpls);
+        const ids = tpls.map((t) => t.id);
+        const [counts, mine] = await Promise.all([
+          listTemplateLikeCounts(ids),
+          listMyLikedTemplateIds().catch(() => new Set<string>()),
+        ]);
+        setLikeCounts(counts);
+        setLikedIds(mine);
+      })
       .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"))
       .finally(() => setCommunityLoading(false));
-  }, []);
+  }, [user?.id]);
+
+  const toggleLike = async (id: string) => {
+    if (!user) {
+      setError("Sign in to like templates");
+      return;
+    }
+    const isLiked = likedIds.has(id);
+    // optimistic update
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (isLiked) next.delete(id); else next.add(id);
+      return next;
+    });
+    setLikeCounts((prev) => ({ ...prev, [id]: Math.max(0, (prev[id] ?? 0) + (isLiked ? -1 : 1)) }));
+    try {
+      if (isLiked) await unlikeTemplate(id);
+      else await likeTemplate(id);
+    } catch (e) {
+      // revert
+      setLikedIds((prev) => {
+        const next = new Set(prev);
+        if (isLiked) next.add(id); else next.delete(id);
+        return next;
+      });
+      setLikeCounts((prev) => ({ ...prev, [id]: Math.max(0, (prev[id] ?? 0) + (isLiked ? 1 : -1)) }));
+      setError(e instanceof Error ? e.message : "Like failed");
+    }
+  };
 
   const onPickImage = (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
@@ -228,29 +277,56 @@ export function TemplatesPanel() {
       ) : (
         <div className="grid grid-cols-2 gap-2">
           {community.map((c) => (
-            <button
+            <div
               key={c.id}
-              onClick={() => {
-                if (!window.confirm(`Load "${c.name}" — this replaces your current pages.`)) return;
-                useEditor.getState().loadPages(c.pages as Page[]);
-                useEditor.getState().setCanvasSize(c.canvas_w, c.canvas_h);
-              }}
-              className="brutal-border-2 brutal-press overflow-hidden bg-surface text-left hover:border-teal"
+              className="brutal-border-2 group relative overflow-hidden bg-surface text-left hover:border-teal"
             >
-              <div
-                className="w-full overflow-hidden border-b border-teal/30"
-                style={{
-                  aspectRatio: `${c.canvas_w} / ${c.canvas_h}`,
-                  background: (c.pages?.[0] as Page | undefined)?.bgColor ?? "#0a0f1f",
+              <button
+                onClick={() => {
+                  if (!window.confirm(`Load "${c.name}" — this replaces your current pages.`)) return;
+                  useEditor.getState().loadPages(c.pages as Page[]);
+                  useEditor.getState().setCanvasSize(c.canvas_w, c.canvas_h);
                 }}
-              />
-              <div className="bg-ink px-2 py-1 font-display text-[10px] uppercase tracking-[0.15em] text-teal truncate">
-                {c.name}
-              </div>
-              <div className="bg-ink px-2 pb-1 font-mono text-[9px] text-teal/50">
-                {c.pages?.length ?? 0} slides
-              </div>
-            </button>
+                className="block w-full text-left"
+                title={`Load ${c.name}`}
+              >
+                <div className="w-full border-b border-teal/30">
+                  {c.pages?.[0] ? (
+                    <SlideThumbnail
+                      page={c.pages[0] as Page}
+                      canvasW={c.canvas_w}
+                      canvasH={c.canvas_h}
+                      className="w-full"
+                    />
+                  ) : (
+                    <div style={{ aspectRatio: `${c.canvas_w} / ${c.canvas_h}`, background: "#0a0f1f" }} />
+                  )}
+                </div>
+                <div className="bg-ink px-2 py-1 font-display text-[10px] uppercase tracking-[0.15em] text-teal truncate">
+                  {c.name}
+                </div>
+                <div className="bg-ink px-2 pb-1 font-mono text-[9px] text-teal/50">
+                  {c.pages?.length ?? 0} slides
+                </div>
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); toggleLike(c.id); }}
+                disabled={!user}
+                title={user ? (likedIds.has(c.id) ? "Unlike" : "Like") : "Sign in to like"}
+                className={`absolute right-1.5 top-1.5 flex items-center gap-1 border bg-ink/85 px-1.5 py-0.5 font-mono text-[10px] backdrop-blur transition ${
+                  likedIds.has(c.id)
+                    ? "border-[#ff0080] text-[#ff0080]"
+                    : "border-teal/40 text-teal/80 hover:border-teal hover:text-teal"
+                } ${!user ? "opacity-60" : ""}`}
+              >
+                <Heart
+                  className="h-3 w-3"
+                  fill={likedIds.has(c.id) ? "currentColor" : "none"}
+                  strokeWidth={2}
+                />
+                {likeCounts[c.id] ?? 0}
+              </button>
+            </div>
           ))}
         </div>
       )}

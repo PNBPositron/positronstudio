@@ -26,6 +26,16 @@ export function PresentationMode() {
     const obs = new ResizeObserver(fit);
     if (wrapRef.current) obs.observe(wrapRef.current);
 
+    // Enter native fullscreen so the slide truly fills the screen.
+    const root = document.documentElement;
+    if (root.requestFullscreen && !document.fullscreenElement) {
+      root.requestFullscreen().catch(() => { /* user gesture missing — ignore */ });
+    }
+    const onFsChange = () => {
+      if (!document.fullscreenElement) setPresenting(false);
+    };
+    document.addEventListener("fullscreenchange", onFsChange);
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setPresenting(false);
       if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
@@ -61,6 +71,10 @@ export function PresentationMode() {
       obs.disconnect();
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("mousemove", onMove);
+      document.removeEventListener("fullscreenchange", onFsChange);
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => { /* noop */ });
+      }
       if (idleRef.current) window.clearTimeout(idleRef.current);
       document.body.style.overflow = prev;
     };
