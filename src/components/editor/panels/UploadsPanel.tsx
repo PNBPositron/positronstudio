@@ -1,11 +1,18 @@
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { useEditor, newImage } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
-import { Upload } from "lucide-react";
+import { Upload, Sparkles, Loader2 } from "lucide-react";
+import { generateAiAsset } from "@/lib/ai-templates.functions";
 
 export function UploadsPanel() {
   const { add } = useEditor();
   const [uploads, setUploads] = useState<string[]>([]);
+  const gen = useServerFn(generateAiAsset);
+  const [prompt, setPrompt] = useState("");
+  const [size, setSize] = useState<"1024x1024" | "1024x1536" | "1536x1024">("1024x1024");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -19,6 +26,20 @@ export function UploadsPanel() {
     });
   };
 
+  const onGenerate = async () => {
+    if (!prompt.trim() || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await gen({ data: { prompt: prompt.trim(), size } });
+      setUploads((u) => [res.dataUrl, ...u]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Generation failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <PanelHeader title="Uploads" />
@@ -28,6 +49,38 @@ export function UploadsPanel() {
         <span className="font-mono text-[9px] text-teal/60">PNG · JPG · SVG</span>
         <input type="file" accept="image/*" multiple onChange={onFile} className="hidden" />
       </label>
+
+      <div className="brutal-border-2 space-y-2 bg-surface p-3">
+        <div className="flex items-center gap-2 font-display text-[11px] tracking-[0.2em] text-teal">
+          <Sparkles className="h-3.5 w-3.5" /> AI_ASSET
+        </div>
+        <textarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="e.g. holographic skull on black, studio lighting"
+          rows={2}
+          className="w-full resize-none border border-teal/40 bg-ink p-2 font-mono text-[11px] text-teal placeholder:text-teal/30 focus:border-teal focus:outline-none"
+        />
+        <select
+          value={size}
+          onChange={(e) => setSize(e.target.value as typeof size)}
+          className="w-full border border-teal/40 bg-ink px-2 py-1.5 font-mono text-[11px] text-teal focus:border-teal focus:outline-none"
+        >
+          <option value="1024x1024">Square 1024</option>
+          <option value="1024x1536">Portrait 1024×1536</option>
+          <option value="1536x1024">Landscape 1536×1024</option>
+        </select>
+        <button
+          onClick={onGenerate}
+          disabled={busy || !prompt.trim()}
+          className="brutal-border brutal-press flex w-full items-center justify-center gap-2 bg-blue px-3 py-2 font-display text-[11px] tracking-[0.2em] text-ink disabled:opacity-50"
+        >
+          {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          {busy ? "GENERATING..." : "GENERATE IMAGE"}
+        </button>
+        {error && <p className="font-mono text-[10px] text-[#ff0080]">! {error}</p>}
+      </div>
+
       {uploads.length > 0 ? (
         <div className="grid grid-cols-2 gap-2">
           {uploads.map((src, i) => (
