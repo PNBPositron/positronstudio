@@ -91,7 +91,11 @@ export function PresentationMode() {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-ink scanlines">
-      <div className="relative flex items-center justify-between border-b border-teal/40 bg-ink px-5 py-3">
+      <div
+        className={`absolute inset-x-0 top-0 z-30 flex items-center justify-between border-b border-teal/40 bg-ink/70 px-5 py-2 backdrop-blur transition-opacity ${
+          strip ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-teal to-transparent" />
         <div className="font-display text-sm uppercase tracking-[0.25em] text-teal text-glow">
           ▶ presenting · <span className="font-mono text-xs text-teal/70">{canvasW}×{canvasH}</span>
@@ -108,7 +112,7 @@ export function PresentationMode() {
           </button>
         </div>
       </div>
-      <div ref={wrapRef} className="relative flex flex-1 items-center justify-center overflow-hidden p-8">
+      <div ref={wrapRef} className="relative flex flex-1 items-center justify-center overflow-hidden">
         <button
           onClick={() => setCurrentPage(currentIndex - 1)}
           disabled={currentIndex === 0}
