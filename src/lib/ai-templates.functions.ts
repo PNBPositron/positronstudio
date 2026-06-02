@@ -1,5 +1,33 @@
 import { createServerFn } from "@tanstack/react-start";
 
+// Robustly extract a JSON object from a model response that may include
+// markdown fences, prose, or multiple back-to-back objects.
+function parseLooseJson<T>(raw: string): T {
+  let s = (raw ?? "").trim();
+  s = s.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+  try { return JSON.parse(s) as T; } catch { /* fall through */ }
+  const start = s.indexOf("{");
+  if (start === -1) throw new Error("AI returned invalid JSON");
+  // Walk braces respecting strings to find the matching close.
+  let depth = 0, inStr = false, esc = false;
+  for (let i = start; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === "\\") esc = true;
+      else if (c === '"') inStr = false;
+    } else {
+      if (c === '"') inStr = true;
+      else if (c === "{") depth++;
+      else if (c === "}") {
+        depth--;
+        if (depth === 0) return JSON.parse(s.slice(start, i + 1)) as T;
+      }
+    }
+  }
+  throw new Error("AI returned invalid JSON");
+}
+
 export type AiShadow = { x: number; y: number; blur: number; color: string };
 
 export type AiElementInput =
@@ -384,12 +412,7 @@ Return ONLY valid JSON, no commentary:
     if (!res.ok) throw new Error(`AI gateway error ${res.status}`);
     const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
     const content = json.choices?.[0]?.message?.content ?? "";
-    let parsed: AiPage;
-    try { parsed = JSON.parse(content); } catch {
-      const m = content.match(/\{[\s\S]*\}/);
-      if (!m) throw new Error("AI returned invalid JSON");
-      parsed = JSON.parse(m[0]);
-    }
+    const parsed = parseLooseJson<AiPage>(content);
     if (!parsed || !Array.isArray(parsed.elements)) throw new Error("AI response missing elements");
     return { bg: parsed.bg ?? data.page.bg, elements: parsed.elements };
   });
