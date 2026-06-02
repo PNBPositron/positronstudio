@@ -75,6 +75,7 @@ export function TemplatesPanel() {
   const generate = useServerFn(generateAiTemplate);
   const [prompt, setPrompt] = useState("");
   const [style, setStyle] = useState<AiStyle>("auto");
+  const [slideCount, setSlideCount] = useState(5);
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,6 +113,7 @@ export function TemplatesPanel() {
           height: canvasH,
           style,
           imageDataUrl: imageDataUrl ?? undefined,
+          slideCount,
         },
       });
       const newPages: Page[] = res.pages.map((p) => ({
@@ -146,6 +148,18 @@ export function TemplatesPanel() {
             <option key={s.id} value={s.id}>{s.label}</option>
           ))}
         </select>
+
+        <div className="flex items-center gap-2">
+          <label className="font-mono text-[10px] text-teal/70">slides:</label>
+          <input
+            type="number"
+            min={1}
+            max={10}
+            value={slideCount}
+            onChange={(e) => setSlideCount(Math.max(1, Math.min(10, parseInt(e.target.value) || 5)))}
+            className="w-16 border border-teal/40 bg-ink px-2 py-1 font-mono text-[11px] text-teal focus:border-teal focus:outline-none"
+          />
+        </div>
 
         <textarea
           value={prompt}
