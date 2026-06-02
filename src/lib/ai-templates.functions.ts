@@ -329,3 +329,98 @@ spinSpeed: 0-30 seconds (0 = static). Always set "shape" to "sphere".`;
     parsed.models = parsed.models.map((m) => ({ ...m, shape: "sphere" as const }));
     return parsed;
   });
+
+// ---------------- Edit current slide via chat ----------------
+
+export const editCurrentSlide = createServerFn({ method: "POST" })
+  .inputValidator((data: {
+    prompt: string;
+    width: number;
+    height: number;
+    page: { bg: string; elements: AiElementInput[] };
+  }) => {
+    if (!data?.prompt?.trim()) throw new Error("Prompt is required");
+    if (!data.page || !Array.isArray(data.page.elements)) throw new Error("Page is required");
+    const clamp = (n: unknown, def: number) =>
+      Math.max(320, Math.min(4096, typeof n === "number" && Number.isFinite(n) ? Math.round(n) : def));
+    return {
+      prompt: data.prompt.slice(0, 1000),
+      width: clamp(data.width, 1920),
+      height: clamp(data.height, 1080),
+      page: { bg: data.page.bg ?? "#0a0f1f", elements: data.page.elements.slice(0, 200) },
+    };
+  })
+  .handler(async ({ data }): Promise<AiPage> => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+
+    const sys = `You are an elite graphic designer EDITING an existing slide on a ${data.width}×${data.height}px canvas.
+You will receive the CURRENT slide as JSON and a user instruction. Apply the instruction and return the FULL updated slide.
+
+Rules:
+- Preserve everything the user didn't ask to change. Don't restyle unrelated elements.
+- Keep all elements inside bounds (0 ≤ x, x+width ≤ ${data.width}; 0 ≤ y, y+height ≤ ${data.height}).
+- Use realistic hex colors. Available fonts: "Orbitron", "JetBrains Mono", "Archivo Black", "Inter", "Georgia".
+- Element types: text, shape (rect/circle/triangle/star/arrow), icon (lucide PascalCase), model3d (sphere only).
+- Shape effects available: "liquid_glass", "neon", "soft_shadow", "inner_glow".
+
+Return ONLY valid JSON, no commentary:
+{ "bg": "#hex", "elements": Array<element> }`;
+
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: sys },
+          { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nInstruction: ${data.prompt}` },
+        ],
+        response_format: { type: "json_object" },
+      }),
+    });
+    if (res.status === 429) throw new Error("Rate limit hit. Try again in a moment.");
+    if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
+    if (!res.ok) throw new Error(`AI gateway error ${res.status}`);
+    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    const content = json.choices?.[0]?.message?.content ?? "";
+    let parsed: AiPage;
+    try { parsed = JSON.parse(content); } catch {
+      const m = content.match(/\{[\s\S]*\}/);
+      if (!m) throw new Error("AI returned invalid JSON");
+      parsed = JSON.parse(m[0]);
+    }
+    if (!parsed || !Array.isArray(parsed.elements)) throw new Error("AI response missing elements");
+    return { bg: parsed.bg ?? data.page.bg, elements: parsed.elements };
+  });
+
+// ---------------- AI image asset generation ----------------
+
+export const generateAiAsset = createServerFn({ method: "POST" })
+  .inputValidator((data: { prompt: string; size?: "1024x1024" | "1024x1536" | "1536x1024" }) => {
+    if (!data?.prompt?.trim()) throw new Error("Prompt is required");
+    const size = data.size === "1024x1536" || data.size === "1536x1024" ? data.size : "1024x1024";
+    return { prompt: data.prompt.slice(0, 500), size };
+  })
+  .handler(async ({ data }): Promise<{ dataUrl: string }> => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/images/generations", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image",
+        prompt: data.prompt,
+        size: data.size,
+        n: 1,
+      }),
+    });
+    if (res.status === 429) throw new Error("Rate limit hit. Try again shortly.");
+    if (res.status === 402) throw new Error("AI credits exhausted.");
+    if (!res.ok) throw new Error(`AI gateway error ${res.status}: ${await res.text()}`);
+    const json = (await res.json()) as { data?: Array<{ b64_json?: string; url?: string }> };
+    const first = json.data?.[0];
+    if (first?.b64_json) return { dataUrl: `data:image/png;base64,${first.b64_json}` };
+    if (first?.url) return { dataUrl: first.url };
+    throw new Error("AI returned no image");
+  });
