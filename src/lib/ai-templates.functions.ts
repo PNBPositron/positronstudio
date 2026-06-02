@@ -1,5 +1,33 @@
 import { createServerFn } from "@tanstack/react-start";
 
+// Robustly extract a JSON object from a model response that may include
+// markdown fences, prose, or multiple back-to-back objects.
+function parseLooseJson<T>(raw: string): T {
+  let s = (raw ?? "").trim();
+  s = s.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+  try { return JSON.parse(s) as T; } catch { /* fall through */ }
+  const start = s.indexOf("{");
+  if (start === -1) throw new Error("AI returned invalid JSON");
+  // Walk braces respecting strings to find the matching close.
+  let depth = 0, inStr = false, esc = false;
+  for (let i = start; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === "\\") esc = true;
+      else if (c === '"') inStr = false;
+    } else {
+      if (c === '"') inStr = true;
+      else if (c === "{") depth++;
+      else if (c === "}") {
+        depth--;
+        if (depth === 0) return JSON.parse(s.slice(start, i + 1)) as T;
+      }
+    }
+  }
+  throw new Error("AI returned invalid JSON");
+}
+
 export type AiShadow = { x: number; y: number; blur: number; color: string };
 
 export type AiElementInput =
