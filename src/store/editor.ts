@@ -28,7 +28,22 @@ export type TextElement = ElementBase & {
   href?: string;
 };
 
-export type ShapeKind = "rect" | "circle" | "triangle" | "star" | "arrow";
+export type ShapeKind =
+  | "rect"
+  | "circle"
+  | "triangle"
+  | "star"
+  | "arrow"
+  | "heart"
+  | "diamond"
+  | "hexagon"
+  | "pentagon"
+  | "parallelogram"
+  | "trapezoid"
+  | "cross"
+  | "lightning"
+  | "cloud"
+  | "speech";
 export type ShapeEffect = "none" | "liquid_glass" | "neon" | "soft_shadow" | "inner_glow";
 export type ElementShadow = {
   x: number;

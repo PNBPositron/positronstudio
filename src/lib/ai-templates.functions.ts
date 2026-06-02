@@ -50,7 +50,11 @@ export type AiElementInput =
     }
   | {
       type: "shape";
-      shape: "rect" | "circle" | "triangle" | "star" | "arrow";
+      shape:
+        | "rect" | "circle" | "triangle" | "star" | "arrow"
+        | "heart" | "diamond" | "hexagon" | "pentagon"
+        | "parallelogram" | "trapezoid" | "cross"
+        | "lightning" | "cloud" | "speech";
       x: number;
       y: number;
       width: number;

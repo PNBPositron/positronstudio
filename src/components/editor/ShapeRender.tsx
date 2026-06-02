@@ -1,4 +1,36 @@
-import type { ShapeElement } from "@/store/editor";
+import type { ShapeElement, ShapeKind } from "@/store/editor";
+
+// Reusable path generators (normalized 0-100 viewBox) so previews and canvas share geometry.
+function pathFor(kind: ShapeKind): string | null {
+  switch (kind) {
+    case "heart":
+      return "M50 88 C 18 66, 6 44, 18 26 C 28 12, 44 14, 50 28 C 56 14, 72 12, 82 26 C 94 44, 82 66, 50 88 Z";
+    case "diamond":
+      return "M50 4 L 96 50 L 50 96 L 4 50 Z";
+    case "hexagon":
+      return "M25 6 L 75 6 L 96 50 L 75 94 L 25 94 L 4 50 Z";
+    case "pentagon":
+      return "M50 4 L 96 38 L 78 94 L 22 94 L 4 38 Z";
+    case "parallelogram":
+      return "M22 8 L 96 8 L 78 92 L 4 92 Z";
+    case "trapezoid":
+      return "M22 8 L 78 8 L 96 92 L 4 92 Z";
+    case "cross":
+      return "M38 4 L 62 4 L 62 38 L 96 38 L 96 62 L 62 62 L 62 96 L 38 96 L 38 62 L 4 62 L 4 38 L 38 38 Z";
+    case "lightning":
+      return "M58 4 L 18 56 L 44 56 L 36 96 L 82 40 L 54 40 L 64 4 Z";
+    case "cloud":
+      return "M22 72 C 4 72, 4 46, 22 46 C 22 28, 48 22, 54 38 C 64 26, 84 32, 84 50 C 96 50, 96 72, 84 72 Z";
+    case "speech":
+      return "M8 14 L 92 14 L 92 70 L 50 70 L 30 92 L 32 70 L 8 70 Z";
+    default:
+      return null;
+  }
+}
+
+export function shapePathD(kind: ShapeKind): string | null {
+  return pathFor(kind);
+}
 
 export function ShapeRender({ element }: { element: ShapeElement }) {
   const { shape, fill, stroke, strokeWidth, width, height } = element;
@@ -81,6 +113,14 @@ export function ShapeRender({ element }: { element: ShapeElement }) {
           strokeWidth={strokeWidth}
           strokeLinejoin="miter"
         />
+      </svg>
+    );
+  }
+  const d = pathFor(shape);
+  if (d) {
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path d={d} fill={fill} stroke={stroke} strokeWidth={strokeWidth / 2} strokeLinejoin="miter" />
       </svg>
     );
   }

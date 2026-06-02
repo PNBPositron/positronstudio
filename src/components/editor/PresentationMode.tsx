@@ -26,6 +26,16 @@ export function PresentationMode() {
     const obs = new ResizeObserver(fit);
     if (wrapRef.current) obs.observe(wrapRef.current);
 
+    // Enter native fullscreen so the slide truly fills the screen.
+    const root = document.documentElement;
+    if (root.requestFullscreen && !document.fullscreenElement) {
+      root.requestFullscreen().catch(() => { /* user gesture missing — ignore */ });
+    }
+    const onFsChange = () => {
+      if (!document.fullscreenElement) setPresenting(false);
+    };
+    document.addEventListener("fullscreenchange", onFsChange);
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setPresenting(false);
       if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
@@ -61,6 +71,10 @@ export function PresentationMode() {
       obs.disconnect();
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("mousemove", onMove);
+      document.removeEventListener("fullscreenchange", onFsChange);
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => { /* noop */ });
+      }
       if (idleRef.current) window.clearTimeout(idleRef.current);
       document.body.style.overflow = prev;
     };
@@ -77,7 +91,11 @@ export function PresentationMode() {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-ink scanlines">
-      <div className="relative flex items-center justify-between border-b border-teal/40 bg-ink px-5 py-3">
+      <div
+        className={`absolute inset-x-0 top-0 z-30 flex items-center justify-between border-b border-teal/40 bg-ink/70 px-5 py-2 backdrop-blur transition-opacity ${
+          strip ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-teal to-transparent" />
         <div className="font-display text-sm uppercase tracking-[0.25em] text-teal text-glow">
           ▶ presenting · <span className="font-mono text-xs text-teal/70">{canvasW}×{canvasH}</span>
@@ -94,7 +112,7 @@ export function PresentationMode() {
           </button>
         </div>
       </div>
-      <div ref={wrapRef} className="relative flex flex-1 items-center justify-center overflow-hidden p-8">
+      <div ref={wrapRef} className="relative flex flex-1 items-center justify-center overflow-hidden">
         <button
           onClick={() => setCurrentPage(currentIndex - 1)}
           disabled={currentIndex === 0}

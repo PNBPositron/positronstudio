@@ -113,3 +113,52 @@ export async function publishAsTemplate(input: {
   if (error) throw error;
   return data as unknown as PublicTemplate;
 }
+
+/* ---------------- Template likes ---------------- */
+
+export async function listTemplateLikeCounts(
+  templateIds: string[],
+): Promise<Record<string, number>> {
+  if (templateIds.length === 0) return {};
+  const { data, error } = await supabase
+    .from("template_likes")
+    .select("template_id")
+    .in("template_id", templateIds);
+  if (error) throw error;
+  const counts: Record<string, number> = {};
+  for (const row of (data ?? []) as Array<{ template_id: string }>) {
+    counts[row.template_id] = (counts[row.template_id] ?? 0) + 1;
+  }
+  return counts;
+}
+
+export async function listMyLikedTemplateIds(): Promise<Set<string>> {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return new Set();
+  const { data, error } = await supabase
+    .from("template_likes")
+    .select("template_id")
+    .eq("user_id", u.user.id);
+  if (error) throw error;
+  return new Set((data ?? []).map((r: { template_id: string }) => r.template_id));
+}
+
+export async function likeTemplate(templateId: string): Promise<void> {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) throw new Error("Sign in to like templates");
+  const { error } = await supabase
+    .from("template_likes")
+    .insert({ template_id: templateId, user_id: u.user.id });
+  if (error && !/duplicate key/i.test(error.message)) throw error;
+}
+
+export async function unlikeTemplate(templateId: string): Promise<void> {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) throw new Error("Not signed in");
+  const { error } = await supabase
+    .from("template_likes")
+    .delete()
+    .eq("template_id", templateId)
+    .eq("user_id", u.user.id);
+  if (error) throw error;
+}
