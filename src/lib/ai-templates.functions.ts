@@ -384,12 +384,7 @@ Return ONLY valid JSON, no commentary:
     if (!res.ok) throw new Error(`AI gateway error ${res.status}`);
     const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
     const content = json.choices?.[0]?.message?.content ?? "";
-    let parsed: AiPage;
-    try { parsed = JSON.parse(content); } catch {
-      const m = content.match(/\{[\s\S]*\}/);
-      if (!m) throw new Error("AI returned invalid JSON");
-      parsed = JSON.parse(m[0]);
-    }
+    const parsed = parseLooseJson<AiPage>(content);
     if (!parsed || !Array.isArray(parsed.elements)) throw new Error("AI response missing elements");
     return { bg: parsed.bg ?? data.page.bg, elements: parsed.elements };
   });
