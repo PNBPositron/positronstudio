@@ -1,5 +1,5 @@
-import { useEditor, DEFAULT_FILTERS, type ImageFilters, type ElementShadow } from "@/store/editor";
-import { Copy, Trash2, ArrowUp, ArrowDown, Layers, RotateCcw } from "lucide-react";
+import { useEditor, DEFAULT_FILTERS, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption } from "@/store/editor";
+import { Copy, Trash2, ArrowUp, ArrowDown, Layers, RotateCcw, Plus, Check } from "lucide-react";
 
 const SWATCHES = [
   "#7df9ff", "#00d9ff", "#0ea5e9", "#4d7cff", "#1f3fb8",
@@ -125,6 +125,24 @@ export function PropertiesPanel() {
             <Field label="Fill">
               <ColorRow value={el.fill} onChange={(c) => update(el.id, { fill: c })} />
             </Field>
+            <GradientEditor
+              gradient={el.gradient}
+              fill={el.fill}
+              onChange={(g) => update(el.id, { gradient: g })}
+            />
+            {el.shape === "rect" && (
+              <Field label="Corner radius">
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.floor(Math.min(el.width, el.height) / 2)}
+                  value={el.cornerRadius ?? 0}
+                  onChange={(e) => update(el.id, { cornerRadius: +e.target.value })}
+                  className="w-full accent-teal"
+                />
+                <div className="font-mono text-[11px] text-teal/70">{el.cornerRadius ?? 0}px</div>
+              </Field>
+            )}
             <Field label="Stroke">
               <ColorRow value={el.stroke} onChange={(c) => update(el.id, { stroke: c })} />
             </Field>
@@ -156,6 +174,10 @@ export function PropertiesPanel() {
               onChange={(s) => update(el.id, { shadow: s })}
             />
           </>
+        )}
+
+        {el.type === "quiz" && (
+          <QuizEditor element={el} onChange={(patch) => update(el.id, patch)} />
         )}
 
         {el.type === "icon" && (
@@ -449,6 +471,164 @@ function ShadowEditor({
           </Field>
         </>
       )}
+    </>
+  );
+}
+
+function GradientEditor({
+  gradient,
+  fill,
+  onChange,
+}: {
+  gradient: ShapeGradient | undefined;
+  fill: string;
+  onChange: (g: ShapeGradient | undefined) => void;
+}) {
+  const enabled = !!gradient;
+  const g: ShapeGradient = gradient ?? { from: fill, to: "#ff0080", angle: 45 };
+  return (
+    <>
+      <Field label="Gradient fill">
+        <button
+          onClick={() => onChange(enabled ? undefined : g)}
+          className={`brutal-border-2 w-full py-1.5 font-mono text-[10px] uppercase ${
+            enabled ? "bg-blue text-ink border-teal" : "bg-surface text-teal hover:border-teal"
+          }`}
+        >
+          {enabled ? "ON" : "OFF"}
+        </button>
+      </Field>
+      {enabled && (
+        <>
+          <Field label="From">
+            <input
+              type="color"
+              value={g.from}
+              onChange={(e) => onChange({ ...g, from: e.target.value })}
+              className="brutal-border-2 h-9 w-full bg-surface"
+            />
+          </Field>
+          <Field label="To">
+            <input
+              type="color"
+              value={g.to}
+              onChange={(e) => onChange({ ...g, to: e.target.value })}
+              className="brutal-border-2 h-9 w-full bg-surface"
+            />
+          </Field>
+          <Field label="Angle">
+            <input
+              type="range"
+              min={0}
+              max={360}
+              value={g.angle}
+              onChange={(e) => onChange({ ...g, angle: +e.target.value })}
+              className="w-full accent-teal"
+            />
+            <div className="font-mono text-[11px] text-teal/70">{g.angle}°</div>
+          </Field>
+        </>
+      )}
+    </>
+  );
+}
+
+function QuizEditor({
+  element,
+  onChange,
+}: {
+  element: QuizElement;
+  onChange: (patch: Partial<QuizElement>) => void;
+}) {
+  const setOption = (id: string, text: string) =>
+    onChange({ options: element.options.map((o) => (o.id === id ? { ...o, text } : o)) });
+  const removeOption = (id: string) => {
+    if (element.options.length <= 2) return;
+    const next = element.options.filter((o) => o.id !== id);
+    onChange({
+      options: next,
+      correctId: element.correctId === id ? next[0].id : element.correctId,
+    });
+  };
+  const addOption = () => {
+    const o: QuizOption = { id: Math.random().toString(36).slice(2, 10), text: "New option" };
+    onChange({ options: [...element.options, o] });
+  };
+  return (
+    <>
+      <Field label="Question">
+        <textarea
+          value={element.question}
+          onChange={(e) => onChange({ question: e.target.value })}
+          rows={2}
+          className="brutal-border-2 w-full bg-surface p-2 font-mono text-xs text-teal focus:outline-none focus:border-teal"
+        />
+      </Field>
+      <Field label="Options · pick correct">
+        <div className="space-y-1">
+          {element.options.map((o) => {
+            const correct = o.id === element.correctId;
+            return (
+              <div key={o.id} className="flex items-center gap-1">
+                <button
+                  onClick={() => onChange({ correctId: o.id })}
+                  title="Mark correct"
+                  className={`brutal-border-2 grid h-7 w-7 place-items-center ${
+                    correct ? "bg-blue text-ink border-teal" : "bg-surface text-teal/60 hover:border-teal"
+                  }`}
+                >
+                  <Check className="h-3 w-3" strokeWidth={3} />
+                </button>
+                <input
+                  value={o.text}
+                  onChange={(e) => setOption(o.id, e.target.value)}
+                  className="brutal-border-2 flex-1 bg-surface px-2 py-1 font-mono text-xs text-teal focus:outline-none focus:border-teal"
+                />
+                <button
+                  onClick={() => removeOption(o.id)}
+                  disabled={element.options.length <= 2}
+                  className="brutal-border-2 grid h-7 w-7 place-items-center bg-surface text-teal hover:border-teal disabled:opacity-30"
+                >
+                  <Trash2 className="h-3 w-3" strokeWidth={3} />
+                </button>
+              </div>
+            );
+          })}
+          <button
+            onClick={addOption}
+            className="brutal-border-2 flex w-full items-center justify-center gap-1 bg-surface py-1.5 font-mono text-[10px] uppercase tracking-wider text-teal hover:border-teal"
+          >
+            <Plus className="h-3 w-3" strokeWidth={3} /> Add option
+          </button>
+        </div>
+      </Field>
+      <Field label="Background">
+        <input
+          type="color"
+          value={element.bgColor}
+          onChange={(e) => onChange({ bgColor: e.target.value })}
+          className="brutal-border-2 h-9 w-full bg-surface"
+        />
+      </Field>
+      <Field label="Text">
+        <input
+          type="color"
+          value={element.fgColor}
+          onChange={(e) => onChange({ fgColor: e.target.value })}
+          className="brutal-border-2 h-9 w-full bg-surface"
+        />
+      </Field>
+      <Field label="Accent">
+        <input
+          type="color"
+          value={element.accentColor}
+          onChange={(e) => onChange({ accentColor: e.target.value })}
+          className="brutal-border-2 h-9 w-full bg-surface"
+        />
+      </Field>
+      <div className="font-mono text-[10px] text-teal/50">
+        &gt; click options in presentation mode to test
+      </div>
     </>
   );
 }

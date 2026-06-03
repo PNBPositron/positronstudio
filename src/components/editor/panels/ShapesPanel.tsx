@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Loader2 } from "lucide-react";
-import { useEditor, newShape, newModel3D, type ShapeKind, type AnyElement } from "@/store/editor";
+import { Sparkles, Loader2, HelpCircle } from "lucide-react";
+import { useEditor, newShape, newModel3D, newQuiz, type ShapeKind, type AnyElement } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
 import { Model3DRender } from "../Model3DRender";
 import { shapePathD } from "../ShapeRender";
@@ -69,6 +69,12 @@ export function ShapesPanel() {
   return (
     <div className="space-y-4">
       <PanelHeader title="Shapes" />
+      <button
+        onClick={() => add(newQuiz())}
+        className="brutal-border-2 brutal-press flex w-full items-center justify-center gap-2 bg-blue px-3 py-2 font-display text-[11px] tracking-[0.2em] text-ink"
+      >
+        <HelpCircle className="h-3.5 w-3.5" strokeWidth={2.5} /> ADD INTERACTIVE QUIZ
+      </button>
       <div className="grid grid-cols-3 gap-2">
         {SHAPES.flatMap((s) =>
           FILLS.map((fill) => (

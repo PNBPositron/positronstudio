@@ -33,7 +33,24 @@ export function shapePathD(kind: ShapeKind): string | null {
 }
 
 export function ShapeRender({ element }: { element: ShapeElement }) {
-  const { shape, fill, stroke, strokeWidth, width, height } = element;
+  const { shape, fill, stroke, strokeWidth, width, height, gradient, cornerRadius } = element;
+  const gradId = `g-${element.id}`;
+  const fillRef = gradient ? `url(#${gradId})` : fill;
+  const defs = gradient ? (
+    <defs>
+      <linearGradient
+        id={gradId}
+        gradientUnits="objectBoundingBox"
+        x1="0"
+        y1="0"
+        x2={Math.cos((gradient.angle * Math.PI) / 180)}
+        y2={Math.sin((gradient.angle * Math.PI) / 180)}
+      >
+        <stop offset="0%" stopColor={gradient.from} />
+        <stop offset="100%" stopColor={gradient.to} />
+      </linearGradient>
+    </defs>
+  ) : null;
   const common = {
     width: "100%",
     height: "100%",
@@ -41,14 +58,18 @@ export function ShapeRender({ element }: { element: ShapeElement }) {
     preserveAspectRatio: "none" as const,
   };
   if (shape === "rect") {
+    const r = Math.max(0, cornerRadius ?? 0);
     return (
       <svg {...common}>
+        {defs}
         <rect
           x={strokeWidth / 2}
           y={strokeWidth / 2}
           width={width - strokeWidth}
           height={height - strokeWidth}
-          fill={fill}
+          rx={r}
+          ry={r}
+          fill={fillRef}
           stroke={stroke}
           strokeWidth={strokeWidth}
         />
@@ -58,12 +79,13 @@ export function ShapeRender({ element }: { element: ShapeElement }) {
   if (shape === "circle") {
     return (
       <svg {...common}>
+        {defs}
         <ellipse
           cx={width / 2}
           cy={height / 2}
           rx={width / 2 - strokeWidth / 2}
           ry={height / 2 - strokeWidth / 2}
-          fill={fill}
+          fill={fillRef}
           stroke={stroke}
           strokeWidth={strokeWidth}
         />
@@ -73,9 +95,10 @@ export function ShapeRender({ element }: { element: ShapeElement }) {
   if (shape === "triangle") {
     return (
       <svg {...common}>
+        {defs}
         <polygon
           points={`${width / 2},${strokeWidth} ${width - strokeWidth},${height - strokeWidth} ${strokeWidth},${height - strokeWidth}`}
-          fill={fill}
+          fill={fillRef}
           stroke={stroke}
           strokeWidth={strokeWidth}
           strokeLinejoin="miter"
@@ -95,7 +118,8 @@ export function ShapeRender({ element }: { element: ShapeElement }) {
     }
     return (
       <svg {...common}>
-        <polygon points={pts.join(" ")} fill={fill} stroke={stroke} strokeWidth={strokeWidth} strokeLinejoin="miter" />
+        {defs}
+        <polygon points={pts.join(" ")} fill={fillRef} stroke={stroke} strokeWidth={strokeWidth} strokeLinejoin="miter" />
       </svg>
     );
   }
@@ -106,9 +130,10 @@ export function ShapeRender({ element }: { element: ShapeElement }) {
     const headW = w * 0.35;
     return (
       <svg {...common}>
+        {defs}
         <polygon
           points={`${strokeWidth},${h / 2 - tail / 2} ${w - headW},${h / 2 - tail / 2} ${w - headW},${strokeWidth} ${w - strokeWidth},${h / 2} ${w - headW},${h - strokeWidth} ${w - headW},${h / 2 + tail / 2} ${strokeWidth},${h / 2 + tail / 2}`}
-          fill={fill}
+          fill={fillRef}
           stroke={stroke}
           strokeWidth={strokeWidth}
           strokeLinejoin="miter"
@@ -120,7 +145,8 @@ export function ShapeRender({ element }: { element: ShapeElement }) {
   if (d) {
     return (
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path d={d} fill={fill} stroke={stroke} strokeWidth={strokeWidth / 2} strokeLinejoin="miter" />
+        {defs}
+        <path d={d} fill={fillRef} stroke={stroke} strokeWidth={strokeWidth / 2} strokeLinejoin="miter" />
       </svg>
     );
   }
