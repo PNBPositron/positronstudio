@@ -299,6 +299,15 @@ export function CanvasElement({ element, scale }: { element: AnyElement; scale: 
         );
       })()}
       {element.type === "model3d" && <Model3DRender element={element} />}
+      {element.type === "quiz" && (() => {
+        const presenting = useEditor.getState().presenting;
+        return (
+          <QuizRender
+            element={element}
+            interactive={presenting}
+          />
+        );
+      })()}
 
       {selected && !editing && (
         <>
