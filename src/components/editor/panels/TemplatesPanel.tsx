@@ -266,7 +266,7 @@ export function TemplatesPanel() {
       </div>
 
       <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">
-        ▸ Community templates
+        ▸ Top community templates
       </div>
 
       {communityLoading ? (
@@ -279,7 +279,7 @@ export function TemplatesPanel() {
         </p>
       ) : (
         <div className="grid grid-cols-2 gap-2">
-          {community.map((c) => (
+          {sortTemplates(community, likeCounts, "likes").slice(0, 8).map((c) => (
             <div
               key={c.id}
               className="brutal-border-2 group relative overflow-hidden bg-surface text-left hover:border-teal"
