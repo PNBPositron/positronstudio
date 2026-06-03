@@ -51,6 +51,11 @@ export type ElementShadow = {
   blur: number;
   color: string;
 };
+export type ShapeGradient = {
+  from: string;
+  to: string;
+  angle: number; // degrees
+};
 export type ShapeElement = ElementBase & {
   type: "shape";
   shape: ShapeKind;
@@ -59,6 +64,8 @@ export type ShapeElement = ElementBase & {
   strokeWidth: number;
   effect?: ShapeEffect;
   shadow?: ElementShadow;
+  gradient?: ShapeGradient;
+  cornerRadius?: number; // px, used by rect
 };
 
 export type ImageFilters = {
@@ -107,7 +114,24 @@ export type Model3DElement = ElementBase & {
   tiltY: number; // deg
 };
 
-export type AnyElement = TextElement | ShapeElement | ImageElement | IconElement | Model3DElement;
+export type QuizOption = { id: string; text: string };
+export type QuizElement = ElementBase & {
+  type: "quiz";
+  question: string;
+  options: QuizOption[];
+  correctId: string;
+  bgColor: string;
+  fgColor: string;
+  accentColor: string;
+};
+
+export type AnyElement =
+  | TextElement
+  | ShapeElement
+  | ImageElement
+  | IconElement
+  | Model3DElement
+  | QuizElement;
 
 export type Page = {
   id: string;
@@ -273,6 +297,31 @@ export const newModel3D = (
   tiltY: 25,
   ...overrides,
 });
+
+export const newQuiz = (overrides: Partial<QuizElement> = {}): QuizElement => {
+  const a = uid(), b = uid(), c = uid(), d = uid();
+  return {
+    id: uid(),
+    type: "quiz",
+    x: 160,
+    y: 160,
+    width: 720,
+    height: 520,
+    rotation: 0,
+    question: "What's your question?",
+    options: [
+      { id: a, text: "Option A" },
+      { id: b, text: "Option B" },
+      { id: c, text: "Option C" },
+      { id: d, text: "Option D" },
+    ],
+    correctId: a,
+    bgColor: "#0a0f1f",
+    fgColor: "#ffffff",
+    accentColor: "#7df9ff",
+    ...overrides,
+  };
+};
 
 const newPage = (overrides: Partial<Page> = {}): Page => ({
   id: uid(),
