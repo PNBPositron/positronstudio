@@ -1,9 +1,9 @@
 import { useRef, useState, useEffect } from "react";
-import { useEditor, type AnyElement, type ShapeElement, type ElementShadow, DEFAULT_FILTERS, type ImageFilters } from "@/store/editor";
+import { useEditor, type AnyElement, type ShapeElement, type QuizElement, type ElementShadow, DEFAULT_FILTERS, type ImageFilters } from "@/store/editor";
 import { ShapeRender } from "./ShapeRender";
 import { Model3DRender } from "./Model3DRender";
 import * as LucideIcons from "lucide-react";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, Check, X as XIcon } from "lucide-react";
 
 const filterCss = (f?: ImageFilters) => {
   const v = { ...DEFAULT_FILTERS, ...(f ?? {}) };
@@ -329,6 +329,77 @@ export function CanvasElement({ element, scale }: { element: AnyElement; scale: 
           ))}
         </>
       )}
+    </div>
+  );
+}
+
+function QuizRender({ element, interactive }: { element: QuizElement; interactive: boolean }) {
+  const [picked, setPicked] = useState<string | null>(null);
+  useEffect(() => {
+    if (!interactive) setPicked(null);
+  }, [interactive, element.id]);
+  return (
+    <div
+      onMouseDown={(e) => interactive && e.stopPropagation()}
+      style={{
+        width: "100%",
+        height: "100%",
+        background: element.bgColor,
+        color: element.fgColor,
+        padding: "5%",
+        display: "flex",
+        flexDirection: "column",
+        gap: "4%",
+        border: `3px solid ${element.accentColor}`,
+        borderRadius: 18,
+        fontFamily: "Inter, system-ui, sans-serif",
+        overflow: "hidden",
+      }}
+    >
+      <div style={{ fontSize: "max(20px, 5%)", fontWeight: 800, lineHeight: 1.2 }}>
+        {element.question}
+      </div>
+      <div style={{ display: "grid", gap: "3%", flex: 1, gridTemplateColumns: "1fr 1fr" }}>
+        {element.options.map((opt) => {
+          const isPicked = picked === opt.id;
+          const isCorrect = opt.id === element.correctId;
+          const showResult = picked !== null;
+          const bg = !showResult
+            ? "rgba(255,255,255,0.06)"
+            : isCorrect
+              ? "#16a34a"
+              : isPicked
+                ? "#dc2626"
+                : "rgba(255,255,255,0.04)";
+          return (
+            <button
+              key={opt.id}
+              disabled={!interactive || showResult}
+              onClick={() => interactive && setPicked(opt.id)}
+              style={{
+                background: bg,
+                color: element.fgColor,
+                border: `2px solid ${isPicked || (showResult && isCorrect) ? element.accentColor : "rgba(255,255,255,0.18)"}`,
+                borderRadius: 12,
+                padding: "0 16px",
+                fontSize: "max(16px, 3.2%)",
+                fontWeight: 600,
+                textAlign: "left",
+                cursor: interactive && !showResult ? "pointer" : "default",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
+                transition: "all 0.2s",
+              }}
+            >
+              <span>{opt.text}</span>
+              {showResult && isCorrect && <Check size={20} strokeWidth={3} />}
+              {showResult && isPicked && !isCorrect && <XIcon size={20} strokeWidth={3} />}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
