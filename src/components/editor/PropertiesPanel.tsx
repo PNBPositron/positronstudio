@@ -1,5 +1,5 @@
-import { useEditor, DEFAULT_FILTERS, type ImageFilters, type ElementShadow } from "@/store/editor";
-import { Copy, Trash2, ArrowUp, ArrowDown, Layers, RotateCcw } from "lucide-react";
+import { useEditor, DEFAULT_FILTERS, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption } from "@/store/editor";
+import { Copy, Trash2, ArrowUp, ArrowDown, Layers, RotateCcw, Plus, Check } from "lucide-react";
 
 const SWATCHES = [
   "#7df9ff", "#00d9ff", "#0ea5e9", "#4d7cff", "#1f3fb8",
@@ -125,6 +125,24 @@ export function PropertiesPanel() {
             <Field label="Fill">
               <ColorRow value={el.fill} onChange={(c) => update(el.id, { fill: c })} />
             </Field>
+            <GradientEditor
+              gradient={el.gradient}
+              fill={el.fill}
+              onChange={(g) => update(el.id, { gradient: g })}
+            />
+            {el.shape === "rect" && (
+              <Field label="Corner radius">
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.floor(Math.min(el.width, el.height) / 2)}
+                  value={el.cornerRadius ?? 0}
+                  onChange={(e) => update(el.id, { cornerRadius: +e.target.value })}
+                  className="w-full accent-teal"
+                />
+                <div className="font-mono text-[11px] text-teal/70">{el.cornerRadius ?? 0}px</div>
+              </Field>
+            )}
             <Field label="Stroke">
               <ColorRow value={el.stroke} onChange={(c) => update(el.id, { stroke: c })} />
             </Field>
@@ -156,6 +174,10 @@ export function PropertiesPanel() {
               onChange={(s) => update(el.id, { shadow: s })}
             />
           </>
+        )}
+
+        {el.type === "quiz" && (
+          <QuizEditor element={el} onChange={(patch) => update(el.id, patch)} />
         )}
 
         {el.type === "icon" && (
