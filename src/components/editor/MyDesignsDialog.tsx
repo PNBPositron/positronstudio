@@ -53,6 +53,7 @@ export function MyDesignsDialog({ onClose }: { onClose: () => void }) {
           </h2>
           <button
             onClick={onClose}
+            aria-label="Close my designs"
             className="brutal-border grid h-8 w-8 place-items-center bg-surface text-teal"
           >
             <X className="h-4 w-4" strokeWidth={3} />
@@ -100,6 +101,7 @@ export function MyDesignsDialog({ onClose }: { onClose: () => void }) {
                   <button
                     onClick={() => handleDelete(d.id)}
                     title="Delete"
+                    aria-label={`Delete design ${d.name}`}
                     className="absolute right-1 top-1 grid h-6 w-6 place-items-center bg-[#ff0080] text-ink opacity-0 transition-opacity group-hover:opacity-100"
                   >
                     <Trash2 className="h-3 w-3" strokeWidth={3} />

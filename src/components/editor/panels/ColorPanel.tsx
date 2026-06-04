@@ -57,7 +57,7 @@ export function ColorPanel() {
         </div>
         {bgImage ? (
           <div className="relative">
-            <img src={bgImage} alt="bg" className="h-20 w-full border border-teal/40 object-cover" />
+            <img src={bgImage} alt="Background image preview" className="h-20 w-full border border-teal/40 object-cover" />
             <button
               onClick={() => setBgImage(undefined)}
               className="absolute right-1 top-1 grid h-5 w-5 place-items-center bg-ink/90 text-teal hover:text-[#ff0080]"

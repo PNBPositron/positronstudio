@@ -73,18 +73,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Positron Studio" },
-      { name: "description", content: "Positron Studio is a futuristic-inspired presentation and design editor for creating bold multipage slides." },
+      { title: "Positron Studio — Neobrutalist Design Editor" },
+      { name: "description", content: "Positron Studio is a futuristic, neobrutalist presentation and design editor for creating bold multipage slides." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Positron Studio" },
-      { property: "og:description", content: "Positron Studio is a futuristic-inspired presentation and design editor for creating bold multipage slides." },
+      { property: "og:title", content: "Positron Studio — Neobrutalist Design Editor" },
+      { property: "og:description", content: "Positron Studio is a futuristic, neobrutalist presentation and design editor for creating bold multipage slides." },
+      { property: "og:site_name", content: "Positron Studio" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Positron Studio" },
-      { name: "twitter:description", content: "Positron Studio is a futuristic-inspired presentation and design editor for creating bold multipage slides." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/48b3ff1e-e674-49bd-a37b-1aef98007bdc" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/48b3ff1e-e674-49bd-a37b-1aef98007bdc" },
+      { name: "twitter:title", content: "Positron Studio — Neobrutalist Design Editor" },
+      { name: "twitter:description", content: "Positron Studio is a futuristic, neobrutalist presentation and design editor for creating bold multipage slides." },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -93,6 +92,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;700;800;900&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@500;700&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "Positron Studio",
+              url: "https://positronstudio.lovable.app",
+              logo: "https://positronstudio.lovable.app/favicon.ico",
+            },
+            {
+              "@type": "WebSite",
+              name: "Positron Studio",
+              url: "https://positronstudio.lovable.app",
+            },
+          ],
+        }),
       },
     ],
   }),
