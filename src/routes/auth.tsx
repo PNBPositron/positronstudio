@@ -11,6 +11,12 @@ export const Route = createFileRoute("/auth")({
     meta: [
       { title: "Sign in — Positron Studio" },
       { name: "description", content: "Sign in to Positron Studio to save and sync your neobrutalist designs." },
+      { property: "og:title", content: "Sign in — Positron Studio" },
+      { property: "og:description", content: "Sign in to Positron Studio to save and sync your neobrutalist designs." },
+      { property: "og:url", content: "https://positronstudio.lovable.app/auth" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://positronstudio.lovable.app/auth" },
     ],
   }),
 });

@@ -116,6 +116,7 @@ export function PresentationMode() {
         <button
           onClick={() => setCurrentPage(currentIndex - 1)}
           disabled={currentIndex === 0}
+          aria-label="Previous slide"
           className="brutal-border absolute left-4 top-1/2 z-10 grid h-12 w-12 -translate-y-1/2 place-items-center bg-surface text-teal disabled:opacity-30"
         >
           <ChevronLeft className="h-5 w-5" strokeWidth={3} />
@@ -123,6 +124,7 @@ export function PresentationMode() {
         <button
           onClick={() => setCurrentPage(currentIndex + 1)}
           disabled={currentIndex === pages.length - 1}
+          aria-label="Next slide"
           className="brutal-border absolute right-4 top-1/2 z-10 grid h-12 w-12 -translate-y-1/2 place-items-center bg-surface text-teal disabled:opacity-30"
         >
           <ChevronRight className="h-5 w-5" strokeWidth={3} />

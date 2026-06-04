@@ -223,7 +223,7 @@ export function TemplatesPanel() {
 
         {imageDataUrl ? (
           <div className="relative">
-            <img src={imageDataUrl} alt="ref" className="h-20 w-full border border-teal/40 object-cover" />
+            <img src={imageDataUrl} alt="AI reference image preview" className="h-20 w-full border border-teal/40 object-cover" />
             <button
               onClick={() => setImageDataUrl(null)}
               className="absolute right-1 top-1 grid h-5 w-5 place-items-center bg-ink/90 text-teal hover:text-[#ff0080]"
