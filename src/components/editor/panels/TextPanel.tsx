@@ -6,11 +6,47 @@ const PRESETS = [
   { label: "+ Add body text", fontSize: 32, fontWeight: 500, fontFamily: "JetBrains Mono", text: "Body text goes here" },
 ];
 
-const QUICK = [
-  { text: "NEURAL\nDROP", fontSize: 180, color: "#7df9ff" },
-  { text: "SYSTEM\nONLINE", fontSize: 140, color: "#4d7cff" },
-  { text: "404 LOVE", fontSize: 120, color: "#7df9ff" },
-  { text: "GLITCH//\nMODE", fontSize: 160, color: "#4d7cff" },
+type FontDef = { family: string; weight: number; sample?: string; category: string };
+const FONTS: FontDef[] = [
+  // Display / brutalist
+  { family: "Archivo Black", weight: 900, category: "Display" },
+  { family: "Anton", weight: 400, category: "Display" },
+  { family: "Bebas Neue", weight: 400, category: "Display" },
+  { family: "Bungee", weight: 400, category: "Display" },
+  { family: "Rampart One", weight: 400, category: "Display" },
+  { family: "Righteous", weight: 400, category: "Display" },
+  { family: "Russo One", weight: 400, category: "Display" },
+  { family: "Shrikhand", weight: 400, category: "Display" },
+  { family: "Tilt Prism", weight: 400, category: "Display" },
+  { family: "Zen Dots", weight: 400, category: "Display" },
+  // Futurist / techno
+  { family: "Orbitron", weight: 900, category: "Techno" },
+  { family: "Unbounded", weight: 800, category: "Techno" },
+  { family: "Syne", weight: 800, category: "Techno" },
+  { family: "Major Mono Display", weight: 400, category: "Techno" },
+  // Pixel / retro
+  { family: "Press Start 2P", weight: 400, sample: "PIXEL", category: "Retro" },
+  { family: "VT323", weight: 400, category: "Retro" },
+  // Sans
+  { family: "Inter", weight: 800, category: "Sans" },
+  { family: "Montserrat", weight: 900, category: "Sans" },
+  { family: "Space Grotesk", weight: 700, category: "Sans" },
+  // Serif
+  { family: "Abril Fatface", weight: 400, category: "Serif" },
+  { family: "Cinzel", weight: 800, category: "Serif" },
+  { family: "Cormorant Garamond", weight: 700, category: "Serif" },
+  { family: "DM Serif Display", weight: 400, category: "Serif" },
+  { family: "Fraunces", weight: 900, category: "Serif" },
+  { family: "Playfair Display", weight: 800, category: "Serif" },
+  // Script / handwritten
+  { family: "Caveat", weight: 700, category: "Script" },
+  { family: "Lobster", weight: 400, category: "Script" },
+  { family: "Pacifico", weight: 400, category: "Script" },
+  { family: "Permanent Marker", weight: 400, category: "Script" },
+  // Mono
+  { family: "JetBrains Mono", weight: 700, category: "Mono" },
+  { family: "Fira Code", weight: 700, category: "Mono" },
+  { family: "Space Mono", weight: 700, category: "Mono" },
 ];
 
 export function TextPanel() {
@@ -44,29 +80,36 @@ export function TextPanel() {
       </div>
       <div>
         <div className="mb-2 font-display text-[10px] uppercase tracking-[0.2em] text-teal/70">
-          ▸ Style packs
+          ▸ Fonts · {FONTS.length}
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          {QUICK.map((q, i) => (
+        <div className="grid grid-cols-1 gap-1.5">
+          {FONTS.map((f) => (
             <button
-              key={i}
+              key={f.family}
               onClick={() =>
-                add(newText({ text: q.text, fontSize: 72, color: q.color, height: 200, width: 480 }))
+                add(
+                  newText({
+                    text: f.sample ?? f.family,
+                    fontSize: 96,
+                    fontWeight: f.weight,
+                    fontFamily: f.family,
+                    height: 140,
+                    width: 720,
+                    color: "#7df9ff",
+                  }),
+                )
               }
-              className="brutal-border-2 brutal-press flex h-24 items-center justify-center bg-surface p-2 text-center hover:border-teal"
+              title={`Add text in ${f.family}`}
+              className="brutal-border-2 brutal-press group flex items-center justify-between bg-surface px-3 py-2.5 text-left hover:bg-surface-2 hover:border-teal"
             >
               <span
-                style={{
-                  fontFamily: "Orbitron",
-                  fontWeight: 900,
-                  fontSize: 13,
-                  color: q.color,
-                  whiteSpace: "pre-line",
-                  lineHeight: 1,
-                  letterSpacing: "0.05em",
-                }}
+                style={{ fontFamily: f.family, fontWeight: f.weight, fontSize: 20, lineHeight: 1 }}
+                className="text-teal truncate"
               >
-                {q.text}
+                {f.family}
+              </span>
+              <span className="ml-2 shrink-0 font-mono text-[9px] uppercase tracking-widest text-teal/40 group-hover:text-teal/70">
+                {f.category}
               </span>
             </button>
           ))}
