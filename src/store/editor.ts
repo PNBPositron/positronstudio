@@ -356,6 +356,54 @@ export const newQuiz = (overrides: Partial<QuizElement> = {}): QuizElement => {
   };
 };
 
+export const newChart = (
+  chart: ChartKind = "bar",
+  overrides: Partial<ChartElement> = {},
+): ChartElement => ({
+  id: uid(),
+  type: "chart",
+  x: 160,
+  y: 160,
+  width: 720,
+  height: 520,
+  rotation: 0,
+  chart,
+  data: [
+    { label: "Q1", value: 32 },
+    { label: "Q2", value: 58 },
+    { label: "Q3", value: 45 },
+    { label: "Q4", value: 78 },
+  ],
+  colors: ["#7df9ff", "#ff0080", "#ffd84a", "#4d7cff", "#00ff88", "#b16bff"],
+  bgColor: "#0a0f1f",
+  fgColor: "#ffffff",
+  title: "Quarterly results",
+  showValues: true,
+  showAxes: true,
+  ...overrides,
+});
+
+export const newButton = (overrides: Partial<ButtonElement> = {}): ButtonElement => ({
+  id: uid(),
+  type: "button",
+  x: 240,
+  y: 240,
+  width: 320,
+  height: 96,
+  rotation: 0,
+  text: "Click me",
+  bgColor: "#7df9ff",
+  fgColor: "#0a0f1f",
+  borderColor: "#0a0f1f",
+  borderWidth: 4,
+  cornerRadius: 12,
+  fontSize: 36,
+  fontFamily: "Archivo Black",
+  fontWeight: 900,
+  action: "next-slide",
+  ...overrides,
+});
+
 const newPage = (overrides: Partial<Page> = {}): Page => ({
   id: uid(),
   elements: [],
