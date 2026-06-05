@@ -1,4 +1,4 @@
-import { useEditor, DEFAULT_FILTERS, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption } from "@/store/editor";
+import { useEditor, DEFAULT_FILTERS, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption, type ChartElement, type ButtonElement, type ChartKind, type ButtonAction } from "@/store/editor";
 import { Copy, Trash2, ArrowUp, ArrowDown, Layers, RotateCcw, Plus, Check } from "lucide-react";
 
 const SWATCHES = [
@@ -178,6 +178,14 @@ export function PropertiesPanel() {
 
         {el.type === "quiz" && (
           <QuizEditor element={el} onChange={(patch) => update(el.id, patch)} />
+        )}
+
+        {el.type === "chart" && (
+          <ChartEditor element={el} onChange={(patch) => update(el.id, patch)} />
+        )}
+
+        {el.type === "button" && (
+          <ButtonEditor element={el} onChange={(patch) => update(el.id, patch)} />
         )}
 
         {el.type === "icon" && (
