@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Loader2, HelpCircle } from "lucide-react";
-import { useEditor, newShape, newModel3D, newQuiz, type ShapeKind, type AnyElement } from "@/store/editor";
+import { Sparkles, Loader2, HelpCircle, BarChart3, LineChart, PieChart, AreaChart, MousePointerClick } from "lucide-react";
+import { useEditor, newShape, newModel3D, newQuiz, newChart, newButton, type ShapeKind, type ChartKind, type ButtonAction, type AnyElement } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
 import { Model3DRender } from "../Model3DRender";
 import { shapePathD } from "../ShapeRender";
@@ -69,12 +69,53 @@ export function ShapesPanel() {
   return (
     <div className="space-y-4">
       <PanelHeader title="Shapes" />
+
+      <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">▸ Interactive</div>
       <button
         onClick={() => add(newQuiz())}
         className="brutal-border-2 brutal-press flex w-full items-center justify-center gap-2 bg-blue px-3 py-2 font-display text-[11px] tracking-[0.2em] text-ink"
       >
-        <HelpCircle className="h-3.5 w-3.5" strokeWidth={2.5} /> ADD INTERACTIVE QUIZ
+        <HelpCircle className="h-3.5 w-3.5" strokeWidth={2.5} /> ADD QUIZ
       </button>
+      <div className="grid grid-cols-2 gap-2">
+        {([
+          { label: "NEXT →", action: "next-slide", bg: "#7df9ff", fg: "#0a0f1f" },
+          { label: "← BACK", action: "prev-slide", bg: "#0a0f1f", fg: "#7df9ff" },
+          { label: "RESTART", action: "first-slide", bg: "#ff0080", fg: "#ffffff" },
+          { label: "LINK ↗", action: "link", bg: "#ffd84a", fg: "#0a0f1f" },
+        ] as Array<{ label: string; action: ButtonAction; bg: string; fg: string }>).map((b) => (
+          <button
+            key={b.action}
+            onClick={() => add(newButton({ text: b.label, action: b.action, bgColor: b.bg, fgColor: b.fg, borderColor: b.fg }))}
+            className="brutal-border-2 brutal-press flex items-center justify-center gap-1 py-2 font-display text-[10px] tracking-[0.15em]"
+            style={{ background: b.bg, color: b.fg, borderColor: b.fg }}
+          >
+            <MousePointerClick className="h-3 w-3" /> {b.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">▸ Charts & Graphs</div>
+      <div className="grid grid-cols-2 gap-2">
+        {([
+          { kind: "bar", label: "Bar", Icon: BarChart3 },
+          { kind: "line", label: "Line", Icon: LineChart },
+          { kind: "area", label: "Area", Icon: AreaChart },
+          { kind: "pie", label: "Pie", Icon: PieChart },
+          { kind: "donut", label: "Donut", Icon: PieChart },
+        ] as Array<{ kind: ChartKind; label: string; Icon: typeof BarChart3 }>).map(({ kind, label, Icon }) => (
+          <button
+            key={kind}
+            onClick={() => add(newChart(kind, { title: `${label} chart` }))}
+            className="brutal-border-2 brutal-press flex flex-col items-center justify-center gap-1 bg-surface py-3 text-teal hover:border-teal"
+          >
+            <Icon className="h-5 w-5" strokeWidth={2} />
+            <span className="font-display text-[10px] uppercase tracking-[0.15em]">{label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">▸ Shapes</div>
       <div className="grid grid-cols-3 gap-2">
         {SHAPES.flatMap((s) =>
           FILLS.map((fill) => (

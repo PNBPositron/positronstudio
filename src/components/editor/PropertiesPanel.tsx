@@ -1,4 +1,4 @@
-import { useEditor, DEFAULT_FILTERS, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption } from "@/store/editor";
+import { useEditor, DEFAULT_FILTERS, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption, type ChartElement, type ButtonElement, type ChartKind, type ButtonAction } from "@/store/editor";
 import { Copy, Trash2, ArrowUp, ArrowDown, Layers, RotateCcw, Plus, Check } from "lucide-react";
 
 const SWATCHES = [
@@ -178,6 +178,14 @@ export function PropertiesPanel() {
 
         {el.type === "quiz" && (
           <QuizEditor element={el} onChange={(patch) => update(el.id, patch)} />
+        )}
+
+        {el.type === "chart" && (
+          <ChartEditor element={el} onChange={(patch) => update(el.id, patch)} />
+        )}
+
+        {el.type === "button" && (
+          <ButtonEditor element={el} onChange={(patch) => update(el.id, patch)} />
         )}
 
         {el.type === "icon" && (
@@ -629,6 +637,202 @@ function QuizEditor({
       <div className="font-mono text-[10px] text-teal/50">
         &gt; click options in presentation mode to test
       </div>
+    </>
+  );
+}
+
+function ChartEditor({
+  element,
+  onChange,
+}: {
+  element: ChartElement;
+  onChange: (patch: Partial<ChartElement>) => void;
+}) {
+  const setData = (i: number, patch: Partial<{ label: string; value: number }>) => {
+    onChange({ data: element.data.map((d, idx) => (idx === i ? { ...d, ...patch } : d)) });
+  };
+  const addRow = () => onChange({ data: [...element.data, { label: `Item ${element.data.length + 1}`, value: 0 }] });
+  const removeRow = (i: number) => onChange({ data: element.data.filter((_, idx) => idx !== i) });
+  return (
+    <>
+      <Field label="Chart type">
+        <select
+          value={element.chart}
+          onChange={(e) => onChange({ chart: e.target.value as ChartKind })}
+          className="brutal-border-2 w-full bg-surface px-2 py-1.5 font-mono text-xs text-teal focus:outline-none focus:border-teal"
+        >
+          <option value="bar">Bar</option>
+          <option value="line">Line</option>
+          <option value="area">Area</option>
+          <option value="pie">Pie</option>
+          <option value="donut">Donut</option>
+        </select>
+      </Field>
+      <Field label="Title">
+        <input
+          value={element.title ?? ""}
+          onChange={(e) => onChange({ title: e.target.value })}
+          className="brutal-border-2 w-full bg-surface px-2 py-1.5 font-mono text-xs text-teal focus:outline-none focus:border-teal"
+        />
+      </Field>
+      <Field label="Data">
+        <div className="space-y-1">
+          {element.data.map((row, i) => (
+            <div key={i} className="flex items-center gap-1">
+              <input
+                value={row.label}
+                onChange={(e) => setData(i, { label: e.target.value })}
+                className="brutal-border-2 min-w-0 flex-1 bg-surface px-2 py-1 font-mono text-[11px] text-teal focus:outline-none focus:border-teal"
+              />
+              <input
+                type="number"
+                value={row.value}
+                onChange={(e) => setData(i, { value: +e.target.value })}
+                className="brutal-border-2 w-16 bg-surface px-2 py-1 font-mono text-[11px] text-teal focus:outline-none focus:border-teal"
+              />
+              <button
+                onClick={() => removeRow(i)}
+                className="brutal-border-2 grid h-7 w-7 place-items-center bg-surface text-teal hover:border-destructive"
+              >
+                <Trash2 className="h-3 w-3" strokeWidth={3} />
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={addRow}
+            className="brutal-border-2 flex w-full items-center justify-center gap-1 bg-surface py-1.5 font-mono text-[10px] uppercase tracking-wider text-teal hover:border-teal"
+          >
+            <Plus className="h-3 w-3" strokeWidth={3} /> Add row
+          </button>
+        </div>
+      </Field>
+      <Field label="Palette">
+        <div className="space-y-1">
+          {element.colors.map((c, i) => (
+            <div key={i} className="flex items-center gap-1">
+              <input
+                type="color"
+                value={c}
+                onChange={(e) =>
+                  onChange({ colors: element.colors.map((col, idx) => (idx === i ? e.target.value : col)) })
+                }
+                className="brutal-border-2 h-7 w-12 bg-surface"
+              />
+              <button
+                onClick={() => onChange({ colors: element.colors.filter((_, idx) => idx !== i) })}
+                className="brutal-border-2 grid h-7 w-7 place-items-center bg-surface text-teal hover:border-destructive"
+              >
+                <Trash2 className="h-3 w-3" strokeWidth={3} />
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() => onChange({ colors: [...element.colors, "#7df9ff"] })}
+            className="brutal-border-2 flex w-full items-center justify-center gap-1 bg-surface py-1.5 font-mono text-[10px] uppercase tracking-wider text-teal hover:border-teal"
+          >
+            <Plus className="h-3 w-3" strokeWidth={3} /> Add color
+          </button>
+        </div>
+      </Field>
+      <Field label="Background">
+        <input type="color" value={element.bgColor} onChange={(e) => onChange({ bgColor: e.target.value })} className="brutal-border-2 h-9 w-full bg-surface" />
+      </Field>
+      <Field label="Foreground">
+        <input type="color" value={element.fgColor} onChange={(e) => onChange({ fgColor: e.target.value })} className="brutal-border-2 h-9 w-full bg-surface" />
+      </Field>
+      <Field label="Display">
+        <div className="flex gap-1">
+          <button
+            onClick={() => onChange({ showValues: !element.showValues })}
+            className={`brutal-border-2 flex-1 py-1.5 font-mono text-[10px] uppercase ${element.showValues ? "bg-blue text-ink border-teal" : "bg-surface text-teal hover:border-teal"}`}
+          >
+            Values
+          </button>
+          <button
+            onClick={() => onChange({ showAxes: !element.showAxes })}
+            className={`brutal-border-2 flex-1 py-1.5 font-mono text-[10px] uppercase ${element.showAxes ? "bg-blue text-ink border-teal" : "bg-surface text-teal hover:border-teal"}`}
+          >
+            Axes
+          </button>
+        </div>
+      </Field>
+    </>
+  );
+}
+
+function ButtonEditor({
+  element,
+  onChange,
+}: {
+  element: ButtonElement;
+  onChange: (patch: Partial<ButtonElement>) => void;
+}) {
+  return (
+    <>
+      <Field label="Label">
+        <input
+          value={element.text}
+          onChange={(e) => onChange({ text: e.target.value })}
+          className="brutal-border-2 w-full bg-surface px-2 py-1.5 font-mono text-xs text-teal focus:outline-none focus:border-teal"
+        />
+      </Field>
+      <Field label="Action">
+        <select
+          value={element.action}
+          onChange={(e) => onChange({ action: e.target.value as ButtonAction })}
+          className="brutal-border-2 w-full bg-surface px-2 py-1.5 font-mono text-xs text-teal focus:outline-none focus:border-teal"
+        >
+          <option value="next-slide">Next slide</option>
+          <option value="prev-slide">Previous slide</option>
+          <option value="first-slide">First slide</option>
+          <option value="last-slide">Last slide</option>
+          <option value="link">Open link</option>
+        </select>
+      </Field>
+      {element.action === "link" && (
+        <Field label="URL">
+          <input
+            type="url"
+            placeholder="https://example.com"
+            value={element.href ?? ""}
+            onChange={(e) => onChange({ href: e.target.value })}
+            className="brutal-border-2 w-full bg-surface px-2 py-1.5 font-mono text-xs text-teal focus:outline-none focus:border-teal"
+          />
+        </Field>
+      )}
+      <Field label="Background">
+        <input type="color" value={element.bgColor} onChange={(e) => onChange({ bgColor: e.target.value })} className="brutal-border-2 h-9 w-full bg-surface" />
+      </Field>
+      <Field label="Text color">
+        <input type="color" value={element.fgColor} onChange={(e) => onChange({ fgColor: e.target.value })} className="brutal-border-2 h-9 w-full bg-surface" />
+      </Field>
+      <Field label="Border color">
+        <input type="color" value={element.borderColor} onChange={(e) => onChange({ borderColor: e.target.value })} className="brutal-border-2 h-9 w-full bg-surface" />
+      </Field>
+      <Field label="Border width">
+        <input type="range" min={0} max={16} value={element.borderWidth} onChange={(e) => onChange({ borderWidth: +e.target.value })} className="w-full accent-teal" />
+        <div className="font-mono text-[11px] text-teal/70">{element.borderWidth}px</div>
+      </Field>
+      <Field label="Corner radius">
+        <input type="range" min={0} max={64} value={element.cornerRadius} onChange={(e) => onChange({ cornerRadius: +e.target.value })} className="w-full accent-teal" />
+        <div className="font-mono text-[11px] text-teal/70">{element.cornerRadius}px</div>
+      </Field>
+      <Field label="Font size">
+        <input type="range" min={12} max={120} value={element.fontSize} onChange={(e) => onChange({ fontSize: +e.target.value })} className="w-full accent-teal" />
+        <div className="font-mono text-[11px] text-teal/70">{element.fontSize}px</div>
+      </Field>
+      <Field label="Font">
+        <select
+          value={element.fontFamily}
+          onChange={(e) => onChange({ fontFamily: e.target.value })}
+          className="brutal-border-2 w-full bg-surface px-2 py-1.5 font-mono text-xs text-teal focus:outline-none focus:border-teal"
+        >
+          {["Archivo Black", "Inter", "Orbitron", "JetBrains Mono", "Georgia"].map((f) => (
+            <option key={f}>{f}</option>
+          ))}
+        </select>
+      </Field>
+      <div className="font-mono text-[10px] text-teal/50">&gt; clickable in presentation mode</div>
     </>
   );
 }

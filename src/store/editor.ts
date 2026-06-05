@@ -125,13 +125,46 @@ export type QuizElement = ElementBase & {
   accentColor: string;
 };
 
+export type ChartKind = "bar" | "line" | "area" | "pie" | "donut";
+export type ChartDataPoint = { label: string; value: number };
+export type ChartElement = ElementBase & {
+  type: "chart";
+  chart: ChartKind;
+  data: ChartDataPoint[];
+  colors: string[];
+  bgColor: string;
+  fgColor: string;
+  title?: string;
+  showValues?: boolean;
+  showAxes?: boolean;
+};
+
+export type ButtonAction = "link" | "next-slide" | "prev-slide" | "first-slide" | "last-slide";
+export type ButtonElement = ElementBase & {
+  type: "button";
+  text: string;
+  bgColor: string;
+  fgColor: string;
+  borderColor: string;
+  borderWidth: number;
+  cornerRadius: number;
+  fontSize: number;
+  fontFamily: string;
+  fontWeight: number;
+  action: ButtonAction;
+  href?: string;
+  shadow?: ElementShadow;
+};
+
 export type AnyElement =
   | TextElement
   | ShapeElement
   | ImageElement
   | IconElement
   | Model3DElement
-  | QuizElement;
+  | QuizElement
+  | ChartElement
+  | ButtonElement;
 
 export type Page = {
   id: string;
@@ -322,6 +355,54 @@ export const newQuiz = (overrides: Partial<QuizElement> = {}): QuizElement => {
     ...overrides,
   };
 };
+
+export const newChart = (
+  chart: ChartKind = "bar",
+  overrides: Partial<ChartElement> = {},
+): ChartElement => ({
+  id: uid(),
+  type: "chart",
+  x: 160,
+  y: 160,
+  width: 720,
+  height: 520,
+  rotation: 0,
+  chart,
+  data: [
+    { label: "Q1", value: 32 },
+    { label: "Q2", value: 58 },
+    { label: "Q3", value: 45 },
+    { label: "Q4", value: 78 },
+  ],
+  colors: ["#7df9ff", "#ff0080", "#ffd84a", "#4d7cff", "#00ff88", "#b16bff"],
+  bgColor: "#0a0f1f",
+  fgColor: "#ffffff",
+  title: "Quarterly results",
+  showValues: true,
+  showAxes: true,
+  ...overrides,
+});
+
+export const newButton = (overrides: Partial<ButtonElement> = {}): ButtonElement => ({
+  id: uid(),
+  type: "button",
+  x: 240,
+  y: 240,
+  width: 320,
+  height: 96,
+  rotation: 0,
+  text: "Click me",
+  bgColor: "#7df9ff",
+  fgColor: "#0a0f1f",
+  borderColor: "#0a0f1f",
+  borderWidth: 4,
+  cornerRadius: 12,
+  fontSize: 36,
+  fontFamily: "Archivo Black",
+  fontWeight: 900,
+  action: "next-slide",
+  ...overrides,
+});
 
 const newPage = (overrides: Partial<Page> = {}): Page => ({
   id: uid(),

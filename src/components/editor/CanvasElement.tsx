@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { useEditor, type AnyElement, type ShapeElement, type QuizElement, type ElementShadow, DEFAULT_FILTERS, type ImageFilters } from "@/store/editor";
+import { useEditor, type AnyElement, type ShapeElement, type QuizElement, type ChartElement, type ButtonElement, type ElementShadow, DEFAULT_FILTERS, type ImageFilters } from "@/store/editor";
 import { ShapeRender } from "./ShapeRender";
 import { Model3DRender } from "./Model3DRender";
 import * as LucideIcons from "lucide-react";
@@ -309,6 +309,12 @@ export function CanvasElement({ element, scale }: { element: AnyElement; scale: 
         );
       })()}
 
+      {element.type === "chart" && <ChartRender element={element} />}
+      {element.type === "button" && (() => {
+        const presenting = useEditor.getState().presenting;
+        return <ButtonRender element={element} interactive={presenting} />;
+      })()}
+
       {selected && !editing && (
         <>
           {(["nw", "ne", "sw", "se"] as Handle[]).map((h) => (
@@ -401,5 +407,161 @@ function QuizRender({ element, interactive }: { element: QuizElement; interactiv
         })}
       </div>
     </div>
+  );
+}
+
+function ChartRender({ element }: { element: ChartElement }) {
+  const { chart, data, colors, bgColor, fgColor, title, showValues, showAxes } = element;
+  const W = 400, H = 300;
+  const padL = 50, padR = 20, padT = title ? 40 : 20, padB = 40;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+  const maxV = Math.max(1, ...data.map((d) => d.value));
+  const stroke = fgColor + "40";
+  const c = (i: number) => colors[i % Math.max(1, colors.length)] || "#7df9ff";
+
+  const renderBars = () => {
+    const bw = (plotW / data.length) * 0.7;
+    const gap = (plotW / data.length) * 0.3;
+    return data.map((d, i) => {
+      const h = (d.value / maxV) * plotH;
+      const x = padL + i * (bw + gap) + gap / 2;
+      const y = padT + plotH - h;
+      return (
+        <g key={i}>
+          <rect x={x} y={y} width={bw} height={h} fill={c(i)} />
+          {showValues && (
+            <text x={x + bw / 2} y={y - 4} textAnchor="middle" fill={fgColor} fontSize="10" fontFamily="Inter, sans-serif" fontWeight={700}>{d.value}</text>
+          )}
+          <text x={x + bw / 2} y={padT + plotH + 14} textAnchor="middle" fill={fgColor} fontSize="10" fontFamily="Inter, sans-serif">{d.label}</text>
+        </g>
+      );
+    });
+  };
+
+  const renderLineOrArea = (filled: boolean) => {
+    if (data.length < 2) return null;
+    const stepX = plotW / (data.length - 1);
+    const pts = data.map((d, i) => [padL + i * stepX, padT + plotH - (d.value / maxV) * plotH] as const);
+    const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0]},${p[1]}`).join(" ");
+    const area = filled ? `${path} L${pts[pts.length - 1][0]},${padT + plotH} L${pts[0][0]},${padT + plotH} Z` : null;
+    return (
+      <g>
+        {area && <path d={area} fill={c(0)} fillOpacity={0.25} />}
+        <path d={path} fill="none" stroke={c(0)} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+        {pts.map((p, i) => (
+          <g key={i}>
+            <circle cx={p[0]} cy={p[1]} r={3.5} fill={c(0)} stroke={bgColor} strokeWidth={1.5} />
+            {showValues && (
+              <text x={p[0]} y={p[1] - 8} textAnchor="middle" fill={fgColor} fontSize="10" fontFamily="Inter, sans-serif" fontWeight={700}>{data[i].value}</text>
+            )}
+            <text x={p[0]} y={padT + plotH + 14} textAnchor="middle" fill={fgColor} fontSize="10" fontFamily="Inter, sans-serif">{data[i].label}</text>
+          </g>
+        ))}
+      </g>
+    );
+  };
+
+  const renderPie = (donut: boolean) => {
+    const cx = W / 2, cy = padT + plotH / 2;
+    const r = Math.min(plotW, plotH) / 2 - 10;
+    const inner = donut ? r * 0.55 : 0;
+    const total = data.reduce((a, b) => a + b.value, 0) || 1;
+    let acc = -Math.PI / 2;
+    return data.map((d, i) => {
+      const ang = (d.value / total) * Math.PI * 2;
+      const a1 = acc, a2 = acc + ang;
+      acc = a2;
+      const large = ang > Math.PI ? 1 : 0;
+      const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+      const x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
+      let path: string;
+      if (donut) {
+        const xi1 = cx + inner * Math.cos(a1), yi1 = cy + inner * Math.sin(a1);
+        const xi2 = cx + inner * Math.cos(a2), yi2 = cy + inner * Math.sin(a2);
+        path = `M${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} L${xi2},${yi2} A${inner},${inner} 0 ${large} 0 ${xi1},${yi1} Z`;
+      } else {
+        path = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z`;
+      }
+      const mid = (a1 + a2) / 2;
+      const lx = cx + (r + 12) * Math.cos(mid);
+      const ly = cy + (r + 12) * Math.sin(mid);
+      return (
+        <g key={i}>
+          <path d={path} fill={c(i)} stroke={bgColor} strokeWidth={1.5} />
+          <text x={lx} y={ly} textAnchor={Math.cos(mid) > 0 ? "start" : "end"} fill={fgColor} fontSize="9" fontFamily="Inter, sans-serif" fontWeight={600}>
+            {d.label}{showValues ? ` · ${d.value}` : ""}
+          </text>
+        </g>
+      );
+    });
+  };
+
+  return (
+    <div style={{ width: "100%", height: "100%", background: bgColor, borderRadius: 12, overflow: "hidden", padding: "2%" }}>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
+        {title && (
+          <text x={padL} y={22} fill={fgColor} fontSize="16" fontWeight={800} fontFamily="Inter, sans-serif">{title}</text>
+        )}
+        {showAxes && chart !== "pie" && chart !== "donut" && (
+          <g>
+            <line x1={padL} y1={padT} x2={padL} y2={padT + plotH} stroke={stroke} strokeWidth={1} />
+            <line x1={padL} y1={padT + plotH} x2={padL + plotW} y2={padT + plotH} stroke={stroke} strokeWidth={1} />
+            {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
+              <g key={i}>
+                <line x1={padL - 4} y1={padT + plotH - t * plotH} x2={padL} y2={padT + plotH - t * plotH} stroke={stroke} />
+                <text x={padL - 6} y={padT + plotH - t * plotH + 3} textAnchor="end" fill={fgColor} fontSize="9" fontFamily="Inter, sans-serif" opacity={0.7}>
+                  {Math.round(maxV * t)}
+                </text>
+              </g>
+            ))}
+          </g>
+        )}
+        {chart === "bar" && renderBars()}
+        {chart === "line" && renderLineOrArea(false)}
+        {chart === "area" && renderLineOrArea(true)}
+        {chart === "pie" && renderPie(false)}
+        {chart === "donut" && renderPie(true)}
+      </svg>
+    </div>
+  );
+}
+
+function ButtonRender({ element, interactive }: { element: ButtonElement; interactive: boolean }) {
+  const { setCurrentPage, currentIndex, pages } = useEditor.getState();
+  const onClick = () => {
+    if (!interactive) return;
+    switch (element.action) {
+      case "next-slide": if (currentIndex < pages.length - 1) setCurrentPage(currentIndex + 1); break;
+      case "prev-slide": if (currentIndex > 0) setCurrentPage(currentIndex - 1); break;
+      case "first-slide": setCurrentPage(0); break;
+      case "last-slide": setCurrentPage(pages.length - 1); break;
+      case "link": if (element.href) window.open(element.href, "_blank", "noopener,noreferrer"); break;
+    }
+  };
+  return (
+    <button
+      onMouseDown={(e) => interactive && e.stopPropagation()}
+      onClick={onClick}
+      style={{
+        width: "100%",
+        height: "100%",
+        background: element.bgColor,
+        color: element.fgColor,
+        border: `${element.borderWidth}px solid ${element.borderColor}`,
+        borderRadius: element.cornerRadius,
+        fontFamily: element.fontFamily,
+        fontWeight: element.fontWeight,
+        fontSize: element.fontSize,
+        cursor: interactive ? "pointer" : "move",
+        padding: 0,
+        boxShadow: element.shadow
+          ? `${element.shadow.x}px ${element.shadow.y}px ${element.shadow.blur}px ${element.shadow.color}`
+          : undefined,
+        transition: "transform 0.1s",
+      }}
+    >
+      {element.text}
+    </button>
   );
 }
