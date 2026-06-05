@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useEditor, newImage } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
-import { Upload, Sparkles, Loader2 } from "lucide-react";
+import { Upload, Sparkles, Loader2, Search } from "lucide-react";
 import { generateAiAsset } from "@/lib/ai-templates.functions";
 
 export function UploadsPanel() {
@@ -13,6 +13,17 @@ export function UploadsPanel() {
   const [size, setSize] = useState<"1024x1024" | "1024x1536" | "1536x1024">("1024x1024");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stockQuery, setStockQuery] = useState("abstract");
+  const [stockSeed, setStockSeed] = useState(0);
+
+  const stockImages = (() => {
+    const q = encodeURIComponent(stockQuery.trim() || "abstract");
+    return Array.from({ length: 12 }, (_, i) => ({
+      thumb: `https://source.unsplash.com/200x200/?${q}&sig=${stockSeed * 100 + i}`,
+      full: `https://source.unsplash.com/1600x1200/?${q}&sig=${stockSeed * 100 + i}`,
+      key: `${stockSeed}-${i}`,
+    }));
+  })();
 
   const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -79,6 +90,50 @@ export function UploadsPanel() {
           {busy ? "GENERATING..." : "GENERATE IMAGE"}
         </button>
         {error && <p className="font-mono text-[10px] text-[#ff0080]">! {error}</p>}
+      </div>
+
+      <div className="brutal-border-2 space-y-2 bg-surface p-3">
+        <div className="flex items-center gap-2 font-display text-[11px] tracking-[0.2em] text-teal">
+          <Search className="h-3.5 w-3.5" /> STOCK_PHOTOS
+        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setStockSeed((s) => s + 1);
+          }}
+          className="flex gap-2"
+        >
+          <input
+            value={stockQuery}
+            onChange={(e) => setStockQuery(e.target.value)}
+            placeholder="nature, city, people..."
+            className="flex-1 border border-teal/40 bg-ink px-2 py-1.5 font-mono text-[11px] text-teal placeholder:text-teal/30 focus:border-teal focus:outline-none"
+          />
+          <button
+            type="submit"
+            className="brutal-border brutal-press bg-blue px-2 py-1.5 font-display text-[10px] tracking-[0.2em] text-ink"
+          >
+            GO
+          </button>
+        </form>
+        <div className="grid grid-cols-2 gap-2">
+          {stockImages.map((img) => (
+            <button
+              key={img.key}
+              onClick={() => add(newImage(img.full))}
+              className="brutal-border-2 brutal-press overflow-hidden bg-ink hover:border-teal"
+            >
+              <img
+                src={img.thumb}
+                alt={`${stockQuery} stock photo`}
+                className="h-20 w-full object-cover"
+                draggable={false}
+                loading="lazy"
+              />
+            </button>
+          ))}
+        </div>
+        <p className="font-mono text-[9px] text-teal/50">via Unsplash · free to use</p>
       </div>
 
       {uploads.length > 0 ? (
