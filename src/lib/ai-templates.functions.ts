@@ -424,24 +424,47 @@ Return ONLY valid JSON, no commentary:
 // ---------------- AI image asset generation ----------------
 
 export const generateAiAsset = createServerFn({ method: "POST" })
-  .inputValidator((data: { prompt: string; size?: "1024x1024" | "1024x1536" | "1536x1024" }) => {
+  .inputValidator((data: {
+    prompt: string;
+    size?: "1024x1024" | "1024x1536" | "1536x1024";
+    model?: string;
+    quality?: "low" | "medium" | "high";
+  }) => {
     if (!data?.prompt?.trim()) throw new Error("Prompt is required");
     const size = data.size === "1024x1536" || data.size === "1536x1024" ? data.size : "1024x1024";
-    return { prompt: data.prompt.slice(0, 500), size };
+    const allowedModels = [
+      "openai/gpt-image-2",
+      "openai/gpt-image-1-mini",
+      "google/gemini-2.5-flash-image",
+      "google/gemini-3.1-flash-image-preview",
+      "google/gemini-3-pro-image-preview",
+    ];
+    const model = data.model && allowedModels.includes(data.model) ? data.model : "openai/gpt-image-2";
+    const quality: "low" | "medium" | "high" =
+      data.quality === "medium" || data.quality === "high" ? data.quality : "low";
+    return { prompt: data.prompt.slice(0, 1000), size, model, quality };
   })
   .handler(async ({ data }): Promise<{ dataUrl: string }> => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const isGemini = data.model.startsWith("google/");
+    const body = isGemini
+      ? {
+          model: data.model,
+          messages: [{ role: "user", content: data.prompt }],
+          modalities: ["image", "text"],
+        }
+      : {
+          model: data.model,
+          prompt: data.prompt,
+          size: data.size,
+          quality: data.quality,
+          n: 1,
+        };
     const res = await fetch("https://ai.gateway.lovable.dev/v1/images/generations", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "openai/gpt-image-2",
-        prompt: data.prompt,
-        size: data.size,
-        quality: "low",
-        n: 1,
-      }),
+      body: JSON.stringify(body),
     });
     if (res.status === 429) throw new Error("Rate limit hit. Try again shortly.");
     if (res.status === 402) throw new Error("AI credits exhausted.");
@@ -451,4 +474,50 @@ export const generateAiAsset = createServerFn({ method: "POST" })
     if (first?.b64_json) return { dataUrl: `data:image/png;base64,${first.b64_json}` };
     if (first?.url) return { dataUrl: first.url };
     throw new Error("AI returned no image");
+  });
+
+// ---------------- Stock photo search (Openverse) ----------------
+
+export type StockImage = {
+  id: string;
+  thumb: string;
+  full: string;
+  title: string;
+  author: string;
+  source: string;
+};
+
+export const stockSearch = createServerFn({ method: "POST" })
+  .inputValidator((data: { query: string; page?: number }) => {
+    const query = (data?.query ?? "").toString().slice(0, 100).trim() || "abstract";
+    const page = Math.max(1, Math.min(20, typeof data?.page === "number" ? Math.round(data.page) : 1));
+    return { query, page };
+  })
+  .handler(async ({ data }): Promise<{ results: StockImage[] }> => {
+    const url = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(data.query)}&page=${data.page}&page_size=20&license_type=commercial&mature=false`;
+    const res = await fetch(url, {
+      headers: { Accept: "application/json", "User-Agent": "Positron-Studio/1.0" },
+    });
+    if (!res.ok) throw new Error(`Stock search failed: ${res.status}`);
+    const json = (await res.json()) as {
+      results?: Array<{
+        id?: string;
+        url?: string;
+        thumbnail?: string;
+        title?: string;
+        creator?: string;
+        source?: string;
+      }>;
+    };
+    const results: StockImage[] = (json.results ?? [])
+      .map((r) => ({
+        id: r.id ?? Math.random().toString(36).slice(2),
+        thumb: r.thumbnail || r.url || "",
+        full: r.url || r.thumbnail || "",
+        title: r.title ?? "",
+        author: r.creator ?? "",
+        source: r.source ?? "openverse",
+      }))
+      .filter((r) => r.full);
+    return { results };
   });
