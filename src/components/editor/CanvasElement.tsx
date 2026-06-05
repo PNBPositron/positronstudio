@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { useEditor, type AnyElement, type ShapeElement, type QuizElement, type ElementShadow, DEFAULT_FILTERS, type ImageFilters } from "@/store/editor";
+import { useEditor, type AnyElement, type ShapeElement, type QuizElement, type ChartElement, type ButtonElement, type ElementShadow, DEFAULT_FILTERS, type ImageFilters } from "@/store/editor";
 import { ShapeRender } from "./ShapeRender";
 import { Model3DRender } from "./Model3DRender";
 import * as LucideIcons from "lucide-react";
@@ -307,6 +307,12 @@ export function CanvasElement({ element, scale }: { element: AnyElement; scale: 
             interactive={presenting}
           />
         );
+      })()}
+
+      {element.type === "chart" && <ChartRender element={element} />}
+      {element.type === "button" && (() => {
+        const presenting = useEditor.getState().presenting;
+        return <ButtonRender element={element} interactive={presenting} />;
       })()}
 
       {selected && !editing && (
