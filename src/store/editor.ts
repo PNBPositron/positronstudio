@@ -125,13 +125,46 @@ export type QuizElement = ElementBase & {
   accentColor: string;
 };
 
+export type ChartKind = "bar" | "line" | "area" | "pie" | "donut";
+export type ChartDataPoint = { label: string; value: number };
+export type ChartElement = ElementBase & {
+  type: "chart";
+  chart: ChartKind;
+  data: ChartDataPoint[];
+  colors: string[];
+  bgColor: string;
+  fgColor: string;
+  title?: string;
+  showValues?: boolean;
+  showAxes?: boolean;
+};
+
+export type ButtonAction = "link" | "next-slide" | "prev-slide" | "first-slide" | "last-slide";
+export type ButtonElement = ElementBase & {
+  type: "button";
+  text: string;
+  bgColor: string;
+  fgColor: string;
+  borderColor: string;
+  borderWidth: number;
+  cornerRadius: number;
+  fontSize: number;
+  fontFamily: string;
+  fontWeight: number;
+  action: ButtonAction;
+  href?: string;
+  shadow?: ElementShadow;
+};
+
 export type AnyElement =
   | TextElement
   | ShapeElement
   | ImageElement
   | IconElement
   | Model3DElement
-  | QuizElement;
+  | QuizElement
+  | ChartElement
+  | ButtonElement;
 
 export type Page = {
   id: string;
