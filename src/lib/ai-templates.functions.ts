@@ -521,3 +521,85 @@ export const stockSearch = createServerFn({ method: "POST" })
       .filter((r) => r.full);
     return { results };
   });
+
+// ---------------- Import template from PPT / PDF ----------------
+
+export const importTemplateFromFile = createServerFn({ method: "POST" })
+  .inputValidator((data: {
+    fileDataUrl: string;
+    fileName?: string;
+    width?: number;
+    height?: number;
+    style?: AiStyle;
+  }) => {
+    if (!data?.fileDataUrl || !data.fileDataUrl.startsWith("data:")) {
+      throw new Error("A PDF or PPTX file is required");
+    }
+    // Hard cap to keep request size sane (~15MB base64).
+    if (data.fileDataUrl.length > 20_000_000) {
+      throw new Error("File too large (max ~15MB). Please upload a smaller file.");
+    }
+    const clamp = (n: unknown, def: number) =>
+      Math.max(320, Math.min(4096, typeof n === "number" && Number.isFinite(n) ? Math.round(n) : def));
+    const validStyles: AiStyle[] = [
+      "auto", "cyberpunk", "liquid_glass", "minimal", "editorial", "brutalist",
+      "retro_80s", "organic", "art_deco", "memphis", "y2k",
+    ];
+    return {
+      fileDataUrl: data.fileDataUrl,
+      fileName: (data.fileName ?? "").toString().slice(0, 200),
+      width: clamp(data.width, 1920),
+      height: clamp(data.height, 1080),
+      style: (data.style && validStyles.includes(data.style)) ? data.style : "auto",
+    };
+  })
+  .handler(async ({ data }): Promise<AiDeck> => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+
+    const sys = `${buildSystem(data.width, data.height, data.style, true)}
+
+IMPORT MODE: A presentation file (PDF or PPTX) is attached. Carefully READ every slide/page — extract the text content, structure, headings, bullet points, data, and overall narrative. Then REDESIGN the whole deck as a beautiful, cohesive template on the ${data.width}×${data.height}px canvas, preserving the source's textual content and slide order but elevating the visual design.
+
+Rules:
+- Keep the SAME number of slides as the source (or as close as possible, max 12).
+- Preserve headings, key phrases, bullets, and numbers verbatim where possible.
+- Reinterpret the layout — do not copy the original layout. Use the style brief above.
+- If the source has charts/images, replace them with iconography or shapes that evoke the same idea.`;
+
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-pro",
+        messages: [
+          { role: "system", content: sys },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: `Imported file: ${data.fileName || "(unnamed)"}. Read its slides and rebuild them as a designed template.` },
+              { type: "image_url", image_url: { url: data.fileDataUrl } },
+            ],
+          },
+        ],
+        response_format: { type: "json_object" },
+      }),
+    });
+    if (res.status === 429) throw new Error("Rate limit hit. Try again in a moment.");
+    if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
+    if (!res.ok) throw new Error(`AI gateway error ${res.status}: ${await res.text()}`);
+    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    const content = json.choices?.[0]?.message?.content;
+    if (!content) throw new Error("Empty AI response");
+    const parsed = parseLooseJson<AiDeck | AiTemplate>(content);
+    let pages: AiPage[];
+    if ("pages" in parsed && Array.isArray(parsed.pages)) {
+      pages = parsed.pages.filter((p) => p && Array.isArray(p.elements));
+    } else if ("elements" in parsed && Array.isArray(parsed.elements)) {
+      pages = [{ bg: parsed.bg ?? "#0a0f1f", elements: parsed.elements }];
+    } else {
+      throw new Error("AI response missing pages/elements");
+    }
+    if (pages.length === 0) throw new Error("AI returned an empty deck");
+    return { pages };
+  });
