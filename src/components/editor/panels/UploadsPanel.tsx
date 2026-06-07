@@ -140,20 +140,6 @@ export function UploadsPanel() {
     });
   };
 
-  const onGenerate = async () => {
-    if (!prompt.trim() || busy) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await gen({ data: { prompt: prompt.trim(), size, model, quality } });
-      setUploads((u) => [res.dataUrl, ...u]);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Generation failed");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <div className="space-y-4">
       <PanelHeader title="Uploads" />
