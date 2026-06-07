@@ -1,56 +1,131 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useEditor, newImage } from "@/store/editor";
+import {
+  useEditor,
+  newImage,
+  DEFAULT_PAGE_DURATION,
+  type AnyElement,
+  type Page,
+  newText,
+  newShape,
+  newIcon,
+  newModel3D,
+} from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
-import { Upload, Sparkles, Loader2, Search } from "lucide-react";
-import { generateAiAsset, stockSearch, type StockImage } from "@/lib/ai-templates.functions";
+import { Upload, Loader2, FileUp } from "lucide-react";
+import {
+  importTemplateFromFile,
+  type AiElementInput,
+  type AiStyle,
+} from "@/lib/ai-templates.functions";
+
+const STYLE_OPTIONS: { id: AiStyle; label: string }[] = [
+  { id: "auto", label: "Auto (match source)" },
+  { id: "minimal", label: "Minimal" },
+  { id: "editorial", label: "Editorial" },
+  { id: "cyberpunk", label: "Cyberpunk" },
+  { id: "liquid_glass", label: "Liquid Glass" },
+  { id: "brutalist", label: "Brutalist" },
+  { id: "retro_80s", label: "Retro 80s" },
+  { id: "organic", label: "Organic" },
+  { id: "art_deco", label: "Art Deco" },
+  { id: "memphis", label: "Memphis" },
+  { id: "y2k", label: "Y2K" },
+];
+
+function buildFromAi(els: AiElementInput[]): AnyElement[] {
+  return els
+    .map((e): AnyElement | null => {
+      if (e.type === "text") {
+        return newText({
+          text: e.text,
+          x: e.x, y: e.y, width: e.width, height: e.height,
+          fontSize: e.fontSize, color: e.color,
+          fontFamily: e.fontFamily ?? "Archivo Black",
+          fontWeight: e.fontWeight ?? 700,
+          align: e.align ?? "left",
+          italic: e.italic, underline: e.underline, bullet: e.bullet, href: e.href,
+        });
+      }
+      if (e.type === "shape") {
+        return newShape(e.shape, {
+          x: e.x, y: e.y, width: e.width, height: e.height,
+          fill: e.fill, stroke: e.stroke, strokeWidth: e.strokeWidth,
+          effect: e.effect, shadow: e.shadow,
+        });
+      }
+      if (e.type === "icon") {
+        return newIcon(e.name, {
+          x: e.x, y: e.y, width: e.width, height: e.height,
+          color: e.color, strokeWidth: e.strokeWidth ?? 2,
+        });
+      }
+      if (e.type === "model3d") {
+        return newModel3D("sphere", {
+          x: e.x, y: e.y, width: e.width, height: e.height,
+          color: e.color,
+          spinSpeed: e.spinSpeed ?? 8,
+          tiltX: e.tiltX ?? -20,
+          tiltY: e.tiltY ?? 25,
+        });
+      }
+      return null;
+    })
+    .filter((e): e is AnyElement => e !== null);
+}
 
 export function UploadsPanel() {
-  const { add } = useEditor();
+  const { add, canvasW, canvasH } = useEditor();
   const [uploads, setUploads] = useState<string[]>([]);
-  const gen = useServerFn(generateAiAsset);
-  const stock = useServerFn(stockSearch);
-  const [prompt, setPrompt] = useState("");
-  const [size, setSize] = useState<"1024x1024" | "1024x1536" | "1536x1024">("1024x1024");
-  const [model, setModel] = useState<string>("openai/gpt-image-2");
-  const [quality, setQuality] = useState<"low" | "medium" | "high">("low");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [stockQuery, setStockQuery] = useState("abstract");
-  const [stockResults, setStockResults] = useState<StockImage[]>([]);
-  const [stockBusy, setStockBusy] = useState(false);
-  const [stockError, setStockError] = useState<string | null>(null);
-  const [stockPage, setStockPage] = useState(1);
+  const importFn = useServerFn(importTemplateFromFile);
+  const [style, setStyle] = useState<AiStyle>("auto");
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importName, setImportName] = useState<string | null>(null);
+  const importRef = useRef<HTMLInputElement>(null);
 
-  const runStockSearch = async (page = 1) => {
-    if (stockBusy) return;
-    setStockBusy(true);
-    setStockError(null);
-    try {
-      const res = await stock({ data: { query: stockQuery, page } });
-      setStockResults(res.results);
-      setStockPage(page);
-    } catch (e) {
-      setStockError(e instanceof Error ? e.message : "Search failed");
-      setStockResults([]);
-    } finally {
-      setStockBusy(false);
+  const onImportFile = (file: File) => {
+    setImportError(null);
+    const ok =
+      file.type === "application/pdf" ||
+      file.type === "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
+      /\.(pdf|pptx)$/i.test(file.name);
+    if (!ok) {
+      setImportError("Please choose a .pdf or .pptx file");
+      return;
     }
-  };
-
-  const insertStock = async (img: StockImage) => {
-    // Fetch and inline as data URL so the canvas/export keep the image even if the source disappears.
-    try {
-      const res = await fetch(img.full);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const blob = await res.blob();
-      const reader = new FileReader();
-      reader.onload = () => add(newImage(reader.result as string));
-      reader.readAsDataURL(blob);
-    } catch {
-      // fall back to direct URL if CORS blocks the fetch
-      add(newImage(img.full));
+    if (file.size > 15 * 1024 * 1024) {
+      setImportError("File too large (max 15MB)");
+      return;
     }
+    setImportName(file.name);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      setImporting(true);
+      try {
+        const res = await importFn({
+          data: {
+            fileDataUrl: reader.result as string,
+            fileName: file.name,
+            width: canvasW,
+            height: canvasH,
+            style,
+          },
+        });
+        const newPages: Page[] = res.pages.map((p) => ({
+          id: Math.random().toString(36).slice(2, 10),
+          bgColor: p.bg,
+          elements: buildFromAi(p.elements),
+          duration: DEFAULT_PAGE_DURATION,
+        }));
+        useEditor.getState().loadPages(newPages);
+      } catch (e) {
+        setImportError(e instanceof Error ? e.message : "Import failed");
+      } finally {
+        setImporting(false);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,130 +166,44 @@ export function UploadsPanel() {
 
       <div className="brutal-border-2 space-y-2 bg-surface p-3">
         <div className="flex items-center gap-2 font-display text-[11px] tracking-[0.2em] text-teal">
-          <Sparkles className="h-3.5 w-3.5" /> AI_ASSET
+          <FileUp className="h-3.5 w-3.5" /> IMPORT_TEMPLATE
         </div>
-        <textarea
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder="e.g. holographic skull on black, studio lighting"
-          rows={2}
-          className="w-full resize-none border border-teal/40 bg-ink p-2 font-mono text-[11px] text-teal placeholder:text-teal/30 focus:border-teal focus:outline-none"
-        />
+        <p className="font-mono text-[10px] text-teal/60">
+          &gt; upload a .pdf or .pptx · AI reads it &amp; rebuilds it as an editable deck (replaces current pages)
+        </p>
         <select
-          value={model}
-          onChange={(e) => setModel(e.target.value)}
-          className="w-full border border-teal/40 bg-ink px-2 py-1.5 font-mono text-[11px] text-teal focus:border-teal focus:outline-none"
+          value={style}
+          onChange={(e) => setStyle(e.target.value as AiStyle)}
+          disabled={importing}
+          className="w-full border border-teal/40 bg-ink px-2 py-1.5 font-mono text-[11px] text-teal focus:border-teal focus:outline-none disabled:opacity-40"
         >
-          <optgroup label="OpenAI">
-            <option value="openai/gpt-image-2">GPT Image 2 (default)</option>
-            <option value="openai/gpt-image-1-mini">GPT Image 1 Mini (cheap)</option>
-          </optgroup>
-          <optgroup label="Google Gemini">
-            <option value="google/gemini-2.5-flash-image">Nano Banana (fast)</option>
-            <option value="google/gemini-3.1-flash-image-preview">Nano Banana 2</option>
-            <option value="google/gemini-3-pro-image-preview">Gemini 3 Pro Image</option>
-          </optgroup>
+          {STYLE_OPTIONS.map((s) => (
+            <option key={s.id} value={s.id}>{s.label}</option>
+          ))}
         </select>
-        <div className="grid grid-cols-2 gap-2">
-          <select
-            value={size}
-            onChange={(e) => setSize(e.target.value as typeof size)}
-            className="w-full border border-teal/40 bg-ink px-2 py-1.5 font-mono text-[11px] text-teal focus:border-teal focus:outline-none"
-          >
-            <option value="1024x1024">Square</option>
-            <option value="1024x1536">Portrait</option>
-            <option value="1536x1024">Landscape</option>
-          </select>
-          <select
-            value={quality}
-            onChange={(e) => setQuality(e.target.value as typeof quality)}
-            disabled={model.startsWith("google/")}
-            title={model.startsWith("google/") ? "Quality only applies to OpenAI models" : ""}
-            className="w-full border border-teal/40 bg-ink px-2 py-1.5 font-mono text-[11px] text-teal focus:border-teal focus:outline-none disabled:opacity-40"
-          >
-            <option value="low">Low quality</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
-        </div>
+        <input
+          ref={importRef}
+          type="file"
+          accept=".pdf,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) onImportFile(f);
+            e.target.value = "";
+          }}
+        />
         <button
-          onClick={onGenerate}
-          disabled={busy || !prompt.trim()}
+          onClick={() => importRef.current?.click()}
+          disabled={importing}
           className="brutal-border brutal-press flex w-full items-center justify-center gap-2 bg-blue px-3 py-2 font-display text-[11px] tracking-[0.2em] text-ink disabled:opacity-50"
         >
-          {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-          {busy ? "GENERATING..." : "GENERATE IMAGE"}
+          {importing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileUp className="h-3.5 w-3.5" />}
+          {importing ? "ANALYZING..." : "CHOOSE PDF / PPTX"}
         </button>
-        {error && <p className="font-mono text-[10px] text-[#ff0080]">! {error}</p>}
-      </div>
-
-      <div className="brutal-border-2 space-y-2 bg-surface p-3">
-        <div className="flex items-center gap-2 font-display text-[11px] tracking-[0.2em] text-teal">
-          <Search className="h-3.5 w-3.5" /> STOCK_PHOTOS
-        </div>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            runStockSearch(1);
-          }}
-          className="flex gap-2"
-        >
-          <input
-            value={stockQuery}
-            onChange={(e) => setStockQuery(e.target.value)}
-            placeholder="nature, city, people..."
-            className="flex-1 border border-teal/40 bg-ink px-2 py-1.5 font-mono text-[11px] text-teal placeholder:text-teal/30 focus:border-teal focus:outline-none"
-          />
-          <button
-            type="submit"
-            disabled={stockBusy}
-            className="brutal-border brutal-press bg-blue px-2 py-1.5 font-display text-[10px] tracking-[0.2em] text-ink"
-          >
-            {stockBusy ? "..." : "GO"}
-          </button>
-        </form>
-        {stockError && <p className="font-mono text-[10px] text-[#ff0080]">! {stockError}</p>}
-        {stockResults.length === 0 && !stockBusy && !stockError && (
-          <p className="font-mono text-[10px] text-teal/50">&gt; search to load creative-commons photos</p>
+        {importName && !importError && (
+          <p className="truncate font-mono text-[10px] text-teal/60">▸ {importName}</p>
         )}
-        <div className="grid grid-cols-2 gap-2">
-          {stockResults.map((img) => (
-            <button
-              key={img.id}
-              onClick={() => insertStock(img)}
-              title={img.title ? `${img.title}${img.author ? ` · ${img.author}` : ""}` : undefined}
-              className="brutal-border-2 brutal-press overflow-hidden bg-ink hover:border-teal"
-            >
-              <img
-                src={img.thumb}
-                alt={img.title || `${stockQuery} stock photo`}
-                className="h-20 w-full object-cover"
-                draggable={false}
-                loading="lazy"
-              />
-            </button>
-          ))}
-        </div>
-        {stockResults.length > 0 && (
-          <div className="flex items-center justify-between gap-2">
-            <button
-              onClick={() => runStockSearch(Math.max(1, stockPage - 1))}
-              disabled={stockBusy || stockPage <= 1}
-              className="brutal-border-2 bg-surface px-2 py-1 font-mono text-[10px] text-teal hover:border-teal disabled:opacity-40"
-            >
-              ← prev
-            </button>
-            <span className="font-mono text-[10px] text-teal/60">page {stockPage}</span>
-            <button
-              onClick={() => runStockSearch(stockPage + 1)}
-              disabled={stockBusy}
-              className="brutal-border-2 bg-surface px-2 py-1 font-mono text-[10px] text-teal hover:border-teal disabled:opacity-40"
-            >
-              next →
-            </button>
-          </div>
-        )}
-        <p className="font-mono text-[9px] text-teal/50">via Openverse · CC-licensed for commercial use</p>
+        {importError && <p className="font-mono text-[10px] text-[#ff0080]">! {importError}</p>}
       </div>
 
       {uploads.length > 0 ? (
