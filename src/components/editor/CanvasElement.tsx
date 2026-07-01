@@ -314,6 +314,31 @@ export function CanvasElement({ element, scale }: { element: AnyElement; scale: 
         const presenting = useEditor.getState().presenting;
         return <ButtonRender element={element} interactive={presenting} />;
       })()}
+      {element.type === "embed" && (() => {
+        const presenting = useEditor.getState().presenting;
+        return (
+          <div style={{ width: "100%", height: "100%", position: "relative", background: "#0a0f1f" }}>
+            <iframe
+              src={element.src}
+              title={element.title || "Embed"}
+              allow={element.allow}
+              allowFullScreen
+              style={{ width: "100%", height: "100%", border: 0, display: "block", background: "#000" }}
+            />
+            {!presenting && (
+              <div
+                // Overlay lets the editor select/drag; iframe still visible but not interactive.
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "transparent",
+                  cursor: "move",
+                }}
+              />
+            )}
+          </div>
+        );
+      })()}
 
       {selected && !editing && (
         <>

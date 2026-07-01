@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Loader2, HelpCircle, BarChart3, LineChart, PieChart, AreaChart, MousePointerClick } from "lucide-react";
-import { useEditor, newShape, newModel3D, newQuiz, newChart, newButton, type ShapeKind, type ChartKind, type ButtonAction, type AnyElement } from "@/store/editor";
+import { Sparkles, Loader2, HelpCircle, BarChart3, LineChart, PieChart, AreaChart, MousePointerClick, Youtube, Globe } from "lucide-react";
+import { useEditor, newShape, newModel3D, newQuiz, newChart, newButton, newEmbed, toEmbedSrc, type ShapeKind, type ChartKind, type ButtonAction, type AnyElement } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
 import { Model3DRender } from "../Model3DRender";
 import { shapePathD } from "../ShapeRender";
@@ -42,6 +42,7 @@ export function ShapesPanel() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [embedUrl, setEmbedUrl] = useState("");
 
   const handleGenerate = async () => {
     if (!prompt.trim() || loading) return;
@@ -93,6 +94,34 @@ export function ShapesPanel() {
             <MousePointerClick className="h-3 w-3" /> {b.label}
           </button>
         ))}
+      </div>
+
+      <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">▸ Embed</div>
+      <div className="brutal-border-2 space-y-2 bg-surface p-3">
+        <div className="flex items-center gap-2 font-display text-[11px] tracking-[0.2em] text-teal">
+          <Globe className="h-3.5 w-3.5" /> IFRAME_URL
+        </div>
+        <input
+          value={embedUrl}
+          onChange={(e) => setEmbedUrl(e.target.value)}
+          placeholder="youtube.com/watch?v=… · vimeo.com/… · any embed url"
+          className="w-full border border-teal/40 bg-ink px-2 py-1.5 font-mono text-[11px] text-teal placeholder:text-teal/30 focus:border-teal focus:outline-none"
+        />
+        <button
+          onClick={() => {
+            const src = toEmbedSrc(embedUrl);
+            if (!src) return;
+            add(newEmbed(src));
+            setEmbedUrl("");
+          }}
+          disabled={!embedUrl.trim()}
+          className="brutal-border brutal-press flex w-full items-center justify-center gap-2 bg-blue px-3 py-1.5 font-display text-[11px] tracking-[0.2em] text-ink disabled:opacity-50"
+        >
+          <Youtube className="h-3.5 w-3.5" /> ADD EMBED
+        </button>
+        <p className="font-mono text-[9px] text-teal/50">
+          &gt; YouTube / Vimeo / any allow-listed iframe URL. Interactive in Present.
+        </p>
       </div>
 
       <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">▸ Charts & Graphs</div>
