@@ -426,6 +426,131 @@ Return ONLY valid JSON, no commentary:
     return { bg: parsed.bg ?? data.page.bg, elements: parsed.elements };
   });
 
+// ---------------- Redesign current slide — N layout variations ----------------
+
+export const redesignSlideVariations = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: {
+    width: number;
+    height: number;
+    page: { bg: string; elements: AiElementInput[] };
+    count?: number;
+    style?: AiStyle;
+  }) => {
+    if (!data.page || !Array.isArray(data.page.elements)) throw new Error("Page is required");
+    const clamp = (n: unknown, def: number) =>
+      Math.max(320, Math.min(4096, typeof n === "number" && Number.isFinite(n) ? Math.round(n) : def));
+    const count = Math.max(2, Math.min(4, typeof data.count === "number" ? Math.round(data.count) : 3));
+    const validStyles: AiStyle[] = [
+      "auto", "cyberpunk", "liquid_glass", "minimal", "editorial", "brutalist",
+      "retro_80s", "organic", "art_deco", "memphis", "y2k",
+    ];
+    const style: AiStyle = (data.style && validStyles.includes(data.style)) ? data.style : "auto";
+    return {
+      width: clamp(data.width, 1920),
+      height: clamp(data.height, 1080),
+      page: { bg: data.page.bg ?? "#0a0f1f", elements: data.page.elements.slice(0, 200) },
+      count,
+      style,
+    };
+  })
+  .handler(async ({ data }): Promise<{ variants: AiPage[] }> => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+
+    const sys = `You are an elite designer producing ${data.count} DISTINCT LAYOUT VARIATIONS of an existing slide.
+
+HARD RULES — no exceptions:
+- KEEP every text element's copy EXACTLY as written. Do NOT translate, rewrite, or summarize any text. Text elements' \`text\` field is verbatim.
+- Keep the same LIST of core content (headlines, body, bullets, quotes). You may drop purely decorative shapes and add new decorative shapes/icons.
+- Each variation must be VISUALLY DIFFERENT from the others AND from the original: different composition, alignment, hierarchy, negative space, palette register, decorative motif. Not just moved by 20px.
+
+STYLE BRIEF: ${STYLE_GUIDES[data.style]}
+
+Canvas: ${data.width}×${data.height}px. Keep every element within bounds (0 ≤ x, x+width ≤ ${data.width}; 0 ≤ y, y+height ≤ ${data.height}).
+Available fonts: "Orbitron", "JetBrains Mono", "Archivo Black", "Inter", "Georgia".
+Element types: text, shape (rect/circle/triangle/star/arrow/heart/diamond/hexagon/pentagon/parallelogram/trapezoid/cross/lightning/cloud/speech), icon (lucide PascalCase), model3d (sphere only).
+Shape effects: "liquid_glass", "neon", "soft_shadow", "inner_glow".
+
+Return ONLY valid JSON, no commentary:
+{ "variants": Array<{ "bg": "#hex", "elements": Array<element> }> } — exactly ${data.count} entries.`;
+
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: sys },
+          { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nProduce ${data.count} distinct layout variations.` },
+        ],
+        response_format: { type: "json_object" },
+      }),
+    });
+    if (res.status === 429) throw new Error("Rate limit hit. Try again in a moment.");
+    if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
+    if (!res.ok) throw new Error(`AI gateway error ${res.status}`);
+    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    const content = json.choices?.[0]?.message?.content ?? "";
+    const parsed = parseLooseJson<{ variants?: unknown }>(content);
+    const arr = Array.isArray(parsed.variants) ? parsed.variants : [];
+    const variants: AiPage[] = arr
+      .filter((v): v is AiPage => !!v && typeof v === "object" && Array.isArray((v as AiPage).elements))
+      .map((v) => ({ bg: v.bg ?? data.page.bg, elements: v.elements }));
+    if (variants.length === 0) throw new Error("AI returned no variations");
+    return { variants };
+  });
+
+// ---------------- Translate deck ----------------
+
+export const translateTexts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { texts: string[]; target: string }) => {
+    if (!Array.isArray(data?.texts)) throw new Error("texts required");
+    const target = (data.target ?? "").toString().slice(0, 60).trim();
+    if (!target) throw new Error("target language required");
+    const texts = data.texts.slice(0, 500).map((t) => (typeof t === "string" ? t.slice(0, 4000) : ""));
+    return { texts, target };
+  })
+  .handler(async ({ data }): Promise<{ translations: string[] }> => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    if (data.texts.length === 0) return { translations: [] };
+
+    const sys = `You are a professional translator. Translate each string in the input array into ${data.target}.
+Rules:
+- Preserve the order and count of items exactly. Return the SAME number of strings.
+- Preserve line breaks, punctuation, emoji, numbers, and inline formatting.
+- Do NOT translate URLs, hex color codes, brand names, or code identifiers.
+- If a string is empty or already in ${data.target}, return it unchanged.
+Return ONLY JSON: { "translations": string[] } with exactly ${data.texts.length} entries.`;
+
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: sys },
+          { role: "user", content: JSON.stringify({ texts: data.texts }) },
+        ],
+        response_format: { type: "json_object" },
+      }),
+    });
+    if (res.status === 429) throw new Error("Rate limit hit. Try again in a moment.");
+    if (res.status === 402) throw new Error("AI credits exhausted.");
+    if (!res.ok) throw new Error(`AI gateway error ${res.status}`);
+    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    const content = json.choices?.[0]?.message?.content ?? "";
+    const parsed = parseLooseJson<{ translations?: unknown }>(content);
+    const out = Array.isArray(parsed.translations) ? parsed.translations : [];
+    const translations = data.texts.map((original, i) => {
+      const t = out[i];
+      return typeof t === "string" ? t : original;
+    });
+    return { translations };
+  });
+
 // ---------------- AI image asset generation ----------------
 
 export const generateAiAsset = createServerFn({ method: "POST" })
