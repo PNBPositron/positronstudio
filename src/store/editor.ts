@@ -156,6 +156,13 @@ export type ButtonElement = ElementBase & {
   shadow?: ElementShadow;
 };
 
+export type EmbedElement = ElementBase & {
+  type: "embed";
+  src: string; // fully-formed iframe URL
+  title?: string;
+  allow?: string;
+};
+
 export type AnyElement =
   | TextElement
   | ShapeElement
@@ -164,7 +171,8 @@ export type AnyElement =
   | Model3DElement
   | QuizElement
   | ChartElement
-  | ButtonElement;
+  | ButtonElement
+  | EmbedElement;
 
 export type Page = {
   id: string;
@@ -401,6 +409,49 @@ export const newButton = (overrides: Partial<ButtonElement> = {}): ButtonElement
   fontFamily: "Archivo Black",
   fontWeight: 900,
   action: "next-slide",
+  ...overrides,
+});
+
+// Normalize a user-pasted URL into an embeddable iframe src.
+// Supports YouTube watch/share, Vimeo, and passes through valid iframe URLs.
+export function toEmbedSrc(raw: string): string {
+  const s = (raw || "").trim();
+  if (!s) return "";
+  try {
+    const u = new URL(s);
+    const host = u.hostname.replace(/^www\./, "");
+    // YouTube
+    if (host === "youtube.com" || host === "m.youtube.com") {
+      const v = u.searchParams.get("v");
+      if (v) return `https://www.youtube.com/embed/${v}`;
+      if (u.pathname.startsWith("/embed/")) return s;
+      if (u.pathname.startsWith("/shorts/")) return `https://www.youtube.com/embed/${u.pathname.split("/")[2]}`;
+    }
+    if (host === "youtu.be") {
+      const id = u.pathname.slice(1);
+      if (id) return `https://www.youtube.com/embed/${id}`;
+    }
+    // Vimeo
+    if (host === "vimeo.com") {
+      const id = u.pathname.split("/").filter(Boolean)[0];
+      if (id && /^\d+$/.test(id)) return `https://player.vimeo.com/video/${id}`;
+    }
+    return s;
+  } catch {
+    return s;
+  }
+}
+
+export const newEmbed = (src: string, overrides: Partial<EmbedElement> = {}): EmbedElement => ({
+  id: uid(),
+  type: "embed",
+  x: 200,
+  y: 200,
+  width: 720,
+  height: 405,
+  rotation: 0,
+  src: toEmbedSrc(src),
+  allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
   ...overrides,
 });
 
