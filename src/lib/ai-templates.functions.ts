@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // Robustly extract a JSON object from a model response that may include
 // markdown fences, prose, or multiple back-to-back objects.
@@ -175,6 +176,7 @@ Return ONLY valid JSON, no markdown, no commentary:
 Each slide aims for 5-12 elements. Across the deck, include at least one shape with an effect (liquid_glass or neon) when the style supports it. Make it visually striking, deliberate, and unmistakably in the requested style.`;
 
 export const generateAiTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { prompt: string; width?: number; height?: number; style?: AiStyle; imageDataUrl?: string; slideCount?: number }) => {
     if (!data || typeof data.prompt !== "string") throw new Error("Prompt is required");
     if (!data.prompt.trim() && !data.imageDataUrl) throw new Error("Provide a prompt or an image");
@@ -258,6 +260,7 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
 // ---------------- Icon set generator ----------------
 
 export const suggestIcons = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { prompt: string; count?: number }) => {
     if (!data?.prompt?.trim()) throw new Error("Prompt is required");
     const count = Math.max(4, Math.min(24, typeof data.count === "number" ? data.count : 12));
@@ -315,6 +318,7 @@ export type Ai3DScene = {
 };
 
 export const generate3DScene = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { prompt: string; width?: number; height?: number }) => {
     if (!data?.prompt?.trim()) throw new Error("Prompt is required");
     const clamp = (n: unknown, def: number) =>
@@ -365,6 +369,7 @@ spinSpeed: 0-30 seconds (0 = static). Always set "shape" to "sphere".`;
 // ---------------- Edit current slide via chat ----------------
 
 export const editCurrentSlide = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: {
     prompt: string;
     width: number;
@@ -424,6 +429,7 @@ Return ONLY valid JSON, no commentary:
 // ---------------- AI image asset generation ----------------
 
 export const generateAiAsset = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: {
     prompt: string;
     size?: "1024x1024" | "1024x1536" | "1536x1024";
@@ -525,6 +531,7 @@ export const stockSearch = createServerFn({ method: "POST" })
 // ---------------- Import template from PPT / PDF ----------------
 
 export const importTemplateFromFile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: {
     fileDataUrl: string;
     fileName?: string;
