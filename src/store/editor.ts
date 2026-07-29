@@ -163,6 +163,121 @@ export type EmbedElement = ElementBase & {
   allow?: string;
 };
 
+// ---- UI components ----
+export type UiStyle = "cyber" | "glass" | "neobrutalist" | "sketch" | "xp";
+export type UiKind =
+  | "card"
+  | "stat"
+  | "badge"
+  | "progress"
+  | "alert"
+  | "list"
+  | "quote"
+  | "profile"
+  | "pricing"
+  | "kbd";
+
+export type UiElement = ElementBase & {
+  type: "ui";
+  kind: UiKind;
+  uiStyle: UiStyle;
+  title: string;
+  body: string;
+  value: number; // 0-100 (progress) or numeric stat
+  items: string[];
+  accentColor: string;
+};
+
+export type UiTheme = {
+  label: string;
+  bg: string;
+  fg: string;
+  muted: string;
+  accent: string;
+  border: string;
+  borderWidth: number;
+  radius: number;
+  shadow: string;
+  font: string;
+  letterSpacing: string;
+  uppercase: boolean;
+  backdrop?: string;
+};
+
+export const UI_STYLE_THEMES: Record<UiStyle, UiTheme> = {
+  cyber: {
+    label: "Cyber",
+    bg: "#0a0f1f",
+    fg: "#7df9ff",
+    muted: "rgba(125,249,255,0.6)",
+    accent: "#ff0080",
+    border: "#7df9ff",
+    borderWidth: 1,
+    radius: 0,
+    shadow: "0 0 18px rgba(125,249,255,0.45)",
+    font: "'Orbitron', 'JetBrains Mono', monospace",
+    letterSpacing: "0.14em",
+    uppercase: true,
+  },
+  glass: {
+    label: "Glass",
+    bg: "rgba(255,255,255,0.16)",
+    fg: "#ffffff",
+    muted: "rgba(255,255,255,0.7)",
+    accent: "#7df9ff",
+    border: "rgba(255,255,255,0.45)",
+    borderWidth: 1,
+    radius: 22,
+    shadow: "0 18px 40px rgba(0,0,0,0.25), inset 1px 1px 1px rgba(255,255,255,0.5)",
+    font: "'Inter', system-ui, sans-serif",
+    letterSpacing: "0.01em",
+    uppercase: false,
+    backdrop: "blur(16px) saturate(160%)",
+  },
+  neobrutalist: {
+    label: "Neobrutal",
+    bg: "#ffd84a",
+    fg: "#0a0a0a",
+    muted: "rgba(10,10,10,0.7)",
+    accent: "#ff0080",
+    border: "#0a0a0a",
+    borderWidth: 4,
+    radius: 0,
+    shadow: "10px 10px 0 0 #0a0a0a",
+    font: "'Archivo Black', 'Inter', sans-serif",
+    letterSpacing: "0.02em",
+    uppercase: true,
+  },
+  sketch: {
+    label: "Sketch",
+    bg: "#fdfcf7",
+    fg: "#1b1b1b",
+    muted: "rgba(27,27,27,0.6)",
+    accent: "#2b6cff",
+    border: "#1b1b1b",
+    borderWidth: 2,
+    radius: 14,
+    shadow: "2px 3px 0 rgba(27,27,27,0.35)",
+    font: "'Caveat', 'Comic Sans MS', cursive",
+    letterSpacing: "0.01em",
+    uppercase: false,
+  },
+  xp: {
+    label: "XP",
+    bg: "#ece9d8",
+    fg: "#0a246a",
+    muted: "#4a4a4a",
+    accent: "#245edb",
+    border: "#7f9db9",
+    borderWidth: 2,
+    radius: 6,
+    shadow: "inset -1px -1px 0 #808080, inset 1px 1px 0 #ffffff, 3px 3px 6px rgba(0,0,0,0.25)",
+    font: "'Tahoma', 'Verdana', sans-serif",
+    letterSpacing: "0em",
+    uppercase: false,
+  },
+};
+
 export type AnyElement =
   | TextElement
   | ShapeElement
@@ -172,7 +287,8 @@ export type AnyElement =
   | QuizElement
   | ChartElement
   | ButtonElement
-  | EmbedElement;
+  | EmbedElement
+  | UiElement;
 
 export type Page = {
   id: string;
