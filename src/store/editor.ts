@@ -314,7 +314,7 @@ export const CANVAS_PRESETS = [
   { name: "Slide 16:9", w: 1920, h: 1080 },
 ] as const;
 
-type Tool = "templates" | "text" | "shapes" | "uploads" | "design" | "icons" | "ai";
+type Tool = "templates" | "text" | "shapes" | "uploads" | "design" | "icons" | "ai" | "components";
 
 type HistorySnap = { pages: Page[]; currentIndex: number };
 
