@@ -61,7 +61,7 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
           alignItems: "center",
           justifyContent: "center",
           background: accent,
-          color: t.uiStyleContrast ?? (element.uiStyle === "cyber" ? "#0a0f1f" : t.fg),
+          color: element.uiStyle === "cyber" || element.uiStyle === "glass" ? "#0a0f1f" : t.fg,
           padding: 0,
         }}
       >
