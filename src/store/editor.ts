@@ -574,7 +574,6 @@ export const newEmbed = (src: string, overrides: Partial<EmbedElement> = {}): Em
 const newPage = (overrides: Partial<Page> = {}): Page => ({
   id: uid(),
   elements: [],
-
   bgColor: DEFAULT_BG,
   duration: DEFAULT_PAGE_DURATION,
   ...overrides,
