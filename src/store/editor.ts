@@ -163,6 +163,121 @@ export type EmbedElement = ElementBase & {
   allow?: string;
 };
 
+// ---- UI components ----
+export type UiStyle = "cyber" | "glass" | "neobrutalist" | "sketch" | "xp";
+export type UiKind =
+  | "card"
+  | "stat"
+  | "badge"
+  | "progress"
+  | "alert"
+  | "list"
+  | "quote"
+  | "profile"
+  | "pricing"
+  | "kbd";
+
+export type UiElement = ElementBase & {
+  type: "ui";
+  kind: UiKind;
+  uiStyle: UiStyle;
+  title: string;
+  body: string;
+  value: number; // 0-100 (progress) or numeric stat
+  items: string[];
+  accentColor: string;
+};
+
+export type UiTheme = {
+  label: string;
+  bg: string;
+  fg: string;
+  muted: string;
+  accent: string;
+  border: string;
+  borderWidth: number;
+  radius: number;
+  shadow: string;
+  font: string;
+  letterSpacing: string;
+  uppercase: boolean;
+  backdrop?: string;
+};
+
+export const UI_STYLE_THEMES: Record<UiStyle, UiTheme> = {
+  cyber: {
+    label: "Cyber",
+    bg: "#0a0f1f",
+    fg: "#7df9ff",
+    muted: "rgba(125,249,255,0.6)",
+    accent: "#ff0080",
+    border: "#7df9ff",
+    borderWidth: 1,
+    radius: 0,
+    shadow: "0 0 18px rgba(125,249,255,0.45)",
+    font: "'Orbitron', 'JetBrains Mono', monospace",
+    letterSpacing: "0.14em",
+    uppercase: true,
+  },
+  glass: {
+    label: "Glass",
+    bg: "rgba(255,255,255,0.16)",
+    fg: "#ffffff",
+    muted: "rgba(255,255,255,0.7)",
+    accent: "#7df9ff",
+    border: "rgba(255,255,255,0.45)",
+    borderWidth: 1,
+    radius: 22,
+    shadow: "0 18px 40px rgba(0,0,0,0.25), inset 1px 1px 1px rgba(255,255,255,0.5)",
+    font: "'Inter', system-ui, sans-serif",
+    letterSpacing: "0.01em",
+    uppercase: false,
+    backdrop: "blur(16px) saturate(160%)",
+  },
+  neobrutalist: {
+    label: "Neobrutal",
+    bg: "#ffd84a",
+    fg: "#0a0a0a",
+    muted: "rgba(10,10,10,0.7)",
+    accent: "#ff0080",
+    border: "#0a0a0a",
+    borderWidth: 4,
+    radius: 0,
+    shadow: "10px 10px 0 0 #0a0a0a",
+    font: "'Archivo Black', 'Inter', sans-serif",
+    letterSpacing: "0.02em",
+    uppercase: true,
+  },
+  sketch: {
+    label: "Sketch",
+    bg: "#fdfcf7",
+    fg: "#1b1b1b",
+    muted: "rgba(27,27,27,0.6)",
+    accent: "#2b6cff",
+    border: "#1b1b1b",
+    borderWidth: 2,
+    radius: 14,
+    shadow: "2px 3px 0 rgba(27,27,27,0.35)",
+    font: "'Caveat', 'Comic Sans MS', cursive",
+    letterSpacing: "0.01em",
+    uppercase: false,
+  },
+  xp: {
+    label: "XP",
+    bg: "#ece9d8",
+    fg: "#0a246a",
+    muted: "#4a4a4a",
+    accent: "#245edb",
+    border: "#7f9db9",
+    borderWidth: 2,
+    radius: 6,
+    shadow: "inset -1px -1px 0 #808080, inset 1px 1px 0 #ffffff, 3px 3px 6px rgba(0,0,0,0.25)",
+    font: "'Tahoma', 'Verdana', sans-serif",
+    letterSpacing: "0em",
+    uppercase: false,
+  },
+};
+
 export type AnyElement =
   | TextElement
   | ShapeElement
@@ -172,7 +287,8 @@ export type AnyElement =
   | QuizElement
   | ChartElement
   | ButtonElement
-  | EmbedElement;
+  | EmbedElement
+  | UiElement;
 
 export type Page = {
   id: string;
@@ -198,7 +314,7 @@ export const CANVAS_PRESETS = [
   { name: "Slide 16:9", w: 1920, h: 1080 },
 ] as const;
 
-type Tool = "templates" | "text" | "shapes" | "uploads" | "design" | "icons" | "ai";
+type Tool = "templates" | "text" | "shapes" | "uploads" | "design" | "icons" | "ai" | "components";
 
 type HistorySnap = { pages: Page[]; currentIndex: number };
 
@@ -454,6 +570,44 @@ export const newEmbed = (src: string, overrides: Partial<EmbedElement> = {}): Em
   allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
   ...overrides,
 });
+
+const UI_DEFAULTS: Record<UiKind, { w: number; h: number; title: string; body: string; value: number; items: string[] }> = {
+  card: { w: 560, h: 360, title: "Card title", body: "Supporting copy goes here. Double-click to edit in the properties panel.", value: 0, items: [] },
+  stat: { w: 420, h: 260, title: "Active users", body: "+12.4% this month", value: 8420, items: [] },
+  badge: { w: 280, h: 96, title: "NEW", body: "", value: 0, items: [] },
+  progress: { w: 560, h: 160, title: "Progress", body: "Loading assets", value: 68, items: [] },
+  alert: { w: 620, h: 200, title: "Heads up", body: "This is an important message for your audience.", value: 0, items: [] },
+  list: { w: 520, h: 380, title: "Checklist", body: "", value: 0, items: ["First item", "Second item", "Third item"] },
+  quote: { w: 640, h: 300, title: "The best way to predict the future is to invent it.", body: "Alan Kay", value: 0, items: [] },
+  profile: { w: 520, h: 200, title: "Ada Lovelace", body: "Lead engineer", value: 0, items: [] },
+  pricing: { w: 460, h: 480, title: "Pro", body: "$29 / month", value: 0, items: ["Unlimited decks", "AI redesign", "Priority support"] },
+  kbd: { w: 360, h: 120, title: "⌘ + K", body: "Command palette", value: 0, items: [] },
+};
+
+export const newUi = (
+  kind: UiKind = "card",
+  uiStyle: UiStyle = "cyber",
+  overrides: Partial<UiElement> = {},
+): UiElement => {
+  const d = UI_DEFAULTS[kind];
+  return {
+    id: uid(),
+    type: "ui",
+    x: 200,
+    y: 200,
+    width: d.w,
+    height: d.h,
+    rotation: 0,
+    kind,
+    uiStyle,
+    title: d.title,
+    body: d.body,
+    value: d.value,
+    items: d.items,
+    accentColor: UI_STYLE_THEMES[uiStyle].accent,
+    ...overrides,
+  };
+};
 
 const newPage = (overrides: Partial<Page> = {}): Page => ({
   id: uid(),

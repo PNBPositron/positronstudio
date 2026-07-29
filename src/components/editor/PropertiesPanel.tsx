@@ -1,4 +1,4 @@
-import { useEditor, DEFAULT_FILTERS, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption, type ChartElement, type ButtonElement, type ChartKind, type ButtonAction } from "@/store/editor";
+import { useEditor, DEFAULT_FILTERS, UI_STYLE_THEMES, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption, type ChartElement, type ButtonElement, type ChartKind, type ButtonAction, type UiStyle } from "@/store/editor";
 import { Copy, Trash2, ArrowUp, ArrowDown, Layers, RotateCcw, Plus, Check } from "lucide-react";
 
 const SWATCHES = [
@@ -35,6 +35,75 @@ export function PropertiesPanel() {
       </div>
 
       <div className="space-y-4 p-4">
+        {el.type === "ui" && (
+          <>
+            <Field label="Style">
+              <div className="grid grid-cols-3 gap-1.5">
+                {(Object.keys(UI_STYLE_THEMES) as UiStyle[]).map((s) => {
+                  const t = UI_STYLE_THEMES[s];
+                  const active = el.uiStyle === s;
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => update(el.id, { uiStyle: s, accentColor: t.accent })}
+                      className={`brutal-press border px-1 py-2 font-display text-[9px] uppercase tracking-[0.12em] ${active ? "border-teal glow-teal" : "border-teal/30"}`}
+                      style={{ background: t.bg === "rgba(255,255,255,0.16)" ? "#2a3550" : t.bg, color: t.fg }}
+                    >
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+            <Field label="Title">
+              <input
+                value={el.title}
+                onChange={(e) => update(el.id, { title: e.target.value })}
+                className="brutal-border-2 w-full bg-surface p-2 font-mono text-xs text-teal focus:outline-none"
+              />
+            </Field>
+            <Field label="Body">
+              <textarea
+                value={el.body}
+                onChange={(e) => update(el.id, { body: e.target.value })}
+                rows={2}
+                className="brutal-border-2 w-full bg-surface p-2 font-mono text-xs text-teal focus:outline-none"
+              />
+            </Field>
+            {(el.kind === "progress" || el.kind === "stat") && (
+              <Field label={el.kind === "progress" ? "Value (%)" : "Value"}>
+                <input
+                  type="number"
+                  value={el.value}
+                  onChange={(e) => update(el.id, { value: +e.target.value })}
+                  className="brutal-border-2 w-full bg-surface p-2 font-mono text-xs text-teal focus:outline-none"
+                />
+              </Field>
+            )}
+            {(el.kind === "list" || el.kind === "pricing") && (
+              <Field label="Items (one per line)">
+                <textarea
+                  value={el.items.join("\n")}
+                  onChange={(e) => update(el.id, { items: e.target.value.split("\n") })}
+                  rows={4}
+                  className="brutal-border-2 w-full bg-surface p-2 font-mono text-xs text-teal focus:outline-none"
+                />
+              </Field>
+            )}
+            <Field label="Accent">
+              <div className="flex flex-wrap gap-1.5">
+                {SWATCHES.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => update(el.id, { accentColor: c })}
+                    className="brutal-border-2 h-7 w-7"
+                    style={{ background: c }}
+                  />
+                ))}
+              </div>
+            </Field>
+          </>
+        )}
         {el.type === "text" && (
           <>
             <Field label="Text">
