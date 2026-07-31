@@ -439,6 +439,8 @@ function QuizRender({ element, interactive }: { element: QuizElement; interactiv
 
 function ChartRender({ element }: { element: ChartElement }) {
   const { chart, data, colors, bgColor, fgColor, title, showValues, showAxes } = element;
+  const theme = element.uiStyle ? UI_STYLE_THEMES[element.uiStyle] : null;
+  const fontFamily = theme ? theme.font : "Inter, sans-serif";
   const W = 400, H = 300;
   const padL = 50, padR = 20, padT = title ? 40 : 20, padB = 40;
   const plotW = W - padL - padR;
