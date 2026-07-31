@@ -137,6 +137,7 @@ export type ChartElement = ElementBase & {
   title?: string;
   showValues?: boolean;
   showAxes?: boolean;
+  uiStyle?: UiStyle;
 };
 
 export type ButtonAction = "link" | "next-slide" | "prev-slide" | "first-slide" | "last-slide";
@@ -175,7 +176,17 @@ export type UiKind =
   | "quote"
   | "profile"
   | "pricing"
-  | "kbd";
+  | "kbd"
+  | "window"
+  | "browser"
+  | "search"
+  | "terminal"
+  | "phone"
+  | "modal"
+  | "tabs"
+  | "toggle"
+  | "login"
+  | "notification";
 
 export type UiElement = ElementBase & {
   type: "ui";
@@ -582,6 +593,16 @@ const UI_DEFAULTS: Record<UiKind, { w: number; h: number; title: string; body: s
   profile: { w: 520, h: 200, title: "Ada Lovelace", body: "Lead engineer", value: 0, items: [] },
   pricing: { w: 460, h: 480, title: "Pro", body: "$29 / month", value: 0, items: ["Unlimited decks", "AI redesign", "Priority support"] },
   kbd: { w: 360, h: 120, title: "⌘ + K", body: "Command palette", value: 0, items: [] },
+  window: { w: 720, h: 460, title: "My Document", body: "Window content area", value: 0, items: ["File", "Edit", "View", "Help"] },
+  browser: { w: 800, h: 500, title: "Positron Studio", body: "https://positronstudio.lovable.app", value: 0, items: ["Home", "Docs", "Pricing"] },
+  search: { w: 640, h: 120, title: "Search anything…", body: "⌘K", value: 0, items: [] },
+  terminal: { w: 720, h: 400, title: "bash — 80×24", body: "npm run build", value: 0, items: ["$ npm install", "added 214 packages", "$ npm run build", "✓ built in 1.24s"] },
+  phone: { w: 340, h: 640, title: "Positron", body: "Mobile preview", value: 0, items: ["Inbox", "Today", "Settings"] },
+  modal: { w: 620, h: 340, title: "Delete this slide?", body: "This action can't be undone.", value: 0, items: ["Cancel", "Delete"] },
+  tabs: { w: 680, h: 300, title: "Overview", body: "Tab panel content goes here.", value: 0, items: ["Overview", "Activity", "Settings"] },
+  toggle: { w: 560, h: 300, title: "Preferences", body: "", value: 0, items: ["Notifications", "Dark mode", "Auto-save"] },
+  login: { w: 480, h: 480, title: "Sign in", body: "Continue to your workspace", value: 0, items: ["Email", "Password"] },
+  notification: { w: 560, h: 160, title: "Deck published", body: "Your presentation is now live.", value: 0, items: [] },
 };
 
 export const newUi = (
