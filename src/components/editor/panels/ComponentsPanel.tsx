@@ -2,10 +2,11 @@ import { useState } from "react";
 import {
   HelpCircle, BarChart3, LineChart, PieChart, AreaChart, MousePointerClick, Youtube, Globe,
   Square, Hash, Gauge, AlertTriangle, ListChecks, Quote, User, CreditCard, Command, TrendingUp,
+  AppWindow, Chrome, Search, TerminalSquare, Smartphone, MessageSquare, Rows3, ToggleRight, LogIn, Bell,
 } from "lucide-react";
 import {
   useEditor, newQuiz, newChart, newButton, newEmbed, newUi, toEmbedSrc,
-  UI_STYLE_THEMES, type ChartKind, type ButtonAction, type UiKind, type UiStyle,
+  UI_STYLE_THEMES, chartStylePatch, type ChartKind, type ButtonAction, type UiKind, type UiStyle,
 } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
 import { UiRender } from "../UiRender";
@@ -23,6 +24,19 @@ const UI_KINDS: Array<{ kind: UiKind; label: string; Icon: typeof Square }> = [
   { kind: "kbd", label: "Key", Icon: Command },
 ];
 
+const REAL_UI_KINDS: Array<{ kind: UiKind; label: string; Icon: typeof Square }> = [
+  { kind: "window", label: "Window", Icon: AppWindow },
+  { kind: "browser", label: "Browser", Icon: Chrome },
+  { kind: "search", label: "Search bar", Icon: Search },
+  { kind: "terminal", label: "Terminal", Icon: TerminalSquare },
+  { kind: "phone", label: "Phone", Icon: Smartphone },
+  { kind: "modal", label: "Modal", Icon: MessageSquare },
+  { kind: "tabs", label: "Tabs", Icon: Rows3 },
+  { kind: "toggle", label: "Toggles", Icon: ToggleRight },
+  { kind: "login", label: "Login", Icon: LogIn },
+  { kind: "notification", label: "Toast", Icon: Bell },
+];
+
 const STYLES = Object.keys(UI_STYLE_THEMES) as UiStyle[];
 
 export function ComponentsPanel() {
@@ -37,6 +51,9 @@ export function ComponentsPanel() {
     if (selected?.type === "ui") {
       update(selected.id, { uiStyle: s, accentColor: UI_STYLE_THEMES[s].accent });
     }
+    if (selected?.type === "chart") {
+      update(selected.id, chartStylePatch(s));
+    }
   };
 
   const themedQuiz = () => {
@@ -44,13 +61,7 @@ export function ComponentsPanel() {
     return newQuiz({ bgColor: t.bg === "rgba(255,255,255,0.16)" ? "#1b2233" : t.bg, fgColor: t.fg, accentColor: t.accent });
   };
   const themedChart = (kind: ChartKind, label: string) => {
-    const t = UI_STYLE_THEMES[style];
-    return newChart(kind, {
-      title: `${label} chart`,
-      bgColor: t.bg === "rgba(255,255,255,0.16)" ? "#1b2233" : t.bg,
-      fgColor: t.fg,
-      colors: [t.accent, t.fg, "#ffd84a", "#4d7cff", "#00ff88", "#b16bff"],
-    });
+    return newChart(kind, { title: `${label} chart`, ...chartStylePatch(style) });
   };
 
   return (
@@ -78,8 +89,26 @@ export function ComponentsPanel() {
           })}
         </div>
         <p className="font-mono text-[9px] text-teal/50">
-          &gt; Applies to new components{selected?.type === "ui" ? " and the selected one" : ""}.
+          &gt; Applies to new components, charts{selected?.type === "ui" || selected?.type === "chart" ? " and the selected one" : ""}.
         </p>
+      </div>
+
+      <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">▸ Interfaces</div>
+      <div className="grid grid-cols-2 gap-2">
+        {REAL_UI_KINDS.map(({ kind, label, Icon }) => (
+          <button
+            key={kind}
+            onClick={() => add(newUi(kind, style))}
+            className="brutal-border-2 brutal-press flex flex-col items-center gap-1.5 bg-surface p-2 text-teal hover:border-teal"
+          >
+            <div className="pointer-events-none h-16 w-full overflow-hidden">
+              <UiRender element={newUi(kind, style, { id: `prev-${kind}` })} preview />
+            </div>
+            <span className="flex items-center gap-1 font-display text-[9px] uppercase tracking-[0.15em]">
+              <Icon className="h-3 w-3" /> {label}
+            </span>
+          </button>
+        ))}
       </div>
 
       <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">▸ UI</div>

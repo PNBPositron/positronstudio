@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { useEditor, type AnyElement, type ShapeElement, type QuizElement, type ChartElement, type ButtonElement, type ElementShadow, DEFAULT_FILTERS, type ImageFilters } from "@/store/editor";
+import { useEditor, UI_STYLE_THEMES, type AnyElement, type ShapeElement, type QuizElement, type ChartElement, type ButtonElement, type ElementShadow, DEFAULT_FILTERS, type ImageFilters } from "@/store/editor";
 import { ShapeRender } from "./ShapeRender";
 import { Model3DRender } from "./Model3DRender";
 import { UiRender } from "./UiRender";
@@ -439,6 +439,8 @@ function QuizRender({ element, interactive }: { element: QuizElement; interactiv
 
 function ChartRender({ element }: { element: ChartElement }) {
   const { chart, data, colors, bgColor, fgColor, title, showValues, showAxes } = element;
+  const theme = element.uiStyle ? UI_STYLE_THEMES[element.uiStyle] : null;
+  const fontFamily = theme ? theme.font : "Inter, sans-serif";
   const W = 400, H = 300;
   const padL = 50, padR = 20, padT = title ? 40 : 20, padB = 40;
   const plotW = W - padL - padR;
@@ -458,9 +460,9 @@ function ChartRender({ element }: { element: ChartElement }) {
         <g key={i}>
           <rect x={x} y={y} width={bw} height={h} fill={c(i)} />
           {showValues && (
-            <text x={x + bw / 2} y={y - 4} textAnchor="middle" fill={fgColor} fontSize="10" fontFamily="Inter, sans-serif" fontWeight={700}>{d.value}</text>
+            <text x={x + bw / 2} y={y - 4} textAnchor="middle" fill={fgColor} fontSize="10" fontFamily={fontFamily} fontWeight={700}>{d.value}</text>
           )}
-          <text x={x + bw / 2} y={padT + plotH + 14} textAnchor="middle" fill={fgColor} fontSize="10" fontFamily="Inter, sans-serif">{d.label}</text>
+          <text x={x + bw / 2} y={padT + plotH + 14} textAnchor="middle" fill={fgColor} fontSize="10" fontFamily={fontFamily}>{d.label}</text>
         </g>
       );
     });
@@ -480,9 +482,9 @@ function ChartRender({ element }: { element: ChartElement }) {
           <g key={i}>
             <circle cx={p[0]} cy={p[1]} r={3.5} fill={c(0)} stroke={bgColor} strokeWidth={1.5} />
             {showValues && (
-              <text x={p[0]} y={p[1] - 8} textAnchor="middle" fill={fgColor} fontSize="10" fontFamily="Inter, sans-serif" fontWeight={700}>{data[i].value}</text>
+              <text x={p[0]} y={p[1] - 8} textAnchor="middle" fill={fgColor} fontSize="10" fontFamily={fontFamily} fontWeight={700}>{data[i].value}</text>
             )}
-            <text x={p[0]} y={padT + plotH + 14} textAnchor="middle" fill={fgColor} fontSize="10" fontFamily="Inter, sans-serif">{data[i].label}</text>
+            <text x={p[0]} y={padT + plotH + 14} textAnchor="middle" fill={fgColor} fontSize="10" fontFamily={fontFamily}>{data[i].label}</text>
           </g>
         ))}
       </g>
@@ -516,7 +518,7 @@ function ChartRender({ element }: { element: ChartElement }) {
       return (
         <g key={i}>
           <path d={path} fill={c(i)} stroke={bgColor} strokeWidth={1.5} />
-          <text x={lx} y={ly} textAnchor={Math.cos(mid) > 0 ? "start" : "end"} fill={fgColor} fontSize="9" fontFamily="Inter, sans-serif" fontWeight={600}>
+          <text x={lx} y={ly} textAnchor={Math.cos(mid) > 0 ? "start" : "end"} fill={fgColor} fontSize="9" fontFamily={fontFamily} fontWeight={600}>
             {d.label}{showValues ? ` · ${d.value}` : ""}
           </text>
         </g>
@@ -525,10 +527,23 @@ function ChartRender({ element }: { element: ChartElement }) {
   };
 
   return (
-    <div style={{ width: "100%", height: "100%", background: bgColor, borderRadius: 12, overflow: "hidden", padding: "2%" }}>
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        background: bgColor,
+        borderRadius: theme ? theme.radius : 12,
+        border: theme ? `${theme.borderWidth}px solid ${theme.border}` : "none",
+        boxShadow: theme ? theme.shadow : "none",
+        backdropFilter: theme?.backdrop,
+        overflow: "hidden",
+        padding: "2%",
+        boxSizing: "border-box",
+      }}
+    >
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
         {title && (
-          <text x={padL} y={22} fill={fgColor} fontSize="16" fontWeight={800} fontFamily="Inter, sans-serif">{title}</text>
+          <text x={padL} y={22} fill={fgColor} fontSize="16" fontWeight={800} fontFamily={fontFamily}>{title}</text>
         )}
         {showAxes && chart !== "pie" && chart !== "donut" && (
           <g>
@@ -537,7 +552,7 @@ function ChartRender({ element }: { element: ChartElement }) {
             {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
               <g key={i}>
                 <line x1={padL - 4} y1={padT + plotH - t * plotH} x2={padL} y2={padT + plotH - t * plotH} stroke={stroke} />
-                <text x={padL - 6} y={padT + plotH - t * plotH + 3} textAnchor="end" fill={fgColor} fontSize="9" fontFamily="Inter, sans-serif" opacity={0.7}>
+                <text x={padL - 6} y={padT + plotH - t * plotH + 3} textAnchor="end" fill={fgColor} fontSize="9" fontFamily={fontFamily} opacity={0.7}>
                   {Math.round(maxV * t)}
                 </text>
               </g>

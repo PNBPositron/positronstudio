@@ -1,4 +1,4 @@
-import { useEditor, DEFAULT_FILTERS, UI_STYLE_THEMES, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption, type ChartElement, type ButtonElement, type ChartKind, type ButtonAction, type UiStyle } from "@/store/editor";
+import { useEditor, DEFAULT_FILTERS, UI_STYLE_THEMES, chartStylePatch, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption, type ChartElement, type ButtonElement, type ChartKind, type ButtonAction, type UiStyle } from "@/store/editor";
 import { Copy, Trash2, ArrowUp, ArrowDown, Layers, RotateCcw, Plus, Check } from "lucide-react";
 
 const SWATCHES = [
@@ -250,7 +250,27 @@ export function PropertiesPanel() {
         )}
 
         {el.type === "chart" && (
-          <ChartEditor element={el} onChange={(patch) => update(el.id, patch)} />
+          <>
+            <Field label="Style">
+              <div className="grid grid-cols-3 gap-1.5">
+                {(Object.keys(UI_STYLE_THEMES) as UiStyle[]).map((s) => {
+                  const t = UI_STYLE_THEMES[s];
+                  const active = el.uiStyle === s;
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => update(el.id, chartStylePatch(s))}
+                      className={`brutal-press border px-1 py-2 font-display text-[9px] uppercase tracking-[0.12em] ${active ? "border-teal glow-teal" : "border-teal/30"}`}
+                      style={{ background: t.bg === "rgba(255,255,255,0.16)" ? "#2a3550" : t.bg, color: t.fg }}
+                    >
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+            <ChartEditor element={el} onChange={(patch) => update(el.id, patch)} />
+          </>
         )}
 
         {el.type === "button" && (
