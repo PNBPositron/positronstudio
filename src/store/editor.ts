@@ -518,6 +518,20 @@ export const newChart = (
   ...overrides,
 });
 
+// Map a UI style pack onto chart colors so charts match UI components.
+export const chartStylePatch = (uiStyle: UiStyle): Partial<ChartElement> => {
+  const t = UI_STYLE_THEMES[uiStyle];
+  const solidBg = t.bg === "rgba(255,255,255,0.16)" ? "#1b2233" : t.bg;
+  const palettes: Record<UiStyle, string[]> = {
+    cyber: ["#7df9ff", "#ff0080", "#ffd84a", "#4d7cff", "#00ff88", "#b16bff"],
+    glass: ["#7df9ff", "#ffffff", "#a5b4fc", "#fca5a5", "#86efac", "#fcd34d"],
+    neobrutalist: ["#ff0080", "#0a0a0a", "#2b6cff", "#00c853", "#ff6d00", "#8e24aa"],
+    sketch: ["#2b6cff", "#1b1b1b", "#e8534f", "#3aa76d", "#f2a33c", "#7b5ea7"],
+    xp: ["#245edb", "#3ec53e", "#e8a33d", "#c0392b", "#7f9db9", "#8e44ad"],
+  };
+  return { uiStyle, bgColor: solidBg, fgColor: t.fg, colors: palettes[uiStyle] };
+};
+
 export const newButton = (overrides: Partial<ButtonElement> = {}): ButtonElement => ({
   id: uid(),
   type: "button",
