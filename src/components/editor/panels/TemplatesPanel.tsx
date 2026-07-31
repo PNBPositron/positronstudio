@@ -23,6 +23,7 @@ import {
   type PublicTemplate,
 } from "@/lib/designs";
 import { SlideThumbnail } from "../SlideThumbnail";
+import { useSettings } from "@/store/settings";
 import { useAuth } from "@/hooks/use-auth";
 
 function buildFromAi(els: AiElementInput[]): AnyElement[] {
@@ -83,6 +84,7 @@ const STYLE_OPTIONS: { id: AiStyle; label: string }[] = [
 export function TemplatesPanel() {
   const { canvasW, canvasH } = useEditor();
   const generate = useServerFn(generateAiTemplate);
+  const aiEnabled = useSettings((s) => s.aiEnabled);
   const [prompt, setPrompt] = useState("");
   const [style, setStyle] = useState<AiStyle>("auto");
   const [slideCount, setSlideCount] = useState(5);
@@ -186,6 +188,11 @@ export function TemplatesPanel() {
     <div className="space-y-4">
       <PanelHeader title="Templates" />
 
+      {!aiEnabled ? (
+        <div className="brutal-border-2 bg-surface p-3 font-mono text-[10px] text-teal/50">
+          &gt; AI features are turned off in settings
+        </div>
+      ) : (
       <div className="brutal-border-2 space-y-2 bg-surface p-3">
         <div className="flex items-center gap-2 font-display text-[11px] tracking-[0.2em] text-teal">
           <Sparkles className="h-3.5 w-3.5" /> AI_GENERATOR
@@ -264,6 +271,7 @@ export function TemplatesPanel() {
           <p className="font-mono text-[10px] text-[#ff0080]">! {error}</p>
         )}
       </div>
+      )}
 
       <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">
         ▸ Top community templates

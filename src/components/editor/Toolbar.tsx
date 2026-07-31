@@ -11,6 +11,7 @@ import { MyDesignsDialog } from "./MyDesignsDialog";
 import { exportPNG, exportPDF, exportPPTX, exportVideo, exportHTML, exportJSON, importJSONFile } from "@/lib/export";
 import { useServerFn } from "@tanstack/react-start";
 import { translateTexts } from "@/lib/ai-templates.functions";
+import { useSettings } from "@/store/settings";
 
 const LANGUAGES = [
   "Spanish", "French", "German", "Italian", "Portuguese", "Dutch",
@@ -24,6 +25,7 @@ export function Toolbar() {
     designId, designName, setDesignName, setDesignMeta, newDesign,
   } = useEditor();
   const { user } = useAuth();
+  const aiEnabled = useSettings((s) => s.aiEnabled);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [translating, setTranslating] = useState(false);
@@ -237,6 +239,7 @@ export function Toolbar() {
             <IconBtn onClick={() => setOpen(true)} title="My designs">
               <FolderOpen className="h-4 w-4" strokeWidth={2.5} />
             </IconBtn>
+            {aiEnabled && (
             <div className="relative" ref={langRef}>
               <button
                 onClick={() => setLangOpen((v) => !v)}
@@ -262,6 +265,7 @@ export function Toolbar() {
                 </div>
               )}
             </div>
+            )}
             <IconBtn onClick={handlePublish} title="Publish as public template">
               {publishing ? (
                 <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2.5} />
@@ -286,6 +290,7 @@ export function Toolbar() {
         ) : (
           <Link
             to="/auth"
+            search={{ next: undefined }}
             className="brutal-border brutal-press flex items-center gap-2 bg-surface px-4 py-2 font-display text-xs tracking-[0.2em] text-teal hover:bg-teal/10"
           >
             <Cloud className="h-3.5 w-3.5" strokeWidth={3} />

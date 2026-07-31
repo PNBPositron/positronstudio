@@ -18,6 +18,7 @@ import {
   type AiElementInput,
   type AiStyle,
 } from "@/lib/ai-templates.functions";
+import { useSettings } from "@/store/settings";
 
 const STYLE_OPTIONS: { id: AiStyle; label: string }[] = [
   { id: "auto", label: "Auto (match source)" },
@@ -76,6 +77,7 @@ function buildFromAi(els: AiElementInput[]): AnyElement[] {
 
 export function UploadsPanel() {
   const { add, canvasW, canvasH } = useEditor();
+  const aiEnabled = useSettings((s) => s.aiEnabled);
   const [uploads, setUploads] = useState<string[]>([]);
   const importFn = useServerFn(importTemplateFromFile);
   const [style, setStyle] = useState<AiStyle>("auto");
@@ -150,6 +152,7 @@ export function UploadsPanel() {
         <input type="file" accept="image/*" multiple onChange={onFile} className="hidden" />
       </label>
 
+      {aiEnabled && (
       <div className="brutal-border-2 space-y-2 bg-surface p-3">
         <div className="flex items-center gap-2 font-display text-[11px] tracking-[0.2em] text-teal">
           <FileUp className="h-3.5 w-3.5" /> IMPORT_TEMPLATE
@@ -191,6 +194,7 @@ export function UploadsPanel() {
         )}
         {importError && <p className="font-mono text-[10px] text-[#ff0080]">! {importError}</p>}
       </div>
+      )}
 
       {uploads.length > 0 ? (
         <div className="grid grid-cols-2 gap-2">
