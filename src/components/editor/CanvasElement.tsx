@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { useEditor, type AnyElement, type ShapeElement, type QuizElement, type ChartElement, type ButtonElement, type ElementShadow, DEFAULT_FILTERS, type ImageFilters } from "@/store/editor";
+import { useEditor, UI_STYLE_THEMES, type AnyElement, type ShapeElement, type QuizElement, type ChartElement, type ButtonElement, type ElementShadow, DEFAULT_FILTERS, type ImageFilters } from "@/store/editor";
 import { ShapeRender } from "./ShapeRender";
 import { Model3DRender } from "./Model3DRender";
 import { UiRender } from "./UiRender";
