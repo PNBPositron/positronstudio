@@ -114,6 +114,28 @@ export async function publishAsTemplate(input: {
   return data as unknown as PublicTemplate;
 }
 
+export async function listMyPublicTemplates(): Promise<PublicTemplate[]> {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return [];
+  const { data, error } = await supabase
+    .from("public_templates")
+    .select("id, user_id, name, canvas_w, canvas_h, pages, thumbnail, created_at")
+    .eq("user_id", u.user.id)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as PublicTemplate[];
+}
+
+export async function renamePublicTemplate(id: string, name: string): Promise<void> {
+  const { error } = await supabase.from("public_templates").update({ name }).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deletePublicTemplate(id: string): Promise<void> {
+  const { error } = await supabase.from("public_templates").delete().eq("id", id);
+  if (error) throw error;
+}
+
 /* ---------------- Template likes ---------------- */
 
 export async function listTemplateLikeCounts(
