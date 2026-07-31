@@ -290,6 +290,7 @@ export function Toolbar() {
         ) : (
           <Link
             to="/auth"
+            search={{ next: undefined }}
             className="brutal-border brutal-press flex items-center gap-2 bg-surface px-4 py-2 font-display text-xs tracking-[0.2em] text-teal hover:bg-teal/10"
           >
             <Cloud className="h-3.5 w-3.5" strokeWidth={3} />
