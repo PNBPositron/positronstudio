@@ -23,6 +23,7 @@ import {
   type PublicTemplate,
 } from "@/lib/designs";
 import { SlideThumbnail } from "../SlideThumbnail";
+import { useSettings } from "@/store/settings";
 import { useAuth } from "@/hooks/use-auth";
 
 function buildFromAi(els: AiElementInput[]): AnyElement[] {
@@ -83,6 +84,7 @@ const STYLE_OPTIONS: { id: AiStyle; label: string }[] = [
 export function TemplatesPanel() {
   const { canvasW, canvasH } = useEditor();
   const generate = useServerFn(generateAiTemplate);
+  const aiEnabled = useSettings((s) => s.aiEnabled);
   const [prompt, setPrompt] = useState("");
   const [style, setStyle] = useState<AiStyle>("auto");
   const [slideCount, setSlideCount] = useState(5);
