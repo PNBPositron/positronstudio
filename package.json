@@ -74,6 +74,10 @@
     "zod": "^4.4.3",
     "zustand": "^5.0.13"
   },
+  "overrides": {
+    "seroval": "^1.6.0",
+    "seroval-plugins": "^1.6.0"
+  },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@lovable.dev/vite-tanstack-config": "2.8.2",
