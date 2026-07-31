@@ -30,9 +30,13 @@ export function Sidebar() {
     (t) => panels[t.id as PanelId] !== false && !(t.id === "ai" && !aiEnabled),
   );
 
+  const visibleKey = visible.map((t) => t.id).join(",");
   useEffect(() => {
-    if (visible.length && !visible.some((t) => t.id === tool)) setTool(visible[0].id);
-  }, [visible, tool, setTool]);
+    const ids = visibleKey.split(",").filter(Boolean);
+    if (ids.length && !ids.includes(tool)) {
+      setTool(ids[0] as typeof tool);
+    }
+  }, [visibleKey, tool, setTool]);
 
   return (
     <aside className="flex h-full">
