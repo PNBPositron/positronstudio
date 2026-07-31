@@ -1,4 +1,4 @@
-import { useEditor, DEFAULT_FILTERS, UI_STYLE_THEMES, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption, type ChartElement, type ButtonElement, type ChartKind, type ButtonAction, type UiStyle } from "@/store/editor";
+import { useEditor, DEFAULT_FILTERS, UI_STYLE_THEMES, chartStylePatch, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption, type ChartElement, type ButtonElement, type ChartKind, type ButtonAction, type UiStyle } from "@/store/editor";
 import { Copy, Trash2, ArrowUp, ArrowDown, Layers, RotateCcw, Plus, Check } from "lucide-react";
 
 const SWATCHES = [
