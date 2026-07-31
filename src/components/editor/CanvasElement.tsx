@@ -527,7 +527,20 @@ function ChartRender({ element }: { element: ChartElement }) {
   };
 
   return (
-    <div style={{ width: "100%", height: "100%", background: bgColor, borderRadius: 12, overflow: "hidden", padding: "2%" }}>
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        background: bgColor,
+        borderRadius: theme ? theme.radius : 12,
+        border: theme ? `${theme.borderWidth}px solid ${theme.border}` : "none",
+        boxShadow: theme ? theme.shadow : "none",
+        backdropFilter: theme?.backdrop,
+        overflow: "hidden",
+        padding: "2%",
+        boxSizing: "border-box",
+      }}
+    >
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
         {title && (
           <text x={padL} y={22} fill={fgColor} fontSize="16" fontWeight={800} fontFamily={fontFamily}>{title}</text>
