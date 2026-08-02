@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import {
   useEditor, newQuiz, newChart, newButton, newEmbed, newUi, toEmbedSrc,
-  UI_STYLE_THEMES, chartStylePatch, type ChartKind, type ButtonAction, type UiKind, type UiStyle,
+  UI_STYLE_THEMES, chartStylePatch, solidThemeBg, type ChartKind, type ButtonAction, type UiKind, type UiStyle,
 } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
 import { UiRender } from "../UiRender";
@@ -58,7 +58,7 @@ export function ComponentsPanel() {
 
   const themedQuiz = () => {
     const t = UI_STYLE_THEMES[style];
-    return newQuiz({ bgColor: t.bg === "rgba(255,255,255,0.16)" ? "#1b2233" : t.bg, fgColor: t.fg, accentColor: t.accent });
+    return newQuiz({ bgColor: solidThemeBg(style), fgColor: t.fg, accentColor: t.accent });
   };
   const themedChart = (kind: ChartKind, label: string) => {
     return newChart(kind, { title: `${label} chart`, ...chartStylePatch(style) });
@@ -70,7 +70,7 @@ export function ComponentsPanel() {
 
       <div className="brutal-border-2 space-y-2 bg-surface p-3">
         <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">▸ Style</div>
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className="grid grid-cols-4 gap-1.5">
           {STYLES.map((s) => {
             const t = UI_STYLE_THEMES[s];
             const active = style === s;
@@ -81,7 +81,7 @@ export function ComponentsPanel() {
                 className={`brutal-press border px-1.5 py-2 font-display text-[9px] uppercase tracking-[0.12em] ${
                   active ? "border-teal glow-teal" : "border-teal/30"
                 }`}
-                style={{ background: t.bg === "rgba(255,255,255,0.16)" ? "#2a3550" : t.bg, color: t.fg }}
+                style={{ background: t.bg.startsWith("#") ? t.bg : t.bg.includes("gradient") ? t.bg : "#2a3550", color: t.fg }}
               >
                 {t.label}
               </button>
@@ -144,7 +144,7 @@ export function ComponentsPanel() {
           { label: "LINK ↗", action: "link" },
         ] as Array<{ label: string; action: ButtonAction }>).map((b) => {
           const t = UI_STYLE_THEMES[style];
-          const bg = t.bg === "rgba(255,255,255,0.16)" ? "#2a3550" : t.bg;
+          const bg = solidThemeBg(style);
           return (
             <button
               key={b.action}
@@ -154,7 +154,7 @@ export function ComponentsPanel() {
                     text: b.label,
                     action: b.action,
                     bgColor: t.accent,
-                    fgColor: style === "cyber" ? "#0a0f1f" : "#ffffff",
+                    fgColor: t.onAccent ?? "#ffffff",
                     borderColor: t.border,
                     borderWidth: t.borderWidth,
                     cornerRadius: t.radius,
