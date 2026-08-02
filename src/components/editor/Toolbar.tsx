@@ -28,6 +28,7 @@ export function Toolbar() {
   const aiEnabled = useSettings((s) => s.aiEnabled);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [shareLink, setShareLink] = useState<string | null>(null);
   const [translating, setTranslating] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
