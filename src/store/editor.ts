@@ -170,7 +170,19 @@ export type EmbedElement = ElementBase & {
 };
 
 // ---- UI components ----
-export type UiStyle = "cyber" | "glass" | "neobrutalist" | "sketch" | "xp";
+export type UiStyle =
+  | "cyber"
+  | "glass"
+  | "neobrutalist"
+  | "sketch"
+  | "xp"
+  | "aqua"
+  | "midnight"
+  | "pastel"
+  | "vapor"
+  | "material"
+  | "matrix"
+  | "swiss";
 export type UiKind =
   | "card"
   | "stat"
@@ -218,6 +230,10 @@ export type UiTheme = {
   letterSpacing: string;
   uppercase: boolean;
   backdrop?: string;
+  /** text color to place on top of the accent color */
+  onAccent?: string;
+  /** true when the surface is dark (drives inner fills / dividers) */
+  dark?: boolean;
 };
 
 export const UI_STYLE_THEMES: Record<UiStyle, UiTheme> = {
@@ -234,6 +250,8 @@ export const UI_STYLE_THEMES: Record<UiStyle, UiTheme> = {
     font: "'Orbitron', 'JetBrains Mono', monospace",
     letterSpacing: "0.14em",
     uppercase: true,
+    onAccent: "#ffffff",
+    dark: true,
   },
   glass: {
     label: "Glass",
@@ -249,6 +267,8 @@ export const UI_STYLE_THEMES: Record<UiStyle, UiTheme> = {
     letterSpacing: "0.01em",
     uppercase: false,
     backdrop: "blur(16px) saturate(160%)",
+    onAccent: "#0a0f1f",
+    dark: true,
   },
   neobrutalist: {
     label: "Neobrutal",
@@ -263,6 +283,7 @@ export const UI_STYLE_THEMES: Record<UiStyle, UiTheme> = {
     font: "'Archivo Black', 'Inter', sans-serif",
     letterSpacing: "0.02em",
     uppercase: true,
+    onAccent: "#ffffff",
   },
   sketch: {
     label: "Sketch",
@@ -277,6 +298,7 @@ export const UI_STYLE_THEMES: Record<UiStyle, UiTheme> = {
     font: "'Caveat', 'Comic Sans MS', cursive",
     letterSpacing: "0.01em",
     uppercase: false,
+    onAccent: "#ffffff",
   },
   xp: {
     label: "XP",
@@ -291,6 +313,115 @@ export const UI_STYLE_THEMES: Record<UiStyle, UiTheme> = {
     font: "'Tahoma', 'Verdana', sans-serif",
     letterSpacing: "0em",
     uppercase: false,
+    onAccent: "#ffffff",
+  },
+  aqua: {
+    label: "Aqua",
+    bg: "#f6f8fc",
+    fg: "#10131a",
+    muted: "rgba(16,19,26,0.55)",
+    accent: "#0a84ff",
+    border: "rgba(0,0,0,0.12)",
+    borderWidth: 1,
+    radius: 18,
+    shadow: "0 12px 34px rgba(15,23,42,0.16)",
+    font: "'Inter', -apple-system, system-ui, sans-serif",
+    letterSpacing: "-0.01em",
+    uppercase: false,
+    onAccent: "#ffffff",
+  },
+  midnight: {
+    label: "Midnight",
+    bg: "#0b0d12",
+    fg: "#e8ecf4",
+    muted: "rgba(232,236,244,0.55)",
+    accent: "#6366f1",
+    border: "rgba(255,255,255,0.14)",
+    borderWidth: 1,
+    radius: 14,
+    shadow: "0 18px 44px rgba(0,0,0,0.55)",
+    font: "'Inter', system-ui, sans-serif",
+    letterSpacing: "-0.01em",
+    uppercase: false,
+    onAccent: "#ffffff",
+    dark: true,
+  },
+  pastel: {
+    label: "Pastel",
+    bg: "#fff5f7",
+    fg: "#4a3b47",
+    muted: "rgba(74,59,71,0.6)",
+    accent: "#f48fb1",
+    border: "#f3d3dd",
+    borderWidth: 2,
+    radius: 26,
+    shadow: "0 10px 24px rgba(244,143,177,0.25)",
+    font: "'Quicksand', 'Nunito', sans-serif",
+    letterSpacing: "0.01em",
+    uppercase: false,
+    onAccent: "#ffffff",
+  },
+  vapor: {
+    label: "Vapor",
+    bg: "linear-gradient(160deg,#2b1055 0%,#7597de 100%)",
+    fg: "#ffe6ff",
+    muted: "rgba(255,230,255,0.7)",
+    accent: "#ff71ce",
+    border: "#01cdfe",
+    borderWidth: 2,
+    radius: 8,
+    shadow: "0 0 26px rgba(255,113,206,0.55), 0 0 60px rgba(1,205,254,0.35)",
+    font: "'Orbitron', 'Inter', sans-serif",
+    letterSpacing: "0.16em",
+    uppercase: true,
+    onAccent: "#2b1055",
+    dark: true,
+  },
+  material: {
+    label: "Material",
+    bg: "#ffffff",
+    fg: "#1c1b1f",
+    muted: "rgba(28,27,31,0.6)",
+    accent: "#6750a4",
+    border: "rgba(28,27,31,0.12)",
+    borderWidth: 1,
+    radius: 16,
+    shadow: "0 1px 2px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.15)",
+    font: "'Roboto', 'Inter', sans-serif",
+    letterSpacing: "0.005em",
+    uppercase: false,
+    onAccent: "#ffffff",
+  },
+  matrix: {
+    label: "Matrix",
+    bg: "#020a03",
+    fg: "#37ff7f",
+    muted: "rgba(55,255,127,0.55)",
+    accent: "#a6ff00",
+    border: "#1c8c3f",
+    borderWidth: 1,
+    radius: 0,
+    shadow: "0 0 22px rgba(55,255,127,0.35), inset 0 0 40px rgba(0,255,120,0.08)",
+    font: "'JetBrains Mono', monospace",
+    letterSpacing: "0.08em",
+    uppercase: false,
+    onAccent: "#020a03",
+    dark: true,
+  },
+  swiss: {
+    label: "Swiss",
+    bg: "#f4f2ed",
+    fg: "#111111",
+    muted: "rgba(17,17,17,0.55)",
+    accent: "#e2231a",
+    border: "#111111",
+    borderWidth: 1,
+    radius: 0,
+    shadow: "none",
+    font: "'Helvetica Neue', 'Inter', Arial, sans-serif",
+    letterSpacing: "-0.02em",
+    uppercase: true,
+    onAccent: "#ffffff",
   },
 };
 
@@ -524,15 +655,29 @@ export const newChart = (
 });
 
 // Map a UI style pack onto chart colors so charts match UI components.
+/** A guaranteed-opaque background for a style pack (charts, quizzes, buttons). */
+export const solidThemeBg = (uiStyle: UiStyle): string => {
+  const t = UI_STYLE_THEMES[uiStyle];
+  if (t.bg.startsWith("#")) return t.bg;
+  return t.dark ? "#1b2233" : "#ffffff";
+};
+
 export const chartStylePatch = (uiStyle: UiStyle): Partial<ChartElement> => {
   const t = UI_STYLE_THEMES[uiStyle];
-  const solidBg = t.bg === "rgba(255,255,255,0.16)" ? "#1b2233" : t.bg;
+  const solidBg = solidThemeBg(uiStyle);
   const palettes: Record<UiStyle, string[]> = {
     cyber: ["#7df9ff", "#ff0080", "#ffd84a", "#4d7cff", "#00ff88", "#b16bff"],
     glass: ["#7df9ff", "#ffffff", "#a5b4fc", "#fca5a5", "#86efac", "#fcd34d"],
     neobrutalist: ["#ff0080", "#0a0a0a", "#2b6cff", "#00c853", "#ff6d00", "#8e24aa"],
     sketch: ["#2b6cff", "#1b1b1b", "#e8534f", "#3aa76d", "#f2a33c", "#7b5ea7"],
     xp: ["#245edb", "#3ec53e", "#e8a33d", "#c0392b", "#7f9db9", "#8e44ad"],
+    aqua: ["#0a84ff", "#30d158", "#ff9f0a", "#ff375f", "#5e5ce6", "#64d2ff"],
+    midnight: ["#6366f1", "#22d3ee", "#f472b6", "#facc15", "#34d399", "#a78bfa"],
+    pastel: ["#f48fb1", "#a5d8f3", "#c5e1a5", "#ffd59e", "#c8b6e2", "#f6a5a5"],
+    vapor: ["#ff71ce", "#01cdfe", "#05ffa1", "#b967ff", "#fffb96", "#7597de"],
+    material: ["#6750a4", "#00897b", "#ef6c00", "#c62828", "#1565c0", "#2e7d32"],
+    matrix: ["#37ff7f", "#a6ff00", "#1c8c3f", "#7dffb0", "#00c853", "#d4ff4d"],
+    swiss: ["#e2231a", "#111111", "#0057b7", "#f2b705", "#767676", "#3d8361"],
   };
   return { uiStyle, bgColor: solidBg, fgColor: t.fg, colors: palettes[uiStyle] };
 };
