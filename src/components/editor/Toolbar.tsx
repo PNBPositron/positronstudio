@@ -343,6 +343,36 @@ export function Toolbar() {
       </div>
 
       {open && <MyDesignsDialog onClose={() => setOpen(false)} />}
+      {shareLink && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-ink/80 p-6">
+          <div className="brutal-border-2 w-full max-w-md bg-surface p-6">
+            <div className="font-display text-sm tracking-[0.2em] text-teal">✓ PUBLISHED · SHARE LINK</div>
+            <p className="mt-2 font-mono text-[11px] text-teal/60">
+              Anyone with this link can view your deck.
+            </p>
+            <input
+              readOnly
+              value={shareLink}
+              onFocus={(e) => e.currentTarget.select()}
+              className="brutal-border-2 mt-4 w-full bg-ink px-3 py-2 font-mono text-xs text-teal"
+            />
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => navigator.clipboard.writeText(shareLink).catch(() => {})}
+                className="brutal-border brutal-press flex-1 bg-blue px-4 py-2 font-display text-xs tracking-[0.2em] text-ink"
+              >
+                COPY LINK
+              </button>
+              <button
+                onClick={() => setShareLink(null)}
+                className="brutal-border brutal-press flex-1 bg-surface px-4 py-2 font-display text-xs tracking-[0.2em] text-teal"
+              >
+                CLOSE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
