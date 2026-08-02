@@ -116,13 +116,19 @@ export function Toolbar() {
     setPublishing(true);
     try {
       const { pages, canvasW, canvasH } = useEditor.getState();
-      await publishAsTemplate({
+      const tpl = await publishAsTemplate({
         name,
         canvas_w: canvasW,
         canvas_h: canvasH,
         pages,
       });
-      alert("✓ Published as a public template");
+      const link = `${window.location.origin}/t/${tpl.id}`;
+      setShareLink(link);
+      try {
+        await navigator.clipboard.writeText(link);
+      } catch {
+        /* clipboard blocked — link is shown in the dialog */
+      }
     } catch (e) {
       console.error(e);
       alert(e instanceof Error ? e.message : "Failed to publish");
