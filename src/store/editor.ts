@@ -655,9 +655,16 @@ export const newChart = (
 });
 
 // Map a UI style pack onto chart colors so charts match UI components.
+/** A guaranteed-opaque background for a style pack (charts, quizzes, buttons). */
+export const solidThemeBg = (uiStyle: UiStyle): string => {
+  const t = UI_STYLE_THEMES[uiStyle];
+  if (t.bg.startsWith("#")) return t.bg;
+  return t.dark ? "#1b2233" : "#ffffff";
+};
+
 export const chartStylePatch = (uiStyle: UiStyle): Partial<ChartElement> => {
   const t = UI_STYLE_THEMES[uiStyle];
-  const solidBg = t.bg === "rgba(255,255,255,0.16)" ? "#1b2233" : t.bg;
+  const solidBg = solidThemeBg(uiStyle);
   const palettes: Record<UiStyle, string[]> = {
     cyber: ["#7df9ff", "#ff0080", "#ffd84a", "#4d7cff", "#00ff88", "#b16bff"],
     glass: ["#7df9ff", "#ffffff", "#a5b4fc", "#fca5a5", "#86efac", "#fcd34d"],
