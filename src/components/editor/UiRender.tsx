@@ -4,6 +4,9 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
   const t = UI_STYLE_THEMES[element.uiStyle];
   const accent = element.accentColor || t.accent;
   const s = preview ? 0.34 : 1;
+  const onAccent = t.onAccent ?? "#ffffff";
+  const sharp = t.radius === 0;
+  const softFill = t.dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)";
 
   const shell: React.CSSProperties = {
     width: "100%",
@@ -61,7 +64,7 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
           alignItems: "center",
           justifyContent: "center",
           background: accent,
-          color: element.uiStyle === "cyber" || element.uiStyle === "glass" ? "#0a0f1f" : t.fg,
+          color: onAccent,
           padding: 0,
         }}
       >
@@ -131,14 +134,14 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
           style={{
             width: 88 * s,
             height: 88 * s,
-            borderRadius: element.uiStyle === "neobrutalist" ? 0 : "50%",
+            borderRadius: sharp ? 0 : "50%",
             background: accent,
             border: `${t.borderWidth}px solid ${t.border}`,
             display: "grid",
             placeItems: "center",
             fontSize: 34 * s,
             fontWeight: 800,
-            color: element.uiStyle === "cyber" ? "#0a0f1f" : "#fff",
+            color: onAccent,
             flexShrink: 0,
           }}
         >
@@ -191,7 +194,7 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
             border: `${Math.max(2, t.borderWidth)}px solid ${t.border}`,
             borderBottomWidth: Math.max(4, t.borderWidth * 2),
             borderRadius: t.radius || 6,
-            background: "rgba(255,255,255,0.08)",
+            background: softFill,
           }}
         >
           {element.title}
@@ -211,8 +214,12 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
         ? "rgba(255,255,255,0.22)"
         : element.uiStyle === "sketch"
           ? "rgba(27,27,27,0.06)"
-          : "rgba(125,249,255,0.10)";
-  const barFg = isXP || element.uiStyle === "neobrutalist" ? "#fff" : t.fg;
+          : element.uiStyle === "cyber"
+            ? "rgba(125,249,255,0.10)"
+            : t.dark
+              ? "rgba(255,255,255,0.07)"
+              : "rgba(0,0,0,0.045)";
+  const barFg = isXP ? "#fff" : element.uiStyle === "neobrutalist" ? onAccent : t.fg;
   const line = t.border;
 
   const chromeShell: React.CSSProperties = { ...shell, padding: 0, gap: 0 };
@@ -224,9 +231,9 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
           style={{
             width: 12 * s,
             height: 12 * s,
-            borderRadius: element.uiStyle === "neobrutalist" ? 0 : "50%",
+            borderRadius: sharp ? 0 : "50%",
             background: c,
-            border: element.uiStyle === "neobrutalist" ? `${2 * s}px solid ${line}` : "none",
+            border: t.borderWidth >= 3 ? `${2 * s}px solid ${line}` : "none",
             display: "inline-block",
           }}
         />
@@ -259,8 +266,8 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
         flex: 1,
         padding: `${8 * s}px ${12 * s}px`,
         border: `${Math.max(1, t.borderWidth)}px solid ${line}`,
-        borderRadius: element.uiStyle === "neobrutalist" ? 0 : (t.radius || 8) / 1.5 + 6 * s,
-        background: isXP ? "#fff" : "rgba(255,255,255,0.08)",
+        borderRadius: sharp ? 0 : (t.radius || 8) / 1.5 + 6 * s,
+        background: isXP ? "#fff" : softFill,
         color: t.muted,
         fontSize: 16 * s,
         overflow: "hidden",
@@ -349,7 +356,7 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
 
   if (K === "phone") {
     return (
-      <div style={{ ...chromeShell, borderRadius: element.uiStyle === "neobrutalist" ? 0 : 36 * s, borderWidth: Math.max(4, t.borderWidth * 2) }}>
+      <div style={{ ...chromeShell, borderRadius: sharp ? 0 : 36 * s, borderWidth: Math.max(4, t.borderWidth * 2) }}>
         <div style={{ display: "flex", justifyContent: "space-between", padding: `${10 * s}px ${18 * s}px`, fontSize: 13 * s, color: t.muted, flexShrink: 0 }}>
           <span>9:41</span>
           <span>▮▮▮ ▮</span>
@@ -363,7 +370,7 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
               style={{
                 padding: `${12 * s}px ${14 * s}px`,
                 border: `${Math.max(1, t.borderWidth)}px solid ${line}`,
-                borderRadius: element.uiStyle === "neobrutalist" ? 0 : 14 * s,
+                borderRadius: sharp ? 0 : 14 * s,
                 fontSize: 16 * s,
                 color: t.fg,
               }}
@@ -393,7 +400,7 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
                 border: `${Math.max(1, t.borderWidth)}px solid ${line}`,
                 borderRadius: t.radius ? t.radius / 2 : 0,
                 background: i === element.items.length - 1 ? accent : "transparent",
-                color: i === element.items.length - 1 ? (element.uiStyle === "cyber" ? "#0a0f1f" : "#fff") : t.fg,
+                color: i === element.items.length - 1 ? onAccent : t.fg,
               }}
             >
               {it}
@@ -417,7 +424,7 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
                 fontWeight: 700,
                 borderBottom: `${3 * s}px solid ${i === 0 ? accent : "transparent"}`,
                 color: i === 0 ? accent : t.muted,
-                background: i === 0 ? "rgba(255,255,255,0.06)" : "transparent",
+                background: i === 0 ? softFill : "transparent",
               }}
             >
               {it}
@@ -446,7 +453,7 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
                   style={{
                     width: 56 * s,
                     height: 30 * s,
-                    borderRadius: element.uiStyle === "neobrutalist" ? 0 : 999,
+                    borderRadius: sharp ? 0 : 999,
                     background: on ? accent : "rgba(128,128,128,0.4)",
                     border: `${Math.max(1, t.borderWidth)}px solid ${line}`,
                     display: "flex",
@@ -456,7 +463,7 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
                     boxSizing: "border-box",
                   }}
                 >
-                  <span style={{ width: 22 * s, height: 22 * s, borderRadius: element.uiStyle === "neobrutalist" ? 0 : "50%", background: "#fff" }} />
+                  <span style={{ width: 22 * s, height: 22 * s, borderRadius: sharp ? 0 : "50%", background: "#fff" }} />
                 </span>
               </div>
             );
@@ -480,7 +487,7 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
             textAlign: "center",
             padding: `${12 * s}px 0`,
             background: accent,
-            color: element.uiStyle === "cyber" ? "#0a0f1f" : "#fff",
+            color: onAccent,
             fontWeight: 800,
             fontSize: 18 * s,
             border: `${t.borderWidth}px solid ${line}`,
@@ -501,11 +508,11 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
             width: 44 * s,
             height: 44 * s,
             flexShrink: 0,
-            borderRadius: element.uiStyle === "neobrutalist" ? 0 : "50%",
+            borderRadius: sharp ? 0 : "50%",
             background: accent,
             display: "grid",
             placeItems: "center",
-            color: element.uiStyle === "cyber" ? "#0a0f1f" : "#fff",
+            color: onAccent,
             fontSize: 22 * s,
             fontWeight: 800,
           }}
