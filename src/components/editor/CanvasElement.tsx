@@ -223,8 +223,13 @@ export function CanvasElement({ element, scale }: { element: AnyElement; scale: 
           fontStyle: element.italic ? "italic" : "normal",
           textDecoration: element.underline || isLink ? "underline" : "none",
           outline: "none",
-          lineHeight: 1.15,
-          letterSpacing: "-0.02em",
+          lineHeight: element.lineHeight ?? 1.15,
+          letterSpacing: `${element.letterSpacing ?? -0.02}em`,
+          textTransform: element.textTransform ?? "none",
+          opacity: element.opacity ?? 1,
+          textShadow: element.shadow
+            ? `${element.shadow.x}px ${element.shadow.y}px ${element.shadow.blur}px ${element.shadow.color}`
+            : undefined,
           wordBreak: "break-word",
           whiteSpace: "pre-wrap",
         };
