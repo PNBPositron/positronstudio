@@ -7,7 +7,7 @@ const PRESETS = [
 ];
 
 type FontDef = { family: string; weight: number; sample?: string; category: string };
-const FONTS: FontDef[] = [
+export const FONTS: FontDef[] = [
   // Display / brutalist
   { family: "Archivo Black", weight: 900, category: "Display" },
   { family: "Anton", weight: 400, category: "Display" },
