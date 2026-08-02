@@ -1,5 +1,10 @@
 import { useEditor, DEFAULT_FILTERS, UI_STYLE_THEMES, chartStylePatch, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption, type ChartElement, type ButtonElement, type ChartKind, type ButtonAction, type UiStyle } from "@/store/editor";
 import { Copy, Trash2, ArrowUp, ArrowDown, Layers, RotateCcw, Plus, Check } from "lucide-react";
+import { FONTS } from "./panels/TextPanel";
+
+const FONT_FAMILIES: string[] = Array.from(
+  new Set(["Inter", "Orbitron", "JetBrains Mono", "Georgia", ...FONTS.map((f) => f.family)]),
+).sort();
 
 const SWATCHES = [
   "#7df9ff", "#00d9ff", "#0ea5e9", "#4d7cff", "#1f3fb8",
