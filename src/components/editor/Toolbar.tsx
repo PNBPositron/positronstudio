@@ -190,9 +190,6 @@ export function Toolbar() {
           <div className="font-display text-xl tracking-[0.18em] text-teal text-glow">
             POSITRON<span className="text-blue text-glow-blue">//</span>STUDIO
           </div>
-          <span className="hidden md:inline-block bg-teal/15 px-2 py-0.5 font-mono text-[10px] tracking-widest text-teal border border-teal/40">
-            v2.0_NEO
-          </span>
         </div>
         <div className="ml-4 hidden items-center gap-2 md:flex">
           <input
