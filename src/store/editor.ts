@@ -26,6 +26,11 @@ export type TextElement = ElementBase & {
   underline?: boolean;
   bullet?: boolean;
   href?: string;
+  letterSpacing?: number; // em
+  lineHeight?: number;
+  textTransform?: "none" | "uppercase" | "lowercase" | "capitalize";
+  opacity?: number; // 0..1
+  shadow?: ElementShadow;
 };
 
 export type ShapeKind =

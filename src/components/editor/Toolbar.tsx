@@ -28,6 +28,7 @@ export function Toolbar() {
   const aiEnabled = useSettings((s) => s.aiEnabled);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [shareLink, setShareLink] = useState<string | null>(null);
   const [translating, setTranslating] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
@@ -116,13 +117,19 @@ export function Toolbar() {
     setPublishing(true);
     try {
       const { pages, canvasW, canvasH } = useEditor.getState();
-      await publishAsTemplate({
+      const tpl = await publishAsTemplate({
         name,
         canvas_w: canvasW,
         canvas_h: canvasH,
         pages,
       });
-      alert("✓ Published as a public template");
+      const link = `${window.location.origin}/t/${tpl.id}`;
+      setShareLink(link);
+      try {
+        await navigator.clipboard.writeText(link);
+      } catch {
+        /* clipboard blocked — link is shown in the dialog */
+      }
     } catch (e) {
       console.error(e);
       alert(e instanceof Error ? e.message : "Failed to publish");
@@ -190,9 +197,6 @@ export function Toolbar() {
           <div className="font-display text-xl tracking-[0.18em] text-teal text-glow">
             POSITRON<span className="text-blue text-glow-blue">//</span>STUDIO
           </div>
-          <span className="hidden md:inline-block bg-teal/15 px-2 py-0.5 font-mono text-[10px] tracking-widest text-teal border border-teal/40">
-            v2.0_NEO
-          </span>
         </div>
         <div className="ml-4 hidden items-center gap-2 md:flex">
           <input
@@ -339,6 +343,36 @@ export function Toolbar() {
       </div>
 
       {open && <MyDesignsDialog onClose={() => setOpen(false)} />}
+      {shareLink && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-ink/80 p-6">
+          <div className="brutal-border-2 w-full max-w-md bg-surface p-6">
+            <div className="font-display text-sm tracking-[0.2em] text-teal">✓ PUBLISHED · SHARE LINK</div>
+            <p className="mt-2 font-mono text-[11px] text-teal/60">
+              Anyone with this link can view your deck.
+            </p>
+            <input
+              readOnly
+              value={shareLink}
+              onFocus={(e) => e.currentTarget.select()}
+              className="brutal-border-2 mt-4 w-full bg-ink px-3 py-2 font-mono text-xs text-teal"
+            />
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => navigator.clipboard.writeText(shareLink).catch(() => {})}
+                className="brutal-border brutal-press flex-1 bg-blue px-4 py-2 font-display text-xs tracking-[0.2em] text-ink"
+              >
+                COPY LINK
+              </button>
+              <button
+                onClick={() => setShareLink(null)}
+                className="brutal-border brutal-press flex-1 bg-surface px-4 py-2 font-display text-xs tracking-[0.2em] text-teal"
+              >
+                CLOSE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
