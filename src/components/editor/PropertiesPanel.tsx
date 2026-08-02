@@ -131,11 +131,78 @@ export function PropertiesPanel() {
                 onChange={(e) => update(el.id, { fontFamily: e.target.value })}
                 className="brutal-border-2 w-full bg-surface px-2 py-1.5 font-mono text-xs text-teal focus:outline-none focus:border-teal"
               >
-                {["Orbitron", "JetBrains Mono", "Inter", "Archivo Black", "Georgia"].map((f) => (
+                {FONT_FAMILIES.map((f) => (
                   <option key={f}>{f}</option>
                 ))}
               </select>
             </Field>
+            <Field label="Font weight">
+              <input
+                type="range"
+                min={100}
+                max={900}
+                step={100}
+                value={el.fontWeight}
+                onChange={(e) => update(el.id, { fontWeight: +e.target.value })}
+                className="w-full accent-teal"
+              />
+              <div className="font-mono text-[11px] text-teal/70">{el.fontWeight}</div>
+            </Field>
+            <Field label="Letter spacing">
+              <input
+                type="range"
+                min={-10}
+                max={40}
+                value={Math.round((el.letterSpacing ?? -0.02) * 100)}
+                onChange={(e) => update(el.id, { letterSpacing: +e.target.value / 100 })}
+                className="w-full accent-teal"
+              />
+              <div className="font-mono text-[11px] text-teal/70">{(el.letterSpacing ?? -0.02).toFixed(2)}em</div>
+            </Field>
+            <Field label="Line height">
+              <input
+                type="range"
+                min={80}
+                max={250}
+                value={Math.round((el.lineHeight ?? 1.15) * 100)}
+                onChange={(e) => update(el.id, { lineHeight: +e.target.value / 100 })}
+                className="w-full accent-teal"
+              />
+              <div className="font-mono text-[11px] text-teal/70">{(el.lineHeight ?? 1.15).toFixed(2)}</div>
+            </Field>
+            <Field label="Opacity">
+              <input
+                type="range"
+                min={5}
+                max={100}
+                value={Math.round((el.opacity ?? 1) * 100)}
+                onChange={(e) => update(el.id, { opacity: +e.target.value / 100 })}
+                className="w-full accent-teal"
+              />
+              <div className="font-mono text-[11px] text-teal/70">{Math.round((el.opacity ?? 1) * 100)}%</div>
+            </Field>
+            <Field label="Case">
+              <div className="flex gap-1">
+                {(["none", "uppercase", "lowercase", "capitalize"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => update(el.id, { textTransform: t })}
+                    title={t}
+                    className={`brutal-border-2 flex-1 py-1.5 font-mono text-[10px] ${
+                      (el.textTransform ?? "none") === t
+                        ? "bg-blue text-ink border-teal"
+                        : "bg-surface text-teal hover:border-teal"
+                    }`}
+                  >
+                    {t === "none" ? "Aa−" : t === "uppercase" ? "AA" : t === "lowercase" ? "aa" : "Aa"}
+                  </button>
+                ))}
+              </div>
+            </Field>
+            <ShadowEditor
+              shadow={el.shadow}
+              onChange={(s) => update(el.id, { shadow: s })}
+            />
             <Field label="Color">
               <ColorRow value={el.color} onChange={(c) => update(el.id, { color: c })} />
             </Field>
