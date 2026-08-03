@@ -177,7 +177,7 @@ Each slide aims for 5-12 elements. Across the deck, include at least one shape w
 
 export const generateAiTemplate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { prompt: string; width?: number; height?: number; style?: AiStyle; imageDataUrl?: string; slideCount?: number }) => {
+  .inputValidator((data: { prompt: string; width?: number; height?: number; style?: AiStyle; imageDataUrl?: string; slideCount?: number; model?: string }) => {
     if (!data || typeof data.prompt !== "string") throw new Error("Prompt is required");
     if (!data.prompt.trim() && !data.imageDataUrl) throw new Error("Provide a prompt or an image");
     const clamp = (n: unknown, def: number) => {
@@ -202,6 +202,7 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
       style,
       imageDataUrl: img,
       slideCount,
+      model: pickModel(data.model),
     };
   })
   .handler(async ({ data }): Promise<AiDeck> => {
@@ -219,7 +220,8 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
       method: "POST",
       headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: data.model,
+        ...reasoningFor(data.model),
         messages: [
           { role: "system", content: buildSystem(data.width, data.height, data.style, !!data.imageDataUrl) },
           { role: "user", content: userContent },
