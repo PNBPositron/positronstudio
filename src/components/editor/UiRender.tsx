@@ -316,6 +316,122 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
     );
   }
 
+  if (K === "taskbar") {
+    return (
+      <div
+        style={{
+          ...shell,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10 * s,
+          padding: `${8 * s}px ${12 * s}px`,
+          background: barBg,
+          color: barFg,
+        }}
+      >
+        <div
+          style={{
+            padding: `${8 * s}px ${16 * s}px`,
+            background: accent,
+            color: onAccent,
+            borderRadius: sharp ? 0 : (t.radius || 8) / 1.5,
+            fontWeight: 800,
+            fontSize: 17 * s,
+            border: `${Math.max(1, t.borderWidth)}px solid ${line}`,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {element.title}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 * s, flex: 1, overflow: "hidden" }}>
+          {element.items.map((it, i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8 * s,
+                padding: `${7 * s}px ${12 * s}px`,
+                background: i === 0 ? softFill : "transparent",
+                border: `1px solid ${i === 0 ? line : "transparent"}`,
+                borderBottom: i === 0 ? `${3 * s}px solid ${accent}` : `1px solid transparent`,
+                borderRadius: sharp ? 0 : (t.radius || 8) / 2,
+                fontSize: 15 * s,
+                color: barFg,
+                whiteSpace: "nowrap",
+              }}
+            >
+              <span style={{ width: 12 * s, height: 12 * s, background: accent, borderRadius: sharp ? 0 : 3 * s, display: "inline-block" }} />
+              {it}
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 * s, fontSize: 15 * s, color: barFg, opacity: 0.9 }}>
+          <span>▲ ⌁ ▮</span>
+          <span style={{ fontWeight: 700 }}>{element.body}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (K === "vtabs") {
+    return (
+      <div style={{ ...chromeShell, flexDirection: "row" }}>
+        <div
+          style={{
+            width: 190 * s,
+            flexShrink: 0,
+            background: barBg,
+            color: barFg,
+            borderRight: `${t.borderWidth}px solid ${line}`,
+            padding: `${12 * s}px ${10 * s}px`,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8 * s,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 * s, paddingBottom: 6 * s }}>{dots}</div>
+          {element.items.map((it, i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8 * s,
+                padding: `${8 * s}px ${10 * s}px`,
+                fontSize: 15 * s,
+                background: i === 0 ? softFill : "transparent",
+                border: `1px solid ${i === 0 ? line : "transparent"}`,
+                borderLeft: i === 0 ? `${3 * s}px solid ${accent}` : "1px solid transparent",
+                borderRadius: sharp ? 0 : (t.radius || 8) / 2,
+                color: i === 0 ? t.fg : t.muted,
+                fontWeight: i === 0 ? 700 : 400,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+              }}
+            >
+              <span style={{ width: 10 * s, height: 10 * s, background: accent, borderRadius: "50%", flexShrink: 0 }} />
+              {it}
+            </div>
+          ))}
+          <div style={{ marginTop: "auto", fontSize: 14 * s, color: t.muted }}>+ New tab</div>
+        </div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 * s, padding: `${10 * s}px ${14 * s}px`, borderBottom: `1px solid ${line}` }}>
+            <span style={{ color: t.muted, fontSize: 15 * s }}>◀ ▶ ⟳</span>
+            {field(element.body || "https://example.com", { borderRadius: 999 })}
+          </div>
+          <div style={{ padding: 20 * s, flex: 1, display: "flex", flexDirection: "column", gap: 10 * s }}>
+            <div style={{ ...titleStyle, fontSize: 26 * s }}>{element.title}</div>
+            <div style={{ height: 10 * s, width: "80%", background: t.muted, opacity: 0.35 }} />
+            <div style={{ height: 10 * s, width: "62%", background: t.muted, opacity: 0.35 }} />
+            <div style={{ marginTop: "auto", height: 8 * s, width: "35%", background: accent }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (K === "search") {
     return (
       <div style={{ ...shell, flexDirection: "row", alignItems: "center", gap: 12 * s, padding: 16 * s }}>
