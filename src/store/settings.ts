@@ -22,8 +22,10 @@ export const PANEL_LABELS: Record<PanelId, string> = {
 
 type SettingsState = {
   aiEnabled: boolean;
+  autoHidePanel: boolean;
   panels: Record<PanelId, boolean>;
   setAiEnabled: (v: boolean) => void;
+  setAutoHidePanel: (v: boolean) => void;
   togglePanel: (id: PanelId) => void;
   resetPanels: () => void;
 };
@@ -42,8 +44,10 @@ export const useSettings = create<SettingsState>()(
   persist(
     (set) => ({
       aiEnabled: true,
+      autoHidePanel: false,
       panels: { ...ALL_ON },
       setAiEnabled: (aiEnabled) => set({ aiEnabled }),
+      setAutoHidePanel: (autoHidePanel) => set({ autoHidePanel }),
       togglePanel: (id) =>
         set((s) => {
           const next = { ...s.panels, [id]: !s.panels[id] };
