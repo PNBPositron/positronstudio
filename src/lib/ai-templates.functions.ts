@@ -1,6 +1,28 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+// Text models users can pick in Settings. Keep in sync with AI_MODELS in src/store/settings.ts.
+const ALLOWED_TEXT_MODELS = [
+  "google/gemini-3.6-flash",
+  "google/gemini-3.1-flash-lite",
+  "google/gemini-3.1-pro-preview",
+  "google/gemini-2.5-pro",
+  "openai/gpt-5.6-terra",
+  "openai/gpt-5.6-luna",
+  "openai/gpt-5.5",
+  "openai/gpt-5.4-mini",
+];
+const DEFAULT_TEXT_MODEL = "google/gemini-3.6-flash";
+
+function pickModel(m?: string) {
+  return typeof m === "string" && ALLOWED_TEXT_MODELS.includes(m) ? m : DEFAULT_TEXT_MODEL;
+}
+
+// GPT-5.6 models require reasoning_effort to be set explicitly.
+function reasoningFor(model: string) {
+  return model.startsWith("openai/gpt-5.6") ? { reasoning_effort: "none" as const } : {};
+}
+
 // Robustly extract a JSON object from a model response that may include
 // markdown fences, prose, or multiple back-to-back objects.
 function parseLooseJson<T>(raw: string): T {
@@ -177,7 +199,7 @@ Each slide aims for 5-12 elements. Across the deck, include at least one shape w
 
 export const generateAiTemplate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { prompt: string; width?: number; height?: number; style?: AiStyle; imageDataUrl?: string; slideCount?: number }) => {
+  .inputValidator((data: { prompt: string; width?: number; height?: number; style?: AiStyle; imageDataUrl?: string; slideCount?: number; model?: string }) => {
     if (!data || typeof data.prompt !== "string") throw new Error("Prompt is required");
     if (!data.prompt.trim() && !data.imageDataUrl) throw new Error("Provide a prompt or an image");
     const clamp = (n: unknown, def: number) => {
@@ -202,6 +224,7 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
       style,
       imageDataUrl: img,
       slideCount,
+      model: pickModel(data.model),
     };
   })
   .handler(async ({ data }): Promise<AiDeck> => {
@@ -219,7 +242,8 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
       method: "POST",
       headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: data.model,
+        ...reasoningFor(data.model),
         messages: [
           { role: "system", content: buildSystem(data.width, data.height, data.style, !!data.imageDataUrl) },
           { role: "user", content: userContent },
@@ -375,6 +399,7 @@ export const editCurrentSlide = createServerFn({ method: "POST" })
     width: number;
     height: number;
     page: { bg: string; elements: AiElementInput[] };
+    model?: string;
   }) => {
     if (!data?.prompt?.trim()) throw new Error("Prompt is required");
     if (!data.page || !Array.isArray(data.page.elements)) throw new Error("Page is required");
@@ -385,6 +410,7 @@ export const editCurrentSlide = createServerFn({ method: "POST" })
       width: clamp(data.width, 1920),
       height: clamp(data.height, 1080),
       page: { bg: data.page.bg ?? "#0a0f1f", elements: data.page.elements.slice(0, 200) },
+      model: pickModel(data.model),
     };
   })
   .handler(async ({ data }): Promise<AiPage> => {
@@ -408,7 +434,8 @@ Return ONLY valid JSON, no commentary:
       method: "POST",
       headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: data.model,
+        ...reasoningFor(data.model),
         messages: [
           { role: "system", content: sys },
           { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nInstruction: ${data.prompt}` },
@@ -436,6 +463,7 @@ export const redesignSlideVariations = createServerFn({ method: "POST" })
     page: { bg: string; elements: AiElementInput[] };
     count?: number;
     style?: AiStyle;
+    model?: string;
   }) => {
     if (!data.page || !Array.isArray(data.page.elements)) throw new Error("Page is required");
     const clamp = (n: unknown, def: number) =>
@@ -452,6 +480,7 @@ export const redesignSlideVariations = createServerFn({ method: "POST" })
       page: { bg: data.page.bg ?? "#0a0f1f", elements: data.page.elements.slice(0, 200) },
       count,
       style,
+      model: pickModel(data.model),
     };
   })
   .handler(async ({ data }): Promise<{ variants: AiPage[] }> => {
@@ -479,7 +508,8 @@ Return ONLY valid JSON, no commentary:
       method: "POST",
       headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: data.model,
+        ...reasoningFor(data.model),
         messages: [
           { role: "system", content: sys },
           { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nProduce ${data.count} distinct layout variations.` },

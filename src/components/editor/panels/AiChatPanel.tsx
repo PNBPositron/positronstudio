@@ -11,6 +11,7 @@ import {
   type Page,
 } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
+import { useSettings } from "@/store/settings";
 import { editCurrentSlide, redesignSlideVariations, type AiElementInput, type AiPage } from "@/lib/ai-templates.functions";
 import { SlideThumbnail } from "../SlideThumbnail";
 
@@ -91,6 +92,7 @@ const QUICK_PROMPTS = [
 
 export function AiChatPanel() {
   const { elements, bgColor, canvasW, canvasH, loadTemplate } = useEditor();
+  const aiModel = useSettings((s) => s.aiModel);
   const edit = useServerFn(editCurrentSlide);
   const redesign = useServerFn(redesignSlideVariations);
   const [input, setInput] = useState("");
@@ -113,6 +115,7 @@ export function AiChatPanel() {
           width: canvasW,
           height: canvasH,
           page: { bg: bgColor, elements: toAi(elements) },
+          model: aiModel,
         },
       });
       loadTemplate(buildFromAi(res.elements), res.bg);
@@ -135,6 +138,7 @@ export function AiChatPanel() {
           height: canvasH,
           page: { bg: bgColor, elements: toAi(elements) },
           count: 3,
+          model: aiModel,
         },
       });
       setVariants(res.variants);
