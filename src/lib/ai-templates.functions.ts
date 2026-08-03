@@ -1,6 +1,28 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+// Text models users can pick in Settings. Keep in sync with AI_MODELS in src/store/settings.ts.
+const ALLOWED_TEXT_MODELS = [
+  "google/gemini-3.6-flash",
+  "google/gemini-3.1-flash-lite",
+  "google/gemini-3.1-pro-preview",
+  "google/gemini-2.5-pro",
+  "openai/gpt-5.6-terra",
+  "openai/gpt-5.6-luna",
+  "openai/gpt-5.5",
+  "openai/gpt-5.4-mini",
+];
+const DEFAULT_TEXT_MODEL = "google/gemini-3.6-flash";
+
+function pickModel(m?: string) {
+  return typeof m === "string" && ALLOWED_TEXT_MODELS.includes(m) ? m : DEFAULT_TEXT_MODEL;
+}
+
+// GPT-5.6 models require reasoning_effort to be set explicitly.
+function reasoningFor(model: string) {
+  return model.startsWith("openai/gpt-5.6") ? { reasoning_effort: "none" as const } : {};
+}
+
 // Robustly extract a JSON object from a model response that may include
 // markdown fences, prose, or multiple back-to-back objects.
 function parseLooseJson<T>(raw: string): T {
