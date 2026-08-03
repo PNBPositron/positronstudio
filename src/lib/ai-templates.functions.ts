@@ -399,6 +399,7 @@ export const editCurrentSlide = createServerFn({ method: "POST" })
     width: number;
     height: number;
     page: { bg: string; elements: AiElementInput[] };
+    model?: string;
   }) => {
     if (!data?.prompt?.trim()) throw new Error("Prompt is required");
     if (!data.page || !Array.isArray(data.page.elements)) throw new Error("Page is required");
@@ -409,6 +410,7 @@ export const editCurrentSlide = createServerFn({ method: "POST" })
       width: clamp(data.width, 1920),
       height: clamp(data.height, 1080),
       page: { bg: data.page.bg ?? "#0a0f1f", elements: data.page.elements.slice(0, 200) },
+      model: pickModel(data.model),
     };
   })
   .handler(async ({ data }): Promise<AiPage> => {
@@ -432,7 +434,8 @@ Return ONLY valid JSON, no commentary:
       method: "POST",
       headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: data.model,
+        ...reasoningFor(data.model),
         messages: [
           { role: "system", content: sys },
           { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nInstruction: ${data.prompt}` },
@@ -460,6 +463,7 @@ export const redesignSlideVariations = createServerFn({ method: "POST" })
     page: { bg: string; elements: AiElementInput[] };
     count?: number;
     style?: AiStyle;
+    model?: string;
   }) => {
     if (!data.page || !Array.isArray(data.page.elements)) throw new Error("Page is required");
     const clamp = (n: unknown, def: number) =>
@@ -476,6 +480,7 @@ export const redesignSlideVariations = createServerFn({ method: "POST" })
       page: { bg: data.page.bg ?? "#0a0f1f", elements: data.page.elements.slice(0, 200) },
       count,
       style,
+      model: pickModel(data.model),
     };
   })
   .handler(async ({ data }): Promise<{ variants: AiPage[] }> => {
@@ -503,7 +508,8 @@ Return ONLY valid JSON, no commentary:
       method: "POST",
       headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: data.model,
+        ...reasoningFor(data.model),
         messages: [
           { role: "system", content: sys },
           { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nProduce ${data.count} distinct layout variations.` },
