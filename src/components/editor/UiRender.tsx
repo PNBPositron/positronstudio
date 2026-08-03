@@ -316,10 +316,6 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
     );
   }
 
-  if (K === "search") {
-    // fallthrough below
-  }
-
   if (K === "taskbar") {
     return (
       <div
