@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useEditor } from "@/store/editor";
 import { useSettings, type PanelId } from "@/store/settings";
-import { LayoutTemplate, Type, Shapes, Upload, SlidersHorizontal, Bot, Blocks, Settings, Pin, PinOff } from "lucide-react";
+import { LayoutTemplate, Type, Shapes, Upload, SlidersHorizontal, Bot, Blocks, Settings } from "lucide-react";
 import { TemplatesPanel } from "./panels/TemplatesPanel";
 import { TextPanel } from "./panels/TextPanel";
 import { ShapesPanel } from "./panels/ShapesPanel";
@@ -23,10 +23,10 @@ const TOOLS = [
 
 export function Sidebar() {
   const { tool, setTool } = useEditor();
-  const { panels, aiEnabled, autoHidePanel, setAutoHidePanel } = useSettings();
+  const { panels, aiEnabled } = useSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [hovering, setHovering] = useState(false);
-  const panelOpen = !autoHidePanel || hovering;
+  const panelOpen = hovering;
 
   const visible = TOOLS.filter(
     (t) => panels[t.id as PanelId] !== false && !(t.id === "ai" && !aiEnabled),
@@ -72,31 +72,21 @@ export function Sidebar() {
           );
         })}
         <button
-          onClick={() => setAutoHidePanel(!autoHidePanel)}
-          title={autoHidePanel ? "Pin panel open" : "Auto-hide panel"}
-          aria-label={autoHidePanel ? "Pin panel open" : "Auto-hide panel"}
-          className="mt-auto flex flex-col items-center gap-1 border border-teal/20 bg-surface px-1 py-3 text-[10px] font-bold uppercase tracking-[0.15em] text-teal/70 hover:border-teal/60 hover:bg-surface-2 hover:text-teal"
-        >
-          {autoHidePanel ? <PinOff className="h-5 w-5" strokeWidth={2} /> : <Pin className="h-5 w-5" strokeWidth={2} />}
-          {autoHidePanel ? "Hidden" : "Pinned"}
-        </button>
-        <button
           onClick={() => setSettingsOpen(true)}
           title="Settings"
           aria-label="Settings"
-          className="flex flex-col items-center gap-1 border border-teal/20 bg-surface px-1 py-3 text-[10px] font-bold uppercase tracking-[0.15em] text-teal/70 hover:border-teal/60 hover:bg-surface-2 hover:text-teal"
+          className="mt-auto flex flex-col items-center gap-1 border border-teal/20 bg-surface px-1 py-3 text-[10px] font-bold uppercase tracking-[0.15em] text-teal/70 transition-colors duration-200 hover:border-teal/60 hover:bg-surface-2 hover:text-teal"
         >
           <Settings className="h-5 w-5" strokeWidth={2} />
           Settings
         </button>
       </nav>
       <div
-        className={`w-72 overflow-y-auto border-r border-teal/30 bg-paper p-4 ${
-          autoHidePanel
-            ? `absolute left-20 top-0 z-40 h-full shadow-2xl transition-transform duration-200 ${
-                panelOpen ? "translate-x-0" : "pointer-events-none -translate-x-[110%] opacity-0"
-              }`
-            : ""
+        aria-hidden={!panelOpen}
+        className={`absolute left-20 top-0 z-40 h-full w-72 overflow-y-auto border-r border-teal/30 bg-paper p-4 shadow-2xl will-change-transform [transition:transform_360ms_cubic-bezier(0.22,1,0.36,1),opacity_240ms_ease-out] motion-reduce:transition-none ${
+          panelOpen
+            ? "translate-x-0 opacity-100"
+            : "pointer-events-none -translate-x-[104%] opacity-0"
         }`}
       >
         {tool === "templates" && <TemplatesPanel />}
