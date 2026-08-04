@@ -168,9 +168,13 @@
 
 /* ---- Slide transitions (presentation mode) ---- */
 @keyframes slide-fade-in {
-
   from { opacity: 0; }
   to { opacity: 1; }
+}
+/* motion preview swatch in Settings */
+@keyframes panel-motion-demo {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(200%); opacity: 1; }
 }
 @keyframes slide-slide-in {
   from { transform: translateX(8%); opacity: 0; }
