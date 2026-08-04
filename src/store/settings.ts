@@ -25,11 +25,27 @@ type SettingsState = {
   autoHidePanel: boolean;
   aiModel: string;
   panels: Record<PanelId, boolean>;
+  panelDurationMs: number;
+  panelStiffness: number; // 0 = soft ease, 100 = springy overshoot
+  reduceMotion: boolean; // force-disable panel motion
   setAiEnabled: (v: boolean) => void;
   setAutoHidePanel: (v: boolean) => void;
   setAiModel: (v: string) => void;
+  setPanelDurationMs: (v: number) => void;
+  setPanelStiffness: (v: number) => void;
+  setReduceMotion: (v: boolean) => void;
+  resetMotion: () => void;
   togglePanel: (id: PanelId) => void;
   resetPanels: () => void;
+};
+
+export const DEFAULT_PANEL_DURATION = 460;
+export const DEFAULT_PANEL_STIFFNESS = 45;
+
+/** maps a 0-100 stiffness to a cubic-bezier with increasing overshoot */
+export const springEasing = (stiffness: number) => {
+  const k = Math.max(0, Math.min(100, stiffness)) / 100;
+  return `cubic-bezier(0.16, ${(1 + k * 0.85).toFixed(3)}, ${(0.4 - k * 0.15).toFixed(3)}, 1)`;
 };
 
 export const AI_MODELS: Array<{ id: string; label: string; hint: string }> = [
@@ -62,9 +78,21 @@ export const useSettings = create<SettingsState>()(
       autoHidePanel: false,
       aiModel: DEFAULT_AI_MODEL,
       panels: { ...ALL_ON },
+      panelDurationMs: DEFAULT_PANEL_DURATION,
+      panelStiffness: DEFAULT_PANEL_STIFFNESS,
+      reduceMotion: false,
       setAiEnabled: (aiEnabled) => set({ aiEnabled }),
       setAutoHidePanel: (autoHidePanel) => set({ autoHidePanel }),
       setAiModel: (aiModel) => set({ aiModel }),
+      setPanelDurationMs: (panelDurationMs) => set({ panelDurationMs }),
+      setPanelStiffness: (panelStiffness) => set({ panelStiffness }),
+      setReduceMotion: (reduceMotion) => set({ reduceMotion }),
+      resetMotion: () =>
+        set({
+          panelDurationMs: DEFAULT_PANEL_DURATION,
+          panelStiffness: DEFAULT_PANEL_STIFFNESS,
+          reduceMotion: false,
+        }),
       togglePanel: (id) =>
         set((s) => {
           const next = { ...s.panels, [id]: !s.panels[id] };
