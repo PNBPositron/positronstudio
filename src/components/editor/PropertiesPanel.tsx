@@ -85,7 +85,7 @@ export function PropertiesPanel() {
                 />
               </Field>
             )}
-            {(el.kind === "list" || el.kind === "pricing") && (
+            {el.items.length > 0 && (
               <Field label="Items (one per line)">
                 <textarea
                   value={el.items.join("\n")}
@@ -107,6 +107,104 @@ export function PropertiesPanel() {
                 ))}
               </div>
             </Field>
+            <Field label="Surface / text / border">
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={el.bgColor ?? "#111827"}
+                  onChange={(e) => update(el.id, { bgColor: e.target.value })}
+                  className="brutal-border-2 h-8 w-full bg-surface"
+                />
+                <input
+                  type="color"
+                  value={el.fgColor ?? "#ffffff"}
+                  onChange={(e) => update(el.id, { fgColor: e.target.value })}
+                  className="brutal-border-2 h-8 w-full bg-surface"
+                />
+                <input
+                  type="color"
+                  value={el.borderColorOverride ?? "#7df9ff"}
+                  onChange={(e) => update(el.id, { borderColorOverride: e.target.value })}
+                  className="brutal-border-2 h-8 w-full bg-surface"
+                />
+              </div>
+              <button
+                onClick={() =>
+                  update(el.id, { bgColor: undefined, fgColor: undefined, borderColorOverride: undefined })
+                }
+                className="brutal-border-2 mt-1.5 w-full bg-surface py-1 font-mono text-[10px] uppercase tracking-wider text-teal hover:border-teal"
+              >
+                Reset to style pack
+              </button>
+            </Field>
+            <Field label="Font">
+              <select
+                value={el.fontFamily ?? ""}
+                onChange={(e) => update(el.id, { fontFamily: e.target.value || undefined })}
+                className="brutal-border-2 w-full bg-surface p-2 font-mono text-xs text-teal focus:outline-none"
+              >
+                <option value="">Style default</option>
+                {FONT_FAMILIES.map((f) => (
+                  <option key={f} value={f}>{f}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label={`Text scale ${(el.textScale ?? 1).toFixed(2)}×`}>
+              <input
+                type="range"
+                min={0.6}
+                max={1.8}
+                step={0.05}
+                value={el.textScale ?? 1}
+                onChange={(e) => update(el.id, { textScale: +e.target.value })}
+                className="w-full accent-teal"
+              />
+            </Field>
+            <Field label={`Padding ${(el.padScale ?? 1).toFixed(2)}×`}>
+              <input
+                type="range"
+                min={0.2}
+                max={2}
+                step={0.05}
+                value={el.padScale ?? 1}
+                onChange={(e) => update(el.id, { padScale: +e.target.value })}
+                className="w-full accent-teal"
+              />
+            </Field>
+            <Field label={`Corner radius ${el.cornerRadius ?? UI_STYLE_THEMES[el.uiStyle].radius}px`}>
+              <input
+                type="range"
+                min={0}
+                max={48}
+                value={el.cornerRadius ?? UI_STYLE_THEMES[el.uiStyle].radius}
+                onChange={(e) => update(el.id, { cornerRadius: +e.target.value })}
+                className="w-full accent-teal"
+              />
+            </Field>
+            <Field label={`Border width ${el.borderWidth ?? UI_STYLE_THEMES[el.uiStyle].borderWidth}px`}>
+              <input
+                type="range"
+                min={0}
+                max={10}
+                value={el.borderWidth ?? UI_STYLE_THEMES[el.uiStyle].borderWidth}
+                onChange={(e) => update(el.id, { borderWidth: +e.target.value })}
+                className="w-full accent-teal"
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => update(el.id, { shadowOff: !el.shadowOff })}
+                className={`brutal-border-2 py-2 font-mono text-[10px] uppercase tracking-wider ${el.shadowOff ? "bg-surface text-teal/50" : "bg-blue text-ink"}`}
+              >
+                Shadow
+              </button>
+              <button
+                onClick={() => update(el.id, { uppercase: !(el.uppercase ?? UI_STYLE_THEMES[el.uiStyle].uppercase) })}
+                className={`brutal-border-2 py-2 font-mono text-[10px] uppercase tracking-wider ${(el.uppercase ?? UI_STYLE_THEMES[el.uiStyle].uppercase) ? "bg-blue text-ink" : "bg-surface text-teal/50"}`}
+              >
+                Caps
+              </button>
+            </div>
           </>
         )}
         {el.type === "text" && (
