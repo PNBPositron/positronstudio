@@ -335,52 +335,130 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
           ...shell,
           flexDirection: "row",
           alignItems: "center",
-          gap: 10 * s,
-          padding: `${8 * s}px ${12 * s}px`,
+          gap: 8 * s,
+          padding: `${6 * s}px ${12 * s}px`,
           background: barBg,
           color: barFg,
         }}
       >
+        {/* left: only the XP-era bar keeps a labelled Start button */}
+        {isXP && (
+          <div
+            style={{
+              padding: `${8 * s}px ${18 * s}px`,
+              background: "linear-gradient(180deg,#5eac56 0%,#3f8f37 55%,#2f7a2a 100%)",
+              color: "#fff",
+              borderRadius: 0,
+              fontWeight: 800,
+              fontStyle: "italic",
+              fontSize: 18 * s,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {element.title || "start"}
+          </div>
+        )}
+        {/* centred window/app cluster, Windows 11 style */}
         <div
           style={{
-            padding: `${8 * s}px ${16 * s}px`,
-            background: accent,
-            color: onAccent,
-            borderRadius: sharp ? 0 : (t.radius || 8) / 1.5,
-            fontWeight: 800,
-            fontSize: 17 * s,
-            border: `${Math.max(1, t.borderWidth)}px solid ${line}`,
-            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: 6 * s,
+            flex: 1,
+            justifyContent: isXP ? "flex-start" : "center",
+            overflow: "hidden",
           }}
         >
-          {element.title}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 * s, flex: 1, overflow: "hidden" }}>
+          {/* start orb */}
+          {!isXP && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 2.5 * s,
+                padding: `${10 * s}px`,
+                borderRadius: sharp ? 0 : 6 * s,
+                background: softFill,
+              }}
+              title={element.title}
+            >
+              {[0, 1, 2, 3].map((i) => (
+                <span key={i} style={{ width: 7 * s, height: 7 * s, background: accent, display: "block", borderRadius: sharp ? 0 : 1.5 * s }} />
+              ))}
+            </div>
+          )}
+          {/* search pill */}
+          {!isXP && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 7 * s,
+                padding: `${7 * s}px ${14 * s}px`,
+                borderRadius: sharp ? 0 : 999,
+                background: softFill,
+                border: `1px solid ${line}`,
+                fontSize: 14 * s,
+                color: barFg,
+                opacity: 0.85,
+                whiteSpace: "nowrap",
+              }}
+            >
+              <span>⌕</span> Search
+            </div>
+          )}
           {element.items.map((it, i) => (
             <div
               key={i}
               style={{
+                position: "relative",
                 display: "flex",
                 alignItems: "center",
                 gap: 8 * s,
-                padding: `${7 * s}px ${12 * s}px`,
+                padding: isXP ? `${7 * s}px ${12 * s}px` : `${9 * s}px ${11 * s}px`,
                 background: i === 0 ? softFill : "transparent",
-                border: `1px solid ${i === 0 ? line : "transparent"}`,
-                borderBottom: i === 0 ? `${3 * s}px solid ${accent}` : `1px solid transparent`,
-                borderRadius: sharp ? 0 : (t.radius || 8) / 2,
+                border: isXP ? `1px solid ${i === 0 ? line : "transparent"}` : "none",
+                borderRadius: sharp ? 0 : 6 * s,
                 fontSize: 15 * s,
                 color: barFg,
                 whiteSpace: "nowrap",
               }}
             >
-              <span style={{ width: 12 * s, height: 12 * s, background: accent, borderRadius: sharp ? 0 : 3 * s, display: "inline-block" }} />
-              {it}
+              <span
+                style={{
+                  width: 16 * s,
+                  height: 16 * s,
+                  background: i % 2 === 0 ? accent : t.muted,
+                  borderRadius: sharp ? 0 : 3 * s,
+                  display: "inline-block",
+                }}
+              />
+              {isXP ? it : null}
+              {!isXP && (
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: 2 * s,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: (i === 0 ? 14 : 6) * s,
+                    height: 3 * s,
+                    borderRadius: 999,
+                    background: accent,
+                    opacity: i < 2 ? 1 : 0,
+                  }}
+                />
+              )}
             </div>
           ))}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 * s, fontSize: 15 * s, color: barFg, opacity: 0.9 }}>
-          <span>▲ ⌁ ▮</span>
-          <span style={{ fontWeight: 700 }}>{element.body}</span>
+        {/* system tray + clock */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 * s, fontSize: 14 * s, color: barFg, opacity: 0.92, whiteSpace: "nowrap" }}>
+          <span style={{ letterSpacing: "0.12em" }}>∧ ᯤ 🔊 ▮</span>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", lineHeight: 1.1 }}>
+            <span style={{ fontWeight: 700 }}>{element.body}</span>
+            <span style={{ fontSize: 11 * s, opacity: 0.75 }}>{element.title || "Windows"}</span>
+          </div>
         </div>
       </div>
     );
