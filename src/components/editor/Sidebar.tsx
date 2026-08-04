@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useEditor } from "@/store/editor";
-import { useSettings, type PanelId } from "@/store/settings";
+import { useSettings, springEasing, type PanelId } from "@/store/settings";
 import { LayoutTemplate, Type, Shapes, Upload, SlidersHorizontal, Bot, Blocks, Settings } from "lucide-react";
 import { TemplatesPanel } from "./panels/TemplatesPanel";
 import { TextPanel } from "./panels/TextPanel";
@@ -23,10 +23,24 @@ const TOOLS = [
 
 export function Sidebar() {
   const { tool, setTool } = useEditor();
-  const { panels, aiEnabled } = useSettings();
+  const { panels, aiEnabled, panelDurationMs, panelStiffness, reduceMotion } = useSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [hovering, setHovering] = useState(false);
   const panelOpen = hovering;
+  const [systemReduced, setSystemReduced] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setSystemReduced(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  const noMotion = reduceMotion || systemReduced;
+  const dur = noMotion ? 0 : panelDurationMs;
+  const ease = springEasing(panelStiffness);
+  const panelTransition = `transform ${dur}ms ${ease}, opacity ${Math.round(dur * 0.62)}ms ${ease}, filter ${Math.round(dur * 0.7)}ms ease-out`;
 
   const visible = TOOLS.filter(
     (t) => panels[t.id as PanelId] !== false && !(t.id === "ai" && !aiEnabled),
@@ -83,10 +97,11 @@ export function Sidebar() {
       </nav>
       <div
         aria-hidden={!panelOpen}
-        className={`absolute left-20 top-0 z-40 h-full w-72 origin-left overflow-y-auto border-r border-teal/30 bg-paper p-4 shadow-2xl will-change-[transform,opacity,filter] [transition:transform_460ms_cubic-bezier(0.16,1,0.3,1),opacity_280ms_cubic-bezier(0.16,1,0.3,1),filter_320ms_ease-out] motion-reduce:transition-none ${
+        style={{ transition: panelTransition }}
+        className={`absolute left-20 top-0 z-40 h-full w-72 origin-left overflow-y-auto border-r border-teal/30 bg-paper p-4 shadow-2xl will-change-[transform,opacity,filter] ${
           panelOpen
-            ? "translate-x-0 scale-x-100 opacity-100 blur-0"
-            : "pointer-events-none -translate-x-[106%] scale-x-[0.97] opacity-0 blur-[2px]"
+            ? `translate-x-0 opacity-100 ${noMotion ? "" : "scale-x-100 blur-0"}`
+            : `pointer-events-none -translate-x-[106%] opacity-0 ${noMotion ? "" : "scale-x-[0.97] blur-[2px]"}`
         }`}
       >
         {tool === "templates" && <TemplatesPanel />}
