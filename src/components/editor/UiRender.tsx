@@ -20,13 +20,31 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
   const sharp = t.radius === 0;
   const softFill = t.dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)";
 
+  // ---- frame shape ----
+  const shape = element.cornerShape ?? "default";
+  const cut = 18 * (preview ? 0.34 : 1);
+  const frameRadius: React.CSSProperties["borderRadius"] =
+    shape === "pill"
+      ? 999
+      : shape === "squircle"
+        ? "28%"
+        : shape === "leaf"
+          ? `${Math.max(24, t.radius * 3)}px 0 ${Math.max(24, t.radius * 3)}px 0`
+          : t.radius;
+  const frameClip =
+    shape === "cut"
+      ? `polygon(${cut}px 0, 100% 0, 100% calc(100% - ${cut}px), calc(100% - ${cut}px) 100%, 0 100%, 0 ${cut}px)`
+      : undefined;
+  const frameBorderStyle = element.borderStyle ?? "solid";
+
   const shell: React.CSSProperties = {
     width: "100%",
     height: "100%",
     background: t.bg,
     color: t.fg,
-    border: `${t.borderWidth}px solid ${t.border}`,
-    borderRadius: t.radius,
+    border: frameBorderStyle === "none" ? "none" : `${t.borderWidth}px ${frameBorderStyle} ${t.border}`,
+    borderRadius: frameRadius,
+    clipPath: frameClip,
     boxShadow: t.shadow,
     backdropFilter: t.backdrop,
     fontFamily: t.font,

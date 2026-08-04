@@ -227,6 +227,9 @@ export type UiElement = ElementBase & {
   padScale?: number; // 0.4 – 2
   shadowOff?: boolean;
   uppercase?: boolean;
+  /** frame shape of the component */
+  cornerShape?: "default" | "pill" | "cut" | "squircle" | "leaf";
+  borderStyle?: "solid" | "dashed" | "dotted" | "double" | "none";
 };
 
 export type UiTheme = {
