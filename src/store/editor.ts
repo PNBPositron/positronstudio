@@ -216,6 +216,17 @@ export type UiElement = ElementBase & {
   value: number; // 0-100 (progress) or numeric stat
   items: string[];
   accentColor: string;
+  /** optional per-element overrides on top of the style pack */
+  bgColor?: string;
+  fgColor?: string;
+  borderColorOverride?: string;
+  fontFamily?: string;
+  cornerRadius?: number;
+  borderWidth?: number;
+  textScale?: number; // 0.6 – 1.8
+  padScale?: number; // 0.4 – 2
+  shadowOff?: boolean;
+  uppercase?: boolean;
 };
 
 export type UiTheme = {
@@ -769,7 +780,7 @@ const UI_DEFAULTS: Record<UiKind, { w: number; h: number; title: string; body: s
   toggle: { w: 560, h: 300, title: "Preferences", body: "", value: 0, items: ["Notifications", "Dark mode", "Auto-save"] },
   login: { w: 480, h: 480, title: "Sign in", body: "Continue to your workspace", value: 0, items: ["Email", "Password"] },
   notification: { w: 560, h: 160, title: "Deck published", body: "Your presentation is now live.", value: 0, items: [] },
-  taskbar: { w: 900, h: 96, title: "Start", body: "9:41", value: 0, items: ["Files", "Browser", "Mail", "Music"] },
+  taskbar: { w: 900, h: 88, title: "Windows", body: "9:41 AM", value: 0, items: ["Explorer", "Edge", "Mail", "Store", "Photos"] },
   vtabs: { w: 860, h: 520, title: "Positron Studio", body: "https://positronstudio.lovable.app", value: 0, items: ["Dashboard", "Editor", "Templates", "Settings"] },
 };
 

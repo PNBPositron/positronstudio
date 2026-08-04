@@ -36,7 +36,7 @@ const REAL_UI_KINDS: Array<{ kind: UiKind; label: string; Icon: typeof Square }>
   { kind: "toggle", label: "Toggles", Icon: ToggleRight },
   { kind: "login", label: "Login", Icon: LogIn },
   { kind: "notification", label: "Toast", Icon: Bell },
-  { kind: "taskbar", label: "Taskbar", Icon: PanelBottom },
+  { kind: "taskbar", label: "Window taskbar", Icon: PanelBottom },
   { kind: "vtabs", label: "Vertical tabs", Icon: PanelLeft },
 ];
 

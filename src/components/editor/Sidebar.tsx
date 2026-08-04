@@ -83,10 +83,10 @@ export function Sidebar() {
       </nav>
       <div
         aria-hidden={!panelOpen}
-        className={`absolute left-20 top-0 z-40 h-full w-72 overflow-y-auto border-r border-teal/30 bg-paper p-4 shadow-2xl will-change-transform [transition:transform_360ms_cubic-bezier(0.22,1,0.36,1),opacity_240ms_ease-out] motion-reduce:transition-none ${
+        className={`absolute left-20 top-0 z-40 h-full w-72 origin-left overflow-y-auto border-r border-teal/30 bg-paper p-4 shadow-2xl will-change-[transform,opacity,filter] [transition:transform_460ms_cubic-bezier(0.16,1,0.3,1),opacity_280ms_cubic-bezier(0.16,1,0.3,1),filter_320ms_ease-out] motion-reduce:transition-none ${
           panelOpen
-            ? "translate-x-0 opacity-100"
-            : "pointer-events-none -translate-x-[104%] opacity-0"
+            ? "translate-x-0 scale-x-100 opacity-100 blur-0"
+            : "pointer-events-none -translate-x-[106%] scale-x-[0.97] opacity-0 blur-[2px]"
         }`}
       >
         {tool === "templates" && <TemplatesPanel />}
