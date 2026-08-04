@@ -216,6 +216,17 @@ export type UiElement = ElementBase & {
   value: number; // 0-100 (progress) or numeric stat
   items: string[];
   accentColor: string;
+  /** optional per-element overrides on top of the style pack */
+  bgColor?: string;
+  fgColor?: string;
+  borderColorOverride?: string;
+  fontFamily?: string;
+  cornerRadius?: number;
+  borderWidth?: number;
+  textScale?: number; // 0.6 – 1.8
+  padScale?: number; // 0.4 – 2
+  shadowOff?: boolean;
+  uppercase?: boolean;
 };
 
 export type UiTheme = {
