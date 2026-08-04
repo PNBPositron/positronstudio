@@ -1,9 +1,21 @@
 import { UI_STYLE_THEMES, type UiElement } from "@/store/editor";
 
 export function UiRender({ element, preview = false }: { element: UiElement; preview?: boolean }) {
-  const t = UI_STYLE_THEMES[element.uiStyle];
+  const base = UI_STYLE_THEMES[element.uiStyle];
+  const t = {
+    ...base,
+    bg: element.bgColor || base.bg,
+    fg: element.fgColor || base.fg,
+    muted: element.fgColor ? element.fgColor : base.muted,
+    border: element.borderColorOverride || base.border,
+    borderWidth: element.borderWidth ?? base.borderWidth,
+    radius: element.cornerRadius ?? base.radius,
+    shadow: element.shadowOff ? "none" : base.shadow,
+    font: element.fontFamily ? `'${element.fontFamily}', ${base.font}` : base.font,
+    uppercase: element.uppercase ?? base.uppercase,
+  };
   const accent = element.accentColor || t.accent;
-  const s = preview ? 0.34 : 1;
+  const s = (preview ? 0.34 : 1) * (element.textScale ?? 1);
   const onAccent = t.onAccent ?? "#ffffff";
   const sharp = t.radius === 0;
   const softFill = t.dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)";
@@ -19,7 +31,7 @@ export function UiRender({ element, preview = false }: { element: UiElement; pre
     backdropFilter: t.backdrop,
     fontFamily: t.font,
     letterSpacing: t.letterSpacing,
-    padding: 28 * s,
+    padding: 28 * s * (element.padScale ?? 1),
     display: "flex",
     flexDirection: "column",
     gap: 12 * s,
