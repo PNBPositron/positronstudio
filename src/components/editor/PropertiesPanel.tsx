@@ -171,6 +171,38 @@ export function PropertiesPanel() {
                 className="w-full accent-teal"
               />
             </Field>
+            <Field label="Frame shape">
+              <div className="grid grid-cols-5 gap-1">
+                {(["default", "pill", "squircle", "cut", "leaf"] as const).map((sh) => {
+                  const active = (el.cornerShape ?? "default") === sh;
+                  return (
+                    <button
+                      key={sh}
+                      onClick={() => update(el.id, { cornerShape: sh })}
+                      className={`brutal-press border py-1.5 font-mono text-[9px] uppercase ${active ? "border-teal bg-blue-deep text-teal" : "border-teal/30 bg-surface text-teal/60"}`}
+                    >
+                      {sh === "default" ? "std" : sh.slice(0, 4)}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+            <Field label="Border style">
+              <div className="grid grid-cols-5 gap-1">
+                {(["solid", "dashed", "dotted", "double", "none"] as const).map((bs) => {
+                  const active = (el.borderStyle ?? "solid") === bs;
+                  return (
+                    <button
+                      key={bs}
+                      onClick={() => update(el.id, { borderStyle: bs })}
+                      className={`brutal-press border py-1.5 font-mono text-[9px] uppercase ${active ? "border-teal bg-blue-deep text-teal" : "border-teal/30 bg-surface text-teal/60"}`}
+                    >
+                      {bs.slice(0, 4)}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
             <Field label={`Corner radius ${el.cornerRadius ?? UI_STYLE_THEMES[el.uiStyle].radius}px`}>
               <input
                 type="range"
