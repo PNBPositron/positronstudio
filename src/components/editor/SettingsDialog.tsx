@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Loader2, Pencil, Trash2, X } from "lucide-react";
-import { useSettings, PANEL_LABELS, AI_MODELS, type PanelId } from "@/store/settings";
+import { useSettings, PANEL_LABELS, AI_MODELS, springEasing, type PanelId } from "@/store/settings";
 import { useAuth } from "@/hooks/use-auth";
 import {
   listMyPublicTemplates,
@@ -10,7 +10,11 @@ import {
 } from "@/lib/designs";
 
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
-  const { aiEnabled, setAiEnabled, aiModel, setAiModel, panels, togglePanel, resetPanels } = useSettings();
+  const {
+    aiEnabled, setAiEnabled, aiModel, setAiModel, panels, togglePanel, resetPanels,
+    panelDurationMs, setPanelDurationMs, panelStiffness, setPanelStiffness,
+    reduceMotion, setReduceMotion, resetMotion,
+  } = useSettings();
   const { user } = useAuth();
   const [templates, setTemplates] = useState<PublicTemplate[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -153,6 +157,76 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
                 </button>
               );
             })}
+          </div>
+        </section>
+
+        {/* Panel motion */}
+        <section className="brutal-border-2 mb-4 bg-surface p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="font-display text-[12px] tracking-[0.2em] text-teal">PANEL MOTION</div>
+            <button
+              onClick={resetMotion}
+              className="font-mono text-[10px] text-teal/60 underline hover:text-teal"
+            >
+              reset
+            </button>
+          </div>
+          <p className="mb-3 font-mono text-[10px] text-teal/60">
+            &gt; how the tool panel slides open and closed
+          </p>
+          <div className="space-y-3">
+            <label className="block">
+              <span className="font-mono text-[10px] text-teal/70">duration · {panelDurationMs}ms</span>
+              <input
+                type="range"
+                min={0}
+                max={1200}
+                step={20}
+                value={panelDurationMs}
+                disabled={reduceMotion}
+                onChange={(e) => setPanelDurationMs(+e.target.value)}
+                className="w-full accent-teal disabled:opacity-40"
+              />
+            </label>
+            <label className="block">
+              <span className="font-mono text-[10px] text-teal/70">spring stiffness · {panelStiffness}</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={panelStiffness}
+                disabled={reduceMotion}
+                onChange={(e) => setPanelStiffness(+e.target.value)}
+                className="w-full accent-teal disabled:opacity-40"
+              />
+            </label>
+            <div
+              className="h-8 border border-teal/30 bg-ink"
+              aria-hidden
+            >
+              <div
+                key={`${panelDurationMs}-${panelStiffness}-${reduceMotion}`}
+                className="h-full w-1/3 bg-blue"
+                style={{
+                  animation: reduceMotion
+                    ? undefined
+                    : `slide-in-right ${panelDurationMs}ms ${springEasing(panelStiffness)}`,
+                }}
+              />
+            </div>
+            <button
+              onClick={() => setReduceMotion(!reduceMotion)}
+              role="switch"
+              aria-checked={reduceMotion}
+              className={`brutal-border brutal-press w-full px-4 py-2 font-display text-[11px] tracking-[0.2em] ${
+                reduceMotion ? "bg-blue text-ink" : "bg-surface-2 text-teal/70"
+              }`}
+            >
+              REDUCED MOTION {reduceMotion ? "ON" : "OFF"}
+            </button>
+            <p className="font-mono text-[9px] text-teal/50">
+              &gt; motion is also disabled automatically when your system prefers reduced motion.
+            </p>
           </div>
         </section>
 
