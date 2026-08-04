@@ -210,7 +210,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
                 style={{
                   animation: reduceMotion
                     ? undefined
-                    : `slide-in-right ${panelDurationMs}ms ${springEasing(panelStiffness)}`,
+                    : `panel-motion-demo ${panelDurationMs}ms ${springEasing(panelStiffness)} both`,
                 }}
               />
             </div>
