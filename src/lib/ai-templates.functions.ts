@@ -460,24 +460,14 @@ Rules:
 Return ONLY valid JSON, no commentary:
 { "bg": "#hex", "elements": Array<element> }`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
-      body: JSON.stringify({
-        model: data.model,
-        ...reasoningFor(data.model),
-        messages: [
-          { role: "system", content: sys },
-          { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nInstruction: ${data.prompt}` },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
-    if (res.status === 429) throw new Error("Rate limit hit. Try again in a moment.");
-    if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
-    if (!res.ok) throw new Error(`AI gateway error ${res.status}`);
-    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const content = json.choices?.[0]?.message?.content ?? "";
+    const content = await chatComplete(
+      data.model,
+      [
+        { role: "system", content: sys },
+        { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nInstruction: ${data.prompt}` },
+      ],
+      { response_format: { type: "json_object" } },
+    );
     const parsed = parseLooseJson<AiPage>(content);
     if (!parsed || !Array.isArray(parsed.elements)) throw new Error("AI response missing elements");
     return { bg: parsed.bg ?? data.page.bg, elements: parsed.elements };
@@ -534,24 +524,14 @@ Shape effects: "liquid_glass", "neon", "soft_shadow", "inner_glow".
 Return ONLY valid JSON, no commentary:
 { "variants": Array<{ "bg": "#hex", "elements": Array<element> }> } — exactly ${data.count} entries.`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
-      body: JSON.stringify({
-        model: data.model,
-        ...reasoningFor(data.model),
-        messages: [
-          { role: "system", content: sys },
-          { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nProduce ${data.count} distinct layout variations.` },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
-    if (res.status === 429) throw new Error("Rate limit hit. Try again in a moment.");
-    if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
-    if (!res.ok) throw new Error(`AI gateway error ${res.status}`);
-    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const content = json.choices?.[0]?.message?.content ?? "";
+    const content = await chatComplete(
+      data.model,
+      [
+        { role: "system", content: sys },
+        { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nProduce ${data.count} distinct layout variations.` },
+      ],
+      { response_format: { type: "json_object" } },
+    );
     const parsed = parseLooseJson<{ variants?: unknown }>(content);
     const arr = Array.isArray(parsed.variants) ? parsed.variants : [];
     const variants: AiPage[] = arr
