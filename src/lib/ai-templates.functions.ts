@@ -11,6 +11,10 @@ const ALLOWED_TEXT_MODELS = [
   "openai/gpt-5.6-luna",
   "openai/gpt-5.5",
   "openai/gpt-5.4-mini",
+  // OpenRouter free tier (requires OPENROUTER_API_KEY)
+  "openrouter/deepseek/deepseek-chat-v3-0324:free",
+  "openrouter/meta-llama/llama-3.3-70b-instruct:free",
+  "openrouter/qwen/qwen3-coder:free",
 ];
 const DEFAULT_TEXT_MODEL = "google/gemini-3.6-flash";
 
@@ -21,6 +25,48 @@ function pickModel(m?: string) {
 // GPT-5.6 models require reasoning_effort to be set explicitly.
 function reasoningFor(model: string) {
   return model.startsWith("openai/gpt-5.6") ? { reasoning_effort: "none" as const } : {};
+}
+
+const OR_PREFIX = "openrouter/";
+
+/** Chat completion against Lovable AI, or OpenRouter for `openrouter/*` models. */
+async function chatComplete(
+  model: string,
+  messages: unknown[],
+  extra: Record<string, unknown> = {},
+): Promise<string> {
+  const or = model.startsWith(OR_PREFIX);
+  const apiKey = or ? process.env.OPENROUTER_API_KEY : process.env.LOVABLE_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      or
+        ? "OpenRouter is not configured yet — add an OPENROUTER_API_KEY to use free models."
+        : "Missing LOVABLE_API_KEY",
+    );
+  }
+  const res = await fetch(
+    or ? "https://openrouter.ai/api/v1/chat/completions" : "https://ai.gateway.lovable.dev/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(or ? { Authorization: `Bearer ${apiKey}` } : { "Lovable-API-Key": apiKey }),
+      },
+      body: JSON.stringify({
+        model: or ? model.slice(OR_PREFIX.length) : model,
+        ...(or ? {} : reasoningFor(model)),
+        messages,
+        ...extra,
+      }),
+    },
+  );
+  if (res.status === 429) throw new Error("Rate limit hit. Try again in a moment.");
+  if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
+  if (!res.ok) throw new Error(`AI error ${res.status}: ${await res.text()}`);
+  const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+  const content = json.choices?.[0]?.message?.content;
+  if (!content) throw new Error("Empty AI response");
+  return content;
 }
 
 // Robustly extract a JSON object from a model response that may include
@@ -228,9 +274,6 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }): Promise<AiDeck> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
-
     const userContent: Array<Record<string, unknown>> = [
       { type: "text", text: `Design concept: ${data.prompt || "(use the attached image as the brief)"}\n\nProduce exactly ${data.slideCount} slides.` },
     ];
@@ -238,27 +281,14 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
       userContent.push({ type: "image_url", image_url: { url: data.imageDataUrl } });
     }
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
-      body: JSON.stringify({
-        model: data.model,
-        ...reasoningFor(data.model),
-        messages: [
-          { role: "system", content: buildSystem(data.width, data.height, data.style, !!data.imageDataUrl) },
-          { role: "user", content: userContent },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
-
-    if (res.status === 429) throw new Error("Rate limit hit. Try again in a moment.");
-    if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
-    if (!res.ok) throw new Error(`AI gateway error ${res.status}: ${await res.text()}`);
-
-    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const content = json.choices?.[0]?.message?.content;
-    if (!content) throw new Error("Empty AI response");
+    const content = await chatComplete(
+      data.model,
+      [
+        { role: "system", content: buildSystem(data.width, data.height, data.style, !!data.imageDataUrl) },
+        { role: "user", content: userContent },
+      ],
+      { response_format: { type: "json_object" } },
+    );
 
     let parsed: AiDeck | AiTemplate;
     try {
@@ -414,9 +444,6 @@ export const editCurrentSlide = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }): Promise<AiPage> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
-
     const sys = `You are an elite graphic designer EDITING an existing slide on a ${data.width}×${data.height}px canvas.
 You will receive the CURRENT slide as JSON and a user instruction. Apply the instruction and return the FULL updated slide.
 
@@ -430,24 +457,14 @@ Rules:
 Return ONLY valid JSON, no commentary:
 { "bg": "#hex", "elements": Array<element> }`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
-      body: JSON.stringify({
-        model: data.model,
-        ...reasoningFor(data.model),
-        messages: [
-          { role: "system", content: sys },
-          { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nInstruction: ${data.prompt}` },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
-    if (res.status === 429) throw new Error("Rate limit hit. Try again in a moment.");
-    if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
-    if (!res.ok) throw new Error(`AI gateway error ${res.status}`);
-    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const content = json.choices?.[0]?.message?.content ?? "";
+    const content = await chatComplete(
+      data.model,
+      [
+        { role: "system", content: sys },
+        { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nInstruction: ${data.prompt}` },
+      ],
+      { response_format: { type: "json_object" } },
+    );
     const parsed = parseLooseJson<AiPage>(content);
     if (!parsed || !Array.isArray(parsed.elements)) throw new Error("AI response missing elements");
     return { bg: parsed.bg ?? data.page.bg, elements: parsed.elements };
@@ -484,9 +501,6 @@ export const redesignSlideVariations = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }): Promise<{ variants: AiPage[] }> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
-
     const sys = `You are an elite designer producing ${data.count} DISTINCT LAYOUT VARIATIONS of an existing slide.
 
 HARD RULES — no exceptions:
@@ -504,24 +518,14 @@ Shape effects: "liquid_glass", "neon", "soft_shadow", "inner_glow".
 Return ONLY valid JSON, no commentary:
 { "variants": Array<{ "bg": "#hex", "elements": Array<element> }> } — exactly ${data.count} entries.`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
-      body: JSON.stringify({
-        model: data.model,
-        ...reasoningFor(data.model),
-        messages: [
-          { role: "system", content: sys },
-          { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nProduce ${data.count} distinct layout variations.` },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
-    if (res.status === 429) throw new Error("Rate limit hit. Try again in a moment.");
-    if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
-    if (!res.ok) throw new Error(`AI gateway error ${res.status}`);
-    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const content = json.choices?.[0]?.message?.content ?? "";
+    const content = await chatComplete(
+      data.model,
+      [
+        { role: "system", content: sys },
+        { role: "user", content: `Current slide:\n${JSON.stringify(data.page)}\n\nProduce ${data.count} distinct layout variations.` },
+      ],
+      { response_format: { type: "json_object" } },
+    );
     const parsed = parseLooseJson<{ variants?: unknown }>(content);
     const arr = Array.isArray(parsed.variants) ? parsed.variants : [];
     const variants: AiPage[] = arr

@@ -24,6 +24,7 @@ type SettingsState = {
   aiEnabled: boolean;
   autoHidePanel: boolean;
   aiModel: string;
+  editorTheme: string;
   panels: Record<PanelId, boolean>;
   panelDurationMs: number;
   panelStiffness: number; // 0 = soft ease, 100 = springy overshoot
@@ -31,6 +32,7 @@ type SettingsState = {
   setAiEnabled: (v: boolean) => void;
   setAutoHidePanel: (v: boolean) => void;
   setAiModel: (v: string) => void;
+  setEditorTheme: (v: string) => void;
   setPanelDurationMs: (v: number) => void;
   setPanelStiffness: (v: number) => void;
   setReduceMotion: (v: boolean) => void;
@@ -57,9 +59,28 @@ export const AI_MODELS: Array<{ id: string; label: string; hint: string }> = [
   { id: "openai/gpt-5.6-luna", label: "GPT-5.6 Luna", hint: "fast openai" },
   { id: "openai/gpt-5.5", label: "GPT-5.5", hint: "frontier quality" },
   { id: "openai/gpt-5.4-mini", label: "GPT-5.4 Mini", hint: "cheap openai" },
+  { id: "openrouter/deepseek/deepseek-chat-v3-0324:free", label: "DeepSeek V3 (free)", hint: "openrouter · free" },
+  { id: "openrouter/meta-llama/llama-3.3-70b-instruct:free", label: "Llama 3.3 70B (free)", hint: "openrouter · free" },
+  { id: "openrouter/qwen/qwen3-coder:free", label: "Qwen3 Coder (free)", hint: "openrouter · free" },
 ];
 
 export const DEFAULT_AI_MODEL = AI_MODELS[0].id;
+
+export const EDITOR_THEMES: Array<{ id: string; label: string; hint: string }> = [
+  { id: "cyber", label: "Cyber", hint: "teal neon on ink (default)" },
+  { id: "glass", label: "Glass", hint: "soft frosted greys" },
+  { id: "neobrutalist", label: "Neobrutalist", hint: "paper white + hot accents" },
+  { id: "sketch", label: "Sketch", hint: "pencil on notepaper" },
+  { id: "xp", label: "XP", hint: "retro desktop blues" },
+  { id: "aqua", label: "Aqua", hint: "glossy ocean" },
+  { id: "pastel", label: "Pastel", hint: "light candy tones" },
+  { id: "vapor", label: "Vapor", hint: "purple/pink synthwave" },
+  { id: "matrix", label: "Matrix", hint: "green terminal" },
+  { id: "midnight", label: "Midnight", hint: "deep indigo dark" },
+  { id: "swiss", label: "Swiss", hint: "black, white, red" },
+];
+
+export const DEFAULT_EDITOR_THEME = "cyber";
 
 const ALL_ON: Record<PanelId, boolean> = {
   templates: true,
@@ -77,6 +98,7 @@ export const useSettings = create<SettingsState>()(
       aiEnabled: true,
       autoHidePanel: false,
       aiModel: DEFAULT_AI_MODEL,
+      editorTheme: DEFAULT_EDITOR_THEME,
       panels: { ...ALL_ON },
       panelDurationMs: DEFAULT_PANEL_DURATION,
       panelStiffness: DEFAULT_PANEL_STIFFNESS,
@@ -84,6 +106,7 @@ export const useSettings = create<SettingsState>()(
       setAiEnabled: (aiEnabled) => set({ aiEnabled }),
       setAutoHidePanel: (autoHidePanel) => set({ autoHidePanel }),
       setAiModel: (aiModel) => set({ aiModel }),
+      setEditorTheme: (editorTheme) => set({ editorTheme }),
       setPanelDurationMs: (panelDurationMs) => set({ panelDurationMs }),
       setPanelStiffness: (panelStiffness) => set({ panelStiffness }),
       setReduceMotion: (reduceMotion) => set({ reduceMotion }),
