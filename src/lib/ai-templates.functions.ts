@@ -274,9 +274,6 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }): Promise<AiDeck> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
-
     const userContent: Array<Record<string, unknown>> = [
       { type: "text", text: `Design concept: ${data.prompt || "(use the attached image as the brief)"}\n\nProduce exactly ${data.slideCount} slides.` },
     ];
@@ -284,27 +281,14 @@ export const generateAiTemplate = createServerFn({ method: "POST" })
       userContent.push({ type: "image_url", image_url: { url: data.imageDataUrl } });
     }
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
-      body: JSON.stringify({
-        model: data.model,
-        ...reasoningFor(data.model),
-        messages: [
-          { role: "system", content: buildSystem(data.width, data.height, data.style, !!data.imageDataUrl) },
-          { role: "user", content: userContent },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
-
-    if (res.status === 429) throw new Error("Rate limit hit. Try again in a moment.");
-    if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
-    if (!res.ok) throw new Error(`AI gateway error ${res.status}: ${await res.text()}`);
-
-    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const content = json.choices?.[0]?.message?.content;
-    if (!content) throw new Error("Empty AI response");
+    const content = await chatComplete(
+      data.model,
+      [
+        { role: "system", content: buildSystem(data.width, data.height, data.style, !!data.imageDataUrl) },
+        { role: "user", content: userContent },
+      ],
+      { response_format: { type: "json_object" } },
+    );
 
     let parsed: AiDeck | AiTemplate;
     try {
