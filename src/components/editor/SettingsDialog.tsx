@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Loader2, Pencil, Trash2, X } from "lucide-react";
-import { useSettings, PANEL_LABELS, AI_MODELS, springEasing, type PanelId } from "@/store/settings";
+import { ChevronDown, ChevronRight, Loader2, Pencil, Trash2, X } from "lucide-react";
+import { useSettings, PANEL_LABELS, AI_MODELS, EDITOR_THEMES, springEasing, type PanelId } from "@/store/settings";
 import { useAuth } from "@/hooks/use-auth";
 import {
   listMyPublicTemplates,
@@ -14,8 +14,10 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
     aiEnabled, setAiEnabled, aiModel, setAiModel, panels, togglePanel, resetPanels,
     panelDurationMs, setPanelDurationMs, panelStiffness, setPanelStiffness,
     reduceMotion, setReduceMotion, resetMotion,
+    editorTheme, setEditorTheme,
   } = useSettings();
   const { user } = useAuth();
+  const [motionOpen, setMotionOpen] = useState(false);
   const [templates, setTemplates] = useState<PublicTemplate[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -163,7 +165,14 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
         {/* Panel motion */}
         <section className="brutal-border-2 mb-4 bg-surface p-4">
           <div className="mb-2 flex items-center justify-between">
-            <div className="font-display text-[12px] tracking-[0.2em] text-teal">PANEL MOTION</div>
+            <button
+              onClick={() => setMotionOpen((v) => !v)}
+              aria-expanded={motionOpen}
+              className="flex items-center gap-2 font-display text-[12px] tracking-[0.2em] text-teal"
+            >
+              {motionOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+              PANEL MOTION
+            </button>
             <button
               onClick={resetMotion}
               className="font-mono text-[10px] text-teal/60 underline hover:text-teal"
@@ -171,6 +180,8 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
               reset
             </button>
           </div>
+          {motionOpen && (
+            <>
           <p className="mb-3 font-mono text-[10px] text-teal/60">
             &gt; how the tool panel slides open and closed
           </p>
@@ -227,6 +238,35 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             <p className="font-mono text-[9px] text-teal/50">
               &gt; motion is also disabled automatically when your system prefers reduced motion.
             </p>
+          </div>
+            </>
+          )}
+        </section>
+
+        {/* Editor theme */}
+        <section className="brutal-border-2 mb-4 bg-surface p-4">
+          <div className="mb-1 font-display text-[12px] tracking-[0.2em] text-teal">EDITOR THEME</div>
+          <p className="mb-3 font-mono text-[10px] text-teal/60">
+            &gt; skins the whole editor, same style packs as the components panel
+          </p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {EDITOR_THEMES.map((t) => {
+              const on = editorTheme === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setEditorTheme(t.id)}
+                  className={`border px-2 py-2 text-left transition-colors duration-150 ${
+                    on ? "border-teal bg-blue-deep text-teal" : "border-teal/30 bg-ink text-teal/60 hover:border-teal/60"
+                  }`}
+                >
+                  <div className="font-display text-[11px] tracking-[0.15em]">
+                    [{on ? "x" : " "}] {t.label}
+                  </div>
+                  <div className="font-mono text-[9px] opacity-70">{t.hint}</div>
+                </button>
+              );
+            })}
           </div>
         </section>
 
