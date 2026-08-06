@@ -12,9 +12,9 @@ const ALLOWED_TEXT_MODELS = [
   "openai/gpt-5.5",
   "openai/gpt-5.4-mini",
   // OpenRouter free tier (requires OPENROUTER_API_KEY)
-  "openrouter/deepseek/deepseek-chat-v3-0324:free",
-  "openrouter/meta-llama/llama-3.3-70b-instruct:free",
-  "openrouter/qwen/qwen3-coder:free",
+  "openrouter/openai/gpt-oss-20b:free",
+  "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+  "openrouter/google/gemma-4-31b-it:free",
 ];
 const DEFAULT_TEXT_MODEL = "google/gemini-3.6-flash";
 
