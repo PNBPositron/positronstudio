@@ -59,9 +59,9 @@ export const AI_MODELS: Array<{ id: string; label: string; hint: string }> = [
   { id: "openai/gpt-5.6-luna", label: "GPT-5.6 Luna", hint: "fast openai" },
   { id: "openai/gpt-5.5", label: "GPT-5.5", hint: "frontier quality" },
   { id: "openai/gpt-5.4-mini", label: "GPT-5.4 Mini", hint: "cheap openai" },
-  { id: "openrouter/deepseek/deepseek-chat-v3-0324:free", label: "DeepSeek V3 (free)", hint: "openrouter · free" },
-  { id: "openrouter/meta-llama/llama-3.3-70b-instruct:free", label: "Llama 3.3 70B (free)", hint: "openrouter · free" },
-  { id: "openrouter/qwen/qwen3-coder:free", label: "Qwen3 Coder (free)", hint: "openrouter · free" },
+  { id: "openrouter/openai/gpt-oss-20b:free", label: "GPT-OSS 20B (free)", hint: "openrouter · free" },
+  { id: "openrouter/nvidia/nemotron-3-super-120b-a12b:free", label: "Nemotron 3 Super 120B (free)", hint: "openrouter · free" },
+  { id: "openrouter/google/gemma-4-31b-it:free", label: "Gemma 4 31B (free)", hint: "openrouter · free" },
 ];
 
 export const DEFAULT_AI_MODEL = AI_MODELS[0].id;
