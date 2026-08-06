@@ -23,11 +23,15 @@ const TOOLS = [
 
 export function Sidebar() {
   const { tool, setTool } = useEditor();
-  const { panels, aiEnabled, panelDurationMs, panelStiffness, reduceMotion } = useSettings();
+  const { panels, aiEnabled, panelDurationMs, panelStiffness, reduceMotion, editorTheme } = useSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [hovering, setHovering] = useState(false);
   const panelOpen = hovering;
   const [systemReduced, setSystemReduced] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.dataset.editorTheme = editorTheme;
+  }, [editorTheme]);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
