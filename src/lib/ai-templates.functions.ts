@@ -444,9 +444,6 @@ export const editCurrentSlide = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }): Promise<AiPage> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
-
     const sys = `You are an elite graphic designer EDITING an existing slide on a ${data.width}×${data.height}px canvas.
 You will receive the CURRENT slide as JSON and a user instruction. Apply the instruction and return the FULL updated slide.
 
@@ -504,9 +501,6 @@ export const redesignSlideVariations = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }): Promise<{ variants: AiPage[] }> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
-
     const sys = `You are an elite designer producing ${data.count} DISTINCT LAYOUT VARIATIONS of an existing slide.
 
 HARD RULES — no exceptions:
