@@ -24,6 +24,7 @@ type SettingsState = {
   aiEnabled: boolean;
   autoHidePanel: boolean;
   aiModel: string;
+  editorTheme: string;
   panels: Record<PanelId, boolean>;
   panelDurationMs: number;
   panelStiffness: number; // 0 = soft ease, 100 = springy overshoot
@@ -31,6 +32,7 @@ type SettingsState = {
   setAiEnabled: (v: boolean) => void;
   setAutoHidePanel: (v: boolean) => void;
   setAiModel: (v: string) => void;
+  setEditorTheme: (v: string) => void;
   setPanelDurationMs: (v: number) => void;
   setPanelStiffness: (v: number) => void;
   setReduceMotion: (v: boolean) => void;
@@ -93,6 +95,7 @@ export const useSettings = create<SettingsState>()(
       aiEnabled: true,
       autoHidePanel: false,
       aiModel: DEFAULT_AI_MODEL,
+      editorTheme: DEFAULT_EDITOR_THEME,
       panels: { ...ALL_ON },
       panelDurationMs: DEFAULT_PANEL_DURATION,
       panelStiffness: DEFAULT_PANEL_STIFFNESS,
@@ -100,6 +103,7 @@ export const useSettings = create<SettingsState>()(
       setAiEnabled: (aiEnabled) => set({ aiEnabled }),
       setAutoHidePanel: (autoHidePanel) => set({ autoHidePanel }),
       setAiModel: (aiModel) => set({ aiModel }),
+      setEditorTheme: (editorTheme) => set({ editorTheme }),
       setPanelDurationMs: (panelDurationMs) => set({ panelDurationMs }),
       setPanelStiffness: (panelStiffness) => set({ panelStiffness }),
       setReduceMotion: (reduceMotion) => set({ reduceMotion }),
