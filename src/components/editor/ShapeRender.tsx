@@ -38,24 +38,40 @@ export function ShapeRender({ element }: { element: ShapeElement }) {
   const fillRef = gradient ? `url(#${gradId})` : fill;
   const defs = gradient ? (
     <defs>
-      <linearGradient
-        id={gradId}
-        gradientUnits="objectBoundingBox"
-        x1="0"
-        y1="0"
-        x2={Math.cos((gradient.angle * Math.PI) / 180)}
-        y2={Math.sin((gradient.angle * Math.PI) / 180)}
-      >
-        <stop offset="0%" stopColor={gradient.from} />
-        <stop offset="100%" stopColor={gradient.to} />
-      </linearGradient>
+      {(gradient.type ?? "linear") === "radial" ? (
+        <radialGradient id={gradId} gradientUnits="objectBoundingBox" cx="0.5" cy="0.5" r="0.75">
+          <stop offset="0%" stopColor={gradient.from} />
+          <stop offset="100%" stopColor={gradient.to} />
+        </radialGradient>
+      ) : (
+        <linearGradient
+          id={gradId}
+          gradientUnits="objectBoundingBox"
+          x1="0"
+          y1="0"
+          x2={Math.cos((gradient.angle * Math.PI) / 180)}
+          y2={Math.sin((gradient.angle * Math.PI) / 180)}
+        >
+          <stop offset="0%" stopColor={gradient.from} />
+          <stop offset="100%" stopColor={gradient.to} />
+        </linearGradient>
+      )}
     </defs>
   ) : null;
+  const dash =
+    element.strokeStyle === "dashed"
+      ? `${Math.max(6, strokeWidth * 3)} ${Math.max(4, strokeWidth * 2)}`
+      : element.strokeStyle === "dotted"
+        ? `0.1 ${Math.max(4, strokeWidth * 2.2)}`
+        : undefined;
   const common = {
     width: "100%",
     height: "100%",
     viewBox: `0 0 ${width} ${height}`,
     preserveAspectRatio: "none" as const,
+    strokeDasharray: dash,
+    strokeLinecap: element.strokeStyle === "dotted" ? ("round" as const) : undefined,
+    style: { opacity: element.opacity ?? 1 },
   };
   if (shape === "rect") {
     const r = Math.max(0, cornerRadius ?? 0);
@@ -144,7 +160,14 @@ export function ShapeRender({ element }: { element: ShapeElement }) {
   const d = pathFor(shape);
   if (d) {
     return (
-      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <svg
+        width="100%"
+        height="100%"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        strokeDasharray={dash}
+        style={{ opacity: element.opacity ?? 1 }}
+      >
         {defs}
         <path d={d} fill={fillRef} stroke={stroke} strokeWidth={strokeWidth / 2} strokeLinejoin="miter" />
       </svg>

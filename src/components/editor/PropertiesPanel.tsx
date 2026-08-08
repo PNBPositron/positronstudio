@@ -427,6 +427,33 @@ export function PropertiesPanel() {
                 className="w-full accent-teal"
               />
             </Field>
+            <Field label="Stroke style">
+              <div className="grid grid-cols-3 gap-1.5">
+                {(["solid", "dashed", "dotted"] as const).map((sst) => (
+                  <button
+                    key={sst}
+                    onClick={() => update(el.id, { strokeStyle: sst })}
+                    className={`brutal-border-2 py-1.5 font-mono text-[10px] uppercase ${
+                      (el.strokeStyle ?? "solid") === sst ? "bg-blue text-ink border-teal" : "bg-surface text-teal hover:border-teal"
+                    }`}
+                  >
+                    {sst}
+                  </button>
+                ))}
+              </div>
+            </Field>
+            <Field label="Opacity">
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={el.opacity ?? 1}
+                onChange={(e) => update(el.id, { opacity: +e.target.value })}
+                className="w-full accent-teal"
+              />
+              <div className="font-mono text-[11px] text-teal/70">{Math.round((el.opacity ?? 1) * 100)}%</div>
+            </Field>
             <Field label="Effect">
               <select
                 value={el.effect ?? "none"}
@@ -507,39 +534,6 @@ export function PropertiesPanel() {
           </>
         )}
 
-        {el.type === "model3d" && (
-          <>
-            <div className="font-display text-[10px] uppercase tracking-[0.25em] text-teal/80">
-              ▸ Sphere
-            </div>
-            <Field label="Color">
-              <ColorRow value={el.color} onChange={(c) => update(el.id, { color: c })} />
-            </Field>
-            <Field label="Tilt X">
-              <input
-                type="range"
-                min={-90}
-                max={90}
-                value={el.tiltX}
-                onChange={(e) => update(el.id, { tiltX: +e.target.value })}
-                className="w-full accent-teal"
-              />
-              <div className="font-mono text-[11px] text-teal/70">{el.tiltX}°</div>
-            </Field>
-            <Field label="Tilt Y">
-              <input
-                type="range"
-                min={-180}
-                max={180}
-                value={el.tiltY}
-                onChange={(e) => update(el.id, { tiltY: +e.target.value })}
-                className="w-full accent-teal"
-              />
-              <div className="font-mono text-[11px] text-teal/70">{el.tiltY}°</div>
-            </Field>
-          </>
-        )}
-
         {el.type === "image" && (() => {
           const f: ImageFilters = { ...DEFAULT_FILTERS, ...(el.filters ?? {}) };
           const set = (patch: Partial<ImageFilters>) =>
@@ -559,6 +553,90 @@ export function PropertiesPanel() {
               <div className="font-display text-[10px] uppercase tracking-[0.25em] text-teal/80">
                 ▸ Image effects
               </div>
+              <Field label="Fit">
+                <div className="grid grid-cols-3 gap-1.5">
+                  {(["cover", "contain", "fill"] as const).map((fit) => (
+                    <button
+                      key={fit}
+                      onClick={() => update(el.id, { fit })}
+                      className={`brutal-border-2 py-1.5 font-mono text-[10px] uppercase ${
+                        (el.fit ?? "cover") === fit ? "bg-blue text-ink border-teal" : "bg-surface text-teal hover:border-teal"
+                      }`}
+                    >
+                      {fit}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <Field label="Corner radius">
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.floor(Math.min(el.width, el.height) / 2)}
+                  value={el.cornerRadius ?? 0}
+                  onChange={(e) => update(el.id, { cornerRadius: +e.target.value })}
+                  className="w-full accent-teal"
+                />
+                <div className="font-mono text-[11px] text-teal/70">{el.cornerRadius ?? 0}px</div>
+              </Field>
+              <Field label="Opacity">
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={el.opacity ?? 1}
+                  onChange={(e) => update(el.id, { opacity: +e.target.value })}
+                  className="w-full accent-teal"
+                />
+                <div className="font-mono text-[11px] text-teal/70">{Math.round((el.opacity ?? 1) * 100)}%</div>
+              </Field>
+              <Field label="Border">
+                <input
+                  type="range"
+                  min={0}
+                  max={24}
+                  value={el.borderWidth ?? 0}
+                  onChange={(e) => update(el.id, { borderWidth: +e.target.value })}
+                  className="w-full accent-teal"
+                />
+                <ColorRow value={el.borderColor ?? "#0a0f1f"} onChange={(c) => update(el.id, { borderColor: c })} />
+              </Field>
+              <Field label="Flip">
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    onClick={() => update(el.id, { flipX: !el.flipX })}
+                    className={`brutal-border-2 py-1.5 font-mono text-[10px] uppercase ${el.flipX ? "bg-blue text-ink border-teal" : "bg-surface text-teal hover:border-teal"}`}
+                  >
+                    horizontal
+                  </button>
+                  <button
+                    onClick={() => update(el.id, { flipY: !el.flipY })}
+                    className={`brutal-border-2 py-1.5 font-mono text-[10px] uppercase ${el.flipY ? "bg-blue text-ink border-teal" : "bg-surface text-teal hover:border-teal"}`}
+                  >
+                    vertical
+                  </button>
+                </div>
+              </Field>
+              <GradientEditor
+                gradient={el.gradient}
+                fill="#7df9ff"
+                onChange={(g) => update(el.id, { gradient: g })}
+              />
+              {el.gradient && (
+                <Field label="Gradient strength">
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={el.gradientOpacity ?? 0.5}
+                    onChange={(e) => update(el.id, { gradientOpacity: +e.target.value })}
+                    className="w-full accent-teal"
+                  />
+                  <div className="font-mono text-[11px] text-teal/70">{Math.round((el.gradientOpacity ?? 0.5) * 100)}%</div>
+                </Field>
+              )}
               {FX.map(([key, label, min, max, step, unit]) => (
                 <Field key={key} label={label}>
                   <input
@@ -825,6 +903,21 @@ function GradientEditor({
               className="w-full accent-teal"
             />
             <div className="font-mono text-[11px] text-teal/70">{g.angle}°</div>
+          </Field>
+          <Field label="Gradient type">
+            <div className="grid grid-cols-2 gap-1.5">
+              {(["linear", "radial"] as const).map((tp) => (
+                <button
+                  key={tp}
+                  onClick={() => onChange({ ...g, type: tp })}
+                  className={`brutal-border-2 py-1.5 font-mono text-[10px] uppercase ${
+                    (g.type ?? "linear") === tp ? "bg-blue text-ink border-teal" : "bg-surface text-teal hover:border-teal"
+                  }`}
+                >
+                  {tp}
+                </button>
+              ))}
+            </div>
           </Field>
         </>
       )}

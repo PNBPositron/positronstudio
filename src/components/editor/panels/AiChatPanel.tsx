@@ -6,7 +6,6 @@ import {
   newText,
   newShape,
   newIcon,
-  newModel3D,
   type AnyElement,
   type Page,
 } from "@/store/editor";
@@ -41,15 +40,6 @@ function buildFromAi(els: AiElementInput[]): AnyElement[] {
           color: e.color, strokeWidth: e.strokeWidth ?? 2,
         });
       }
-      if (e.type === "model3d") {
-        return newModel3D("sphere", {
-          x: e.x, y: e.y, width: e.width, height: e.height,
-          color: e.color,
-          spinSpeed: e.spinSpeed ?? 8,
-          tiltX: e.tiltX ?? -20,
-          tiltY: e.tiltY ?? 25,
-        });
-      }
       return null;
     })
     .filter((e): e is AnyElement => e !== null);
@@ -71,10 +61,6 @@ function toAi(els: AnyElement[]): AiElementInput[] {
     if (e.type === "icon") return {
       type: "icon", name: e.name, x: e.x, y: e.y, width: e.width, height: e.height,
       color: e.color, strokeWidth: e.strokeWidth,
-    };
-    if (e.type === "model3d") return {
-      type: "model3d", shape: "sphere", x: e.x, y: e.y, width: e.width, height: e.height,
-      color: e.color, spinSpeed: e.spinSpeed, tiltX: e.tiltX, tiltY: e.tiltY,
     };
     return null;
   }).filter((x): x is AiElementInput => x !== null);

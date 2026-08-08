@@ -8,7 +8,7 @@ import {
 import { useAuth, signOut } from "@/hooks/use-auth";
 import { saveDesign, publishAsTemplate } from "@/lib/designs";
 import { MyDesignsDialog } from "./MyDesignsDialog";
-import { exportPNG, exportPDF, exportPPTX, exportVideo, exportHTML, exportJSON, importJSONFile } from "@/lib/export";
+import { exportPNG, exportPDF, exportPPTX, exportGIF, exportHTML, exportJSON, importJSONFile } from "@/lib/export";
 import { useServerFn } from "@tanstack/react-start";
 import { translateTexts } from "@/lib/ai-templates.functions";
 import { useSettings } from "@/store/settings";
@@ -44,7 +44,7 @@ export function Toolbar() {
     return () => clearTimeout(t);
   }, [savedAt]);
 
-  const [exporting, setExporting] = useState<null | "png" | "pdf" | "pptx" | "mp4" | "html" | "json">(null);
+  const [exporting, setExporting] = useState<null | "png" | "pdf" | "pptx" | "gif" | "html" | "json">(null);
   const [exportOpen, setExportOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const importRef = useRef<HTMLInputElement>(null);
@@ -58,7 +58,7 @@ export function Toolbar() {
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  const runExport = async (kind: "png" | "pdf" | "pptx" | "mp4" | "html" | "json") => {
+  const runExport = async (kind: "png" | "pdf" | "pptx" | "gif" | "html" | "json") => {
     setExportOpen(false);
     setExporting(kind);
     try {
@@ -68,12 +68,7 @@ export function Toolbar() {
       else if (kind === "pptx") await exportPPTX(n);
       else if (kind === "html") await exportHTML(n);
       else if (kind === "json") exportJSON(n);
-      else {
-        const { ext } = await exportVideo(n);
-        if (ext === "webm") {
-          alert("Your browser couldn't encode MP4 directly — saved as .webm (same content). Use Chrome/Edge for native .mp4.");
-        }
-      }
+      else await exportGIF(n);
     } catch (e) {
       console.error(e);
       alert(e instanceof Error ? e.message : "Export failed");
@@ -326,7 +321,7 @@ export function Toolbar() {
           </button>
           {exportOpen && (
             <div className="brutal-border-2 absolute right-0 top-12 z-50 w-52 bg-ink p-1">
-              {(["png", "pdf", "pptx", "html", "json", "mp4"] as const).map((k) => (
+              {(["png", "pdf", "pptx", "html", "json", "gif"] as const).map((k) => (
                 <button
                   key={k}
                   onClick={() => runExport(k)}
@@ -334,7 +329,7 @@ export function Toolbar() {
                 >
                   <span>EXPORT .{k.toUpperCase()}</span>
                   <span className="font-mono text-[9px] text-teal/60">
-                    {k === "png" ? "current" : k === "mp4" ? "video" : k === "html" ? "interactive" : k === "json" ? "editable" : "all pages"}
+                    {k === "png" ? "current" : k === "gif" ? "animated" : k === "html" ? "interactive" : k === "json" ? "editable" : "all pages"}
                   </span>
                 </button>
               ))}

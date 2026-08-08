@@ -70,14 +70,8 @@ export const EDITOR_THEMES: Array<{ id: string; label: string; hint: string }> =
   { id: "cyber", label: "Cyber", hint: "teal neon on ink (default)" },
   { id: "glass", label: "Glass", hint: "soft frosted greys" },
   { id: "neobrutalist", label: "Neobrutalist", hint: "paper white + hot accents" },
-  { id: "sketch", label: "Sketch", hint: "pencil on notepaper" },
-  { id: "xp", label: "XP", hint: "retro desktop blues" },
-  { id: "aqua", label: "Aqua", hint: "glossy ocean" },
-  { id: "pastel", label: "Pastel", hint: "light candy tones" },
-  { id: "vapor", label: "Vapor", hint: "purple/pink synthwave" },
   { id: "matrix", label: "Matrix", hint: "green terminal" },
   { id: "midnight", label: "Midnight", hint: "deep indigo dark" },
-  { id: "swiss", label: "Swiss", hint: "black, white, red" },
 ];
 
 export const DEFAULT_EDITOR_THEME = "cyber";

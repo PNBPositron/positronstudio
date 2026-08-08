@@ -9,7 +9,6 @@ import {
   newText,
   newShape,
   newIcon,
-  newModel3D,
 } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
 import { Upload, Loader2, FileUp } from "lucide-react";
@@ -59,15 +58,6 @@ function buildFromAi(els: AiElementInput[]): AnyElement[] {
         return newIcon(e.name, {
           x: e.x, y: e.y, width: e.width, height: e.height,
           color: e.color, strokeWidth: e.strokeWidth ?? 2,
-        });
-      }
-      if (e.type === "model3d") {
-        return newModel3D("sphere", {
-          x: e.x, y: e.y, width: e.width, height: e.height,
-          color: e.color,
-          spinSpeed: e.spinSpeed ?? 8,
-          tiltX: e.tiltX ?? -20,
-          tiltY: e.tiltY ?? 25,
         });
       }
       return null;

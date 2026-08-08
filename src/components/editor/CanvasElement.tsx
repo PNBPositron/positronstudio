@@ -1,7 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { useEditor, UI_STYLE_THEMES, type AnyElement, type ShapeElement, type QuizElement, type ChartElement, type ButtonElement, type ElementShadow, DEFAULT_FILTERS, type ImageFilters } from "@/store/editor";
 import { ShapeRender } from "./ShapeRender";
-import { Model3DRender } from "./Model3DRender";
 import { UiRender } from "./UiRender";
 import * as LucideIcons from "lucide-react";
 import { HelpCircle, Check, X as XIcon } from "lucide-react";
@@ -279,18 +278,49 @@ export function CanvasElement({ element, scale }: { element: AnyElement; scale: 
         );
       })()}
       {element.type === "image" && (
-        <img
-          src={element.src}
-          alt=""
-          draggable={false}
+        <div
           style={{
+            position: "relative",
             width: "100%",
             height: "100%",
-            objectFit: "cover",
-            display: "block",
-            filter: [filterCss(element.filters), shadowFilter(element.shadow)].filter(Boolean).join(" "),
+            borderRadius: element.cornerRadius ?? 0,
+            overflow: "hidden",
+            border:
+              element.borderWidth && element.borderWidth > 0
+                ? `${element.borderWidth}px solid ${element.borderColor ?? "#000000"}`
+                : undefined,
+            boxSizing: "border-box",
+            opacity: element.opacity ?? 1,
           }}
-        />
+        >
+          <img
+            src={element.src}
+            alt=""
+            draggable={false}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: element.fit ?? "cover",
+              display: "block",
+              transform: `scale(${element.flipX ? -1 : 1}, ${element.flipY ? -1 : 1})`,
+              filter: [filterCss(element.filters), shadowFilter(element.shadow)].filter(Boolean).join(" "),
+            }}
+          />
+          {element.gradient && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                opacity: element.gradientOpacity ?? 0.5,
+                background:
+                  (element.gradient.type ?? "linear") === "radial"
+                    ? `radial-gradient(circle at 50% 50%, ${element.gradient.from}, ${element.gradient.to})`
+                    : `linear-gradient(${element.gradient.angle}deg, ${element.gradient.from}, ${element.gradient.to})`,
+                pointerEvents: "none",
+              }}
+            />
+          )}
+        </div>
       )}
       {element.type === "icon" && (() => {
         const Comp =
@@ -304,7 +334,6 @@ export function CanvasElement({ element, scale }: { element: AnyElement; scale: 
           />
         );
       })()}
-      {element.type === "model3d" && <Model3DRender element={element} />}
       {element.type === "quiz" && (() => {
         const presenting = useEditor.getState().presenting;
         return (
