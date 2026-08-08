@@ -238,7 +238,10 @@ export async function exportGIF(
   enc.finish();
 
   onProgress?.("saving…");
-  const blob = new Blob([enc.bytes()], { type: "image/gif" });
+  const bytes = enc.bytes();
+  const buf = new Uint8Array(bytes.length);
+  buf.set(bytes);
+  const blob = new Blob([buf.buffer as ArrayBuffer], { type: "image/gif" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
