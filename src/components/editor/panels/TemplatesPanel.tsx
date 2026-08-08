@@ -6,7 +6,6 @@ import {
   newText,
   newShape,
   newIcon,
-  newModel3D,
   DEFAULT_PAGE_DURATION,
   type AnyElement,
   type Page,
@@ -52,15 +51,6 @@ function buildFromAi(els: AiElementInput[]): AnyElement[] {
         return newIcon(e.name, {
           x: e.x, y: e.y, width: e.width, height: e.height,
           color: e.color, strokeWidth: e.strokeWidth ?? 2,
-        });
-      }
-      if (e.type === "model3d") {
-        return newModel3D("sphere", {
-          x: e.x, y: e.y, width: e.width, height: e.height,
-          color: e.color,
-          spinSpeed: e.spinSpeed ?? 8,
-          tiltX: e.tiltX ?? -20,
-          tiltY: e.tiltY ?? 25,
         });
       }
       return null;
