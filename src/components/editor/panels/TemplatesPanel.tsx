@@ -23,6 +23,7 @@ import {
   type PublicTemplate,
 } from "@/lib/designs";
 import { SlideThumbnail } from "../SlideThumbnail";
+import { STARTER_STYLES, buildStarterDeck } from "@/lib/starter-templates";
 import { useSettings } from "@/store/settings";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -274,6 +275,33 @@ export function TemplatesPanel() {
         )}
       </div>
       )}
+
+      <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">
+        ▸ Starter styles
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {STARTER_STYLES.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => {
+              if (!window.confirm(`Load "${s.name}" — this replaces your current pages.`)) return;
+              useEditor.getState().loadPages(buildStarterDeck(s, canvasW, canvasH));
+            }}
+            title={`Load ${s.name}`}
+            className="brutal-border-2 overflow-hidden bg-surface text-left hover:border-teal"
+          >
+            <div className="flex h-10 items-center gap-1 px-2" style={{ background: s.bg }}>
+              <span className="h-5 w-1.5" style={{ background: s.accent }} />
+              <span className="h-3 w-8" style={{ background: s.ink, opacity: 0.85 }} />
+              <span className="h-3 w-4" style={{ background: s.accent2, opacity: 0.85 }} />
+            </div>
+            <div className="bg-ink px-2 py-1 font-display text-[10px] uppercase tracking-[0.15em] text-teal truncate">
+              {s.name}
+            </div>
+            <div className="bg-ink px-2 pb-1 font-mono text-[9px] text-teal/50 truncate">{s.hint}</div>
+          </button>
+        ))}
+      </div>
 
       <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">
         ▸ Top community templates
