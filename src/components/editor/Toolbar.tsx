@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useEditor, type Page, type AnyElement } from "@/store/editor";
 import {
   Undo2, Redo2, Trash2, Download, Play, Zap, Save, Cloud,
-  FolderOpen, LogOut, FilePlus, Loader2, User as UserIcon, ChevronDown, Share2, Upload, Languages,
+  FolderOpen, LogOut, FilePlus, Loader2, User as UserIcon, ChevronDown, Share2, Upload, Languages, Settings,
 } from "lucide-react";
 import { useAuth, signOut } from "@/hooks/use-auth";
 import { saveDesign, publishAsTemplate } from "@/lib/designs";
@@ -12,6 +12,7 @@ import { exportPNG, exportPDF, exportPPTX, exportVideo, exportHTML, exportJSON, 
 import { useServerFn } from "@tanstack/react-start";
 import { translateTexts } from "@/lib/ai-templates.functions";
 import { useSettings } from "@/store/settings";
+import { useUi } from "@/store/ui";
 
 const LANGUAGES = [
   "Spanish", "French", "German", "Italian", "Portuguese", "Dutch",
@@ -21,11 +22,12 @@ const LANGUAGES = [
 
 export function Toolbar() {
   const {
-    undo, redo, clear, setPresenting,
+    undo, redo, clear,
     designId, designName, setDesignName, setDesignMeta, newDesign,
   } = useEditor();
   const { user } = useAuth();
   const aiEnabled = useSettings((s) => s.aiEnabled);
+  const setSettingsOpen = useUi((s) => s.setSettingsOpen);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [shareLink, setShareLink] = useState<string | null>(null);
@@ -217,9 +219,15 @@ export function Toolbar() {
         <IconBtn onClick={redo} title="Redo">
           <Redo2 className="h-4 w-4" strokeWidth={2.5} />
         </IconBtn>
-        <IconBtn onClick={clear} title="Clear">
-          <Trash2 className="h-4 w-4" strokeWidth={2.5} />
-        </IconBtn>
+        {user ? (
+          <IconBtn onClick={() => setSettingsOpen(true)} title="Settings">
+            <Settings className="h-4 w-4" strokeWidth={2.5} />
+          </IconBtn>
+        ) : (
+          <IconBtn onClick={clear} title="Clear">
+            <Trash2 className="h-4 w-4" strokeWidth={2.5} />
+          </IconBtn>
+        )}
         <IconBtn onClick={() => importRef.current?.click()} title="Import .json design">
           <Upload className="h-4 w-4" strokeWidth={2.5} />
         </IconBtn>
@@ -302,13 +310,6 @@ export function Toolbar() {
           </Link>
         )}
 
-        <button
-          onClick={() => setPresenting(true)}
-          className="brutal-border brutal-press flex items-center gap-2 bg-surface px-4 py-2 font-display text-xs tracking-[0.2em] text-teal hover:bg-teal/10"
-        >
-          <Play className="h-3.5 w-3.5 fill-teal" strokeWidth={3} />
-          PRESENT
-        </button>
         <div className="relative" ref={exportRef}>
           <button
             onClick={() => setExportOpen((v) => !v)}
