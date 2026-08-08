@@ -3,7 +3,7 @@ import {
   HelpCircle, BarChart3, LineChart, PieChart, AreaChart, MousePointerClick, Youtube, Globe,
   Square, Hash, Gauge, AlertTriangle, ListChecks, Quote, User, CreditCard, Command, TrendingUp,
   AppWindow, Chrome, Search, TerminalSquare, Smartphone, MessageSquare, Rows3, ToggleRight, LogIn, Bell,
-  PanelBottom, PanelLeft,
+  PanelBottom, PanelLeft, LayoutPanelTop, FolderOpen, SlidersHorizontal, Terminal,
 } from "lucide-react";
 import {
   useEditor, newQuiz, newChart, newButton, newEmbed, newUi, toEmbedSrc,
@@ -38,6 +38,10 @@ const REAL_UI_KINDS: Array<{ kind: UiKind; label: string; Icon: typeof Square }>
   { kind: "notification", label: "Toast", Icon: Bell },
   { kind: "taskbar", label: "Window taskbar", Icon: PanelBottom },
   { kind: "vtabs", label: "Vertical tabs", Icon: PanelLeft },
+  { kind: "kdePanel", label: "KDE panel", Icon: LayoutPanelTop },
+  { kind: "kdeFiles", label: "Dolphin files", Icon: FolderOpen },
+  { kind: "kdeRunner", label: "KRunner", Icon: Terminal },
+  { kind: "kdeSettings", label: "KDE settings", Icon: SlidersHorizontal },
 ];
 
 const STYLES = Object.keys(UI_STYLE_THEMES) as UiStyle[];
