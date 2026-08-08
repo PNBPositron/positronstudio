@@ -427,6 +427,33 @@ export function PropertiesPanel() {
                 className="w-full accent-teal"
               />
             </Field>
+            <Field label="Stroke style">
+              <div className="grid grid-cols-3 gap-1.5">
+                {(["solid", "dashed", "dotted"] as const).map((sst) => (
+                  <button
+                    key={sst}
+                    onClick={() => update(el.id, { strokeStyle: sst })}
+                    className={`brutal-border-2 py-1.5 font-mono text-[10px] uppercase ${
+                      (el.strokeStyle ?? "solid") === sst ? "bg-blue text-ink border-teal" : "bg-surface text-teal hover:border-teal"
+                    }`}
+                  >
+                    {sst}
+                  </button>
+                ))}
+              </div>
+            </Field>
+            <Field label="Opacity">
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={el.opacity ?? 1}
+                onChange={(e) => update(el.id, { opacity: +e.target.value })}
+                className="w-full accent-teal"
+              />
+              <div className="font-mono text-[11px] text-teal/70">{Math.round((el.opacity ?? 1) * 100)}%</div>
+            </Field>
             <Field label="Effect">
               <select
                 value={el.effect ?? "none"}
