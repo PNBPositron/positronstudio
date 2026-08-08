@@ -102,7 +102,7 @@ export const useSettings = create<SettingsState>()(
       panels: { ...ALL_ON },
       panelDurationMs: DEFAULT_PANEL_DURATION,
       panelStiffness: DEFAULT_PANEL_STIFFNESS,
-      reduceMotion: false,
+      reduceMotion: true,
       setAiEnabled: (aiEnabled) => set({ aiEnabled }),
       setAutoHidePanel: (autoHidePanel) => set({ autoHidePanel }),
       setAiModel: (aiModel) => set({ aiModel }),
@@ -114,7 +114,7 @@ export const useSettings = create<SettingsState>()(
         set({
           panelDurationMs: DEFAULT_PANEL_DURATION,
           panelStiffness: DEFAULT_PANEL_STIFFNESS,
-          reduceMotion: false,
+          reduceMotion: true,
         }),
       togglePanel: (id) =>
         set((s) => {
@@ -125,6 +125,10 @@ export const useSettings = create<SettingsState>()(
         }),
       resetPanels: () => set({ panels: { ...ALL_ON } }),
     }),
-    { name: "positron.settings" },
+    {
+      name: "positron.settings",
+      version: 2,
+      migrate: (state) => ({ ...(state as SettingsState), reduceMotion: true }),
+    },
   ),
 );

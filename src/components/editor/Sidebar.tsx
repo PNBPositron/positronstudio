@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useEditor } from "@/store/editor";
 import { useSettings, springEasing, type PanelId } from "@/store/settings";
+import { useUi } from "@/store/ui";
 import { LayoutTemplate, Type, Shapes, Upload, SlidersHorizontal, Bot, Blocks, Settings } from "lucide-react";
 import { TemplatesPanel } from "./panels/TemplatesPanel";
 import { TextPanel } from "./panels/TextPanel";
@@ -24,7 +25,8 @@ const TOOLS = [
 export function Sidebar() {
   const { tool, setTool } = useEditor();
   const { panels, aiEnabled, panelDurationMs, panelStiffness, reduceMotion, editorTheme } = useSettings();
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsOpen = useUi((s) => s.settingsOpen);
+  const setSettingsOpen = useUi((s) => s.setSettingsOpen);
   const [hovering, setHovering] = useState(false);
   const panelOpen = hovering;
   const [systemReduced, setSystemReduced] = useState(false);
