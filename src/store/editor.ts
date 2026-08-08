@@ -60,6 +60,7 @@ export type ShapeGradient = {
   from: string;
   to: string;
   angle: number; // degrees
+  type?: "linear" | "radial";
 };
 export type ShapeElement = ElementBase & {
   type: "shape";
@@ -71,6 +72,8 @@ export type ShapeElement = ElementBase & {
   shadow?: ElementShadow;
   gradient?: ShapeGradient;
   cornerRadius?: number; // px, used by rect
+  opacity?: number; // 0..1
+  strokeStyle?: "solid" | "dashed" | "dotted";
 };
 
 export type ImageFilters = {
@@ -100,6 +103,15 @@ export type ImageElement = ElementBase & {
   src: string;
   filters?: ImageFilters;
   shadow?: ElementShadow;
+  fit?: "cover" | "contain" | "fill";
+  cornerRadius?: number;
+  opacity?: number; // 0..1
+  borderWidth?: number;
+  borderColor?: string;
+  flipX?: boolean;
+  flipY?: boolean;
+  gradient?: ShapeGradient; // optional color wash over the image
+  gradientOpacity?: number; // 0..1
 };
 
 export type IconElement = ElementBase & {
@@ -107,16 +119,6 @@ export type IconElement = ElementBase & {
   name: string; // lucide icon name in PascalCase
   color: string;
   strokeWidth: number;
-};
-
-export type Model3DKind = "sphere";
-export type Model3DElement = ElementBase & {
-  type: "model3d";
-  shape: Model3DKind;
-  color: string;
-  spinSpeed: number; // seconds per full revolution; 0 = static
-  tiltX: number; // deg
-  tiltY: number; // deg
 };
 
 export type QuizOption = { id: string; text: string };
@@ -205,7 +207,11 @@ export type UiKind =
   | "login"
   | "notification"
   | "taskbar"
-  | "vtabs";
+  | "vtabs"
+  | "kdePanel"
+  | "kdeFiles"
+  | "kdeRunner"
+  | "kdeSettings";
 
 export type UiElement = ElementBase & {
   type: "ui";
@@ -446,7 +452,6 @@ export type AnyElement =
   | ShapeElement
   | ImageElement
   | IconElement
-  | Model3DElement
   | QuizElement
   | ChartElement
   | ButtonElement
@@ -596,25 +601,6 @@ export const newIcon = (name: string, overrides: Partial<IconElement> = {}): Ico
   name,
   color: "#0a0f1f",
   strokeWidth: 2,
-  ...overrides,
-});
-
-export const newModel3D = (
-  shape: Model3DKind,
-  overrides: Partial<Model3DElement> = {},
-): Model3DElement => ({
-  id: uid(),
-  type: "model3d",
-  x: 240,
-  y: 240,
-  width: 320,
-  height: 320,
-  rotation: 0,
-  shape,
-  color: "#4d7cff",
-  spinSpeed: 8,
-  tiltX: -20,
-  tiltY: 25,
   ...overrides,
 });
 
@@ -785,6 +771,10 @@ const UI_DEFAULTS: Record<UiKind, { w: number; h: number; title: string; body: s
   notification: { w: 560, h: 160, title: "Deck published", body: "Your presentation is now live.", value: 0, items: [] },
   taskbar: { w: 900, h: 88, title: "Windows", body: "9:41 AM", value: 0, items: ["Explorer", "Edge", "Mail", "Store", "Photos"] },
   vtabs: { w: 860, h: 520, title: "Positron Studio", body: "https://positronstudio.lovable.app", value: 0, items: ["Dashboard", "Editor", "Templates", "Settings"] },
+  kdePanel: { w: 900, h: 88, title: "Plasma", body: "9:41", value: 0, items: ["Dolphin", "Konsole", "Firefox", "Kate", "Discover"] },
+  kdeFiles: { w: 840, h: 520, title: "Documents — Dolphin", body: "/home/user/Documents", value: 0, items: ["Home", "Desktop", "Documents", "Downloads", "Pictures"] },
+  kdeRunner: { w: 720, h: 320, title: "konsole", body: "KRunner", value: 0, items: ["Konsole — Terminal", "Konsolidate — App", "Console settings"] },
+  kdeSettings: { w: 860, h: 520, title: "System Settings", body: "Appearance", value: 0, items: ["Appearance", "Workspace", "Networking", "Hardware"] },
 };
 
 export const newUi = (
