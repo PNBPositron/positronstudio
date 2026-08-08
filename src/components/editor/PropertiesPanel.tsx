@@ -507,39 +507,6 @@ export function PropertiesPanel() {
           </>
         )}
 
-        {el.type === "model3d" && (
-          <>
-            <div className="font-display text-[10px] uppercase tracking-[0.25em] text-teal/80">
-              ▸ Sphere
-            </div>
-            <Field label="Color">
-              <ColorRow value={el.color} onChange={(c) => update(el.id, { color: c })} />
-            </Field>
-            <Field label="Tilt X">
-              <input
-                type="range"
-                min={-90}
-                max={90}
-                value={el.tiltX}
-                onChange={(e) => update(el.id, { tiltX: +e.target.value })}
-                className="w-full accent-teal"
-              />
-              <div className="font-mono text-[11px] text-teal/70">{el.tiltX}°</div>
-            </Field>
-            <Field label="Tilt Y">
-              <input
-                type="range"
-                min={-180}
-                max={180}
-                value={el.tiltY}
-                onChange={(e) => update(el.id, { tiltY: +e.target.value })}
-                className="w-full accent-teal"
-              />
-              <div className="font-mono text-[11px] text-teal/70">{el.tiltY}°</div>
-            </Field>
-          </>
-        )}
-
         {el.type === "image" && (() => {
           const f: ImageFilters = { ...DEFAULT_FILTERS, ...(el.filters ?? {}) };
           const set = (patch: Partial<ImageFilters>) =>
