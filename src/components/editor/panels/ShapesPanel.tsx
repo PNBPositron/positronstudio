@@ -1,11 +1,6 @@
-import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Loader2 } from "lucide-react";
-import { useEditor, newShape, newModel3D, type ShapeKind, type AnyElement } from "@/store/editor";
+import { useEditor, newShape, type ShapeKind } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
-import { Model3DRender } from "../Model3DRender";
 import { shapePathD } from "../ShapeRender";
-import { generate3DScene } from "@/lib/ai-templates.functions";
 
 const SHAPES: { kind: ShapeKind; label: string }[] = [
   { kind: "rect", label: "Rectangle" },
@@ -27,44 +22,15 @@ const SHAPES: { kind: ShapeKind; label: string }[] = [
 
 const FILLS = ["#7df9ff", "#ff0080"];
 
-const SPHERE_PRESETS: Array<{ label: string; color: string }> = [
-  { label: "Plasma", color: "#ff0080" },
-  { label: "Cyan", color: "#7df9ff" },
-  { label: "Cobalt", color: "#4d7cff" },
-  { label: "Acid", color: "#ccff00" },
-  { label: "Sun", color: "#ffd84a" },
-  { label: "Violet", color: "#b16bff" },
+const GRADIENTS: Array<{ from: string; to: string }> = [
+  { from: "#7df9ff", to: "#4d7cff" },
+  { from: "#ff0080", to: "#ffd84a" },
+  { from: "#b16bff", to: "#ff6ec7" },
+  { from: "#ccff00", to: "#00e5ff" },
 ];
 
 export function ShapesPanel() {
-  const { add, loadTemplate, canvasW, canvasH } = useEditor();
-  const generate = useServerFn(generate3DScene);
-  const [prompt, setPrompt] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleGenerate = async () => {
-    if (!prompt.trim() || loading) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await generate({ data: { prompt, width: canvasW, height: canvasH } });
-      const els: AnyElement[] = res.models.map((m) =>
-        newModel3D("sphere", {
-          x: m.x, y: m.y, width: m.width, height: m.height,
-          color: m.color,
-          spinSpeed: m.spinSpeed ?? 8,
-          tiltX: m.tiltX ?? -20,
-          tiltY: m.tiltY ?? 25,
-        }),
-      );
-      loadTemplate(els, res.bg);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Generation failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { add } = useEditor();
 
   return (
     <div className="space-y-4">
@@ -93,55 +59,32 @@ export function ShapesPanel() {
         )}
       </div>
 
-      <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">
-        ▸ 3D Spheres
-      </div>
-
-      <div className="brutal-border-2 space-y-2 bg-surface p-3">
-        <div className="flex items-center gap-2 font-display text-[11px] tracking-[0.2em] text-teal">
-          <Sparkles className="h-3.5 w-3.5" /> AI_SPHERE_SCENE
-        </div>
-        <input
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder="theme · e.g. floating planets at sunset"
-          className="w-full border border-teal/40 bg-ink px-2 py-1.5 font-mono text-[11px] text-teal placeholder:text-teal/30 focus:border-teal focus:outline-none"
-        />
-        <button
-          onClick={handleGenerate}
-          disabled={loading || !prompt.trim()}
-          className="brutal-border brutal-press flex w-full items-center justify-center gap-2 bg-blue px-3 py-1.5 font-display text-[11px] tracking-[0.2em] text-ink disabled:opacity-50"
-        >
-          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-          {loading ? "GENERATING..." : "GENERATE SCENE"}
-        </button>
-        {error && <p className="font-mono text-[10px] text-[#ff0080]">! {error}</p>}
-      </div>
-
-      <div className="grid grid-cols-3 gap-2">
-        {SPHERE_PRESETS.map((s) => (
-          <button
-            key={s.label}
-            onClick={() => add(newModel3D("sphere", { color: s.color, spinSpeed: 0 }))}
-            className="brutal-border-2 brutal-press group flex h-24 flex-col items-center justify-center gap-1 bg-surface p-1 text-teal hover:border-teal hover:bg-surface-2"
-          >
-            <div className="h-12 w-12">
-              <Model3DRender
-                element={{
-                  id: `prev-${s.label}`,
-                  type: "model3d",
-                  x: 0, y: 0, width: 48, height: 48, rotation: 0,
-                  shape: "sphere",
-                  color: s.color,
-                  spinSpeed: 0,
-                  tiltX: -20,
-                  tiltY: 25,
-                }}
-              />
-            </div>
-            <span className="font-display text-[9px] uppercase tracking-[0.15em]">{s.label}</span>
-          </button>
-        ))}
+      <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">▸ Gradient shapes</div>
+      <div className="grid grid-cols-4 gap-2">
+        {GRADIENTS.map((g) =>
+          (["rect", "circle"] as ShapeKind[]).map((kind) => (
+            <button
+              key={kind + g.from}
+              onClick={() =>
+                add(
+                  newShape(kind, {
+                    fill: g.from,
+                    stroke: "transparent",
+                    strokeWidth: 0,
+                    cornerRadius: kind === "rect" ? 24 : 0,
+                    gradient: { from: g.from, to: g.to, angle: 45, type: "linear" },
+                  }),
+                )
+              }
+              className="brutal-border-2 brutal-press h-14 bg-surface hover:border-teal"
+              title={`Gradient ${kind}`}
+              style={{
+                background: `linear-gradient(45deg, ${g.from}, ${g.to})`,
+                borderRadius: kind === "circle" ? 999 : undefined,
+              }}
+            />
+          )),
+        )}
       </div>
     </div>
   );
