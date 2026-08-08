@@ -265,8 +265,6 @@ export function TemplatesPanel() {
       </div>
       )}
 
-      </div>
-
       <div className="font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">
         ▸ Top community templates
       </div>
