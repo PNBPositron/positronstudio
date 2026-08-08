@@ -1,8 +1,8 @@
 import { useEditor, type SlideTransition } from "@/store/editor";
-import { Plus, Copy, Trash2 } from "lucide-react";
+import { Plus, Copy, Trash2, Play } from "lucide-react";
 
 export function PagesBar() {
-  const { pages, currentIndex, setCurrentPage, addPage, duplicatePage, removePage, canvasW, canvasH, setTransition } =
+  const { pages, currentIndex, setCurrentPage, addPage, duplicatePage, removePage, canvasW, canvasH, setTransition, setPresenting } =
     useEditor();
   const currentTransition: SlideTransition = pages[currentIndex]?.transition ?? "none";
   const ratio = canvasW / canvasH;
@@ -84,6 +84,13 @@ export function PagesBar() {
       <span className="font-mono text-[10px] text-teal/60">
         {currentIndex + 1}/{pages.length}
       </span>
+      <button
+        onClick={() => setPresenting(true)}
+        className="brutal-border brutal-press flex shrink-0 items-center gap-2 bg-blue px-4 py-2 font-display text-xs tracking-[0.2em] text-ink"
+      >
+        <Play className="h-3.5 w-3.5 fill-ink" strokeWidth={3} />
+        PRESENT
+      </button>
     </div>
   );
 }
