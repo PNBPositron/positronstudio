@@ -793,6 +793,21 @@ function GradientEditor({
             />
             <div className="font-mono text-[11px] text-teal/70">{g.angle}°</div>
           </Field>
+          <Field label="Gradient type">
+            <div className="grid grid-cols-2 gap-1.5">
+              {(["linear", "radial"] as const).map((tp) => (
+                <button
+                  key={tp}
+                  onClick={() => onChange({ ...g, type: tp })}
+                  className={`brutal-border-2 py-1.5 font-mono text-[10px] uppercase ${
+                    (g.type ?? "linear") === tp ? "bg-blue text-ink border-teal" : "bg-surface text-teal hover:border-teal"
+                  }`}
+                >
+                  {tp}
+                </button>
+              ))}
+            </div>
+          </Field>
         </>
       )}
     </>
