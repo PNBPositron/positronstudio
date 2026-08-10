@@ -645,6 +645,7 @@ export const newQuiz = (overrides: Partial<QuizElement> = {}): QuizElement => {
 
 export const newChart = (
   chart: ChartKind = "bar",
+</dev/null
   overrides: Partial<ChartElement> = {},
 ): ChartElement => ({
   id: uid(),
