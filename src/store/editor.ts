@@ -522,6 +522,16 @@ type State = {
   setBgImage: (src: string | undefined, fit?: BgFit) => void;
   setTransition: (t: SlideTransition) => void;
   setCanvasSize: (w: number, h: number) => void;
+  magicResize: (w: number, h: number) => void;
+  applyBrandKit: (kit: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    bg: string;
+    text: string;
+    headingFont: string;
+    bodyFont: string;
+  }, scope: "slide" | "deck") => void;
   setPresenting: (v: boolean) => void;
   setGuides: (g: { v: number[]; h: number[] }) => void;
   copySelected: () => void;
