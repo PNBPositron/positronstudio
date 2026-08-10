@@ -20,6 +20,26 @@ export const PANEL_LABELS: Record<PanelId, string> = {
   design: "Design",
 };
 
+export type BrandKit = {
+  primary: string;
+  secondary: string;
+  accent: string;
+  bg: string;
+  text: string;
+  headingFont: string;
+  bodyFont: string;
+};
+
+export const DEFAULT_BRAND_KIT: BrandKit = {
+  primary: "#2b6bff",
+  secondary: "#7df9ff",
+  accent: "#ff0080",
+  bg: "#0a0f1f",
+  text: "#ffffff",
+  headingFont: "Archivo Black",
+  bodyFont: "Inter",
+};
+
 type SettingsState = {
   aiEnabled: boolean;
   autoHidePanel: boolean;
@@ -29,6 +49,9 @@ type SettingsState = {
   panelDurationMs: number;
   panelStiffness: number; // 0 = soft ease, 100 = springy overshoot
   reduceMotion: boolean; // force-disable panel motion
+  brandKit: BrandKit;
+  setBrandKit: (patch: Partial<BrandKit>) => void;
+  resetBrandKit: () => void;
   setAiEnabled: (v: boolean) => void;
   setAutoHidePanel: (v: boolean) => void;
   setAiModel: (v: string) => void;
@@ -97,6 +120,9 @@ export const useSettings = create<SettingsState>()(
       panelDurationMs: DEFAULT_PANEL_DURATION,
       panelStiffness: DEFAULT_PANEL_STIFFNESS,
       reduceMotion: true,
+      brandKit: { ...DEFAULT_BRAND_KIT },
+      setBrandKit: (patch) => set((s) => ({ brandKit: { ...s.brandKit, ...patch } })),
+      resetBrandKit: () => set({ brandKit: { ...DEFAULT_BRAND_KIT } }),
       setAiEnabled: (aiEnabled) => set({ aiEnabled }),
       setAutoHidePanel: (autoHidePanel) => set({ autoHidePanel }),
       setAiModel: (aiModel) => set({ aiModel }),
@@ -121,8 +147,12 @@ export const useSettings = create<SettingsState>()(
     }),
     {
       name: "positron.settings",
-      version: 2,
-      migrate: (state) => ({ ...(state as SettingsState), reduceMotion: true }),
+      version: 3,
+      migrate: (state) => ({
+        ...(state as SettingsState),
+        reduceMotion: true,
+        brandKit: { ...DEFAULT_BRAND_KIT, ...((state as SettingsState)?.brandKit ?? {}) },
+      }),
     },
   ),
 );
