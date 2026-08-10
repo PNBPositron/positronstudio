@@ -6,7 +6,7 @@ import {
   PanelBottom, PanelLeft, LayoutPanelTop, FolderOpen, SlidersHorizontal, Terminal,
 } from "lucide-react";
 import {
-  useEditor, newQuiz, newChart, newButton, newEmbed, newUi, toEmbedSrc,
+  useEditor, newQuiz, newPoll, newChart, newButton, newEmbed, newUi, toEmbedSrc,
   UI_STYLE_THEMES, chartStylePatch, solidThemeBg, type ChartKind, type ButtonAction, type UiKind, type UiStyle,
 } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
