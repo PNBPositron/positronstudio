@@ -94,11 +94,11 @@ export function applyLayout(
   const heroH = Math.round(H * 0.4);
   const out: AnyElement[] = [
     hero.type === "text"
-      ? {
+      ? ({
           ...place(hero, M, M, W - M * 2, heroH),
           fontSize: Math.round(Math.min(H * 0.16, hero.fontSize * 1.6)),
           align: "left" as const,
-        }
+        } as AnyElement)
       : place(hero, M, M, W - M * 2, heroH),
   ];
   const gap = Math.round(W * 0.03);
