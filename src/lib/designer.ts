@@ -12,7 +12,7 @@ export const SUGGESTIONS: Suggestion[] = [
   { id: "hero", label: "Hero", hint: "one big headline, rest below" },
 ];
 
-const isTextish = (e: AnyElement) => e.type === "text";
+const isTextish = (e: AnyElement): e is Extract<AnyElement, { type: "text" }> => e.type === "text";
 
 /** Deterministic auto-layout: keeps content, restyles composition. */
 export function applyLayout(
