@@ -402,9 +402,48 @@ export function CanvasElement({ element, scale }: { element: AnyElement; scale: 
 
 function QuizRender({ element, interactive }: { element: QuizElement; interactive: boolean }) {
   const [picked, setPicked] = useState<string | null>(null);
+  const isPoll = element.mode === "poll";
+  const [votes, setVotes] = useState<Record<string, number>>({});
+  const chanRef = useRef<BroadcastChannel | null>(null);
+
+  // Live poll sync: every open window on the same channel shares the tally.
   useEffect(() => {
-    if (!interactive) setPicked(null);
+    if (!isPoll || typeof BroadcastChannel === "undefined") return;
+    const ch = new BroadcastChannel(`poll-${element.liveKey ?? element.id}`);
+    chanRef.current = ch;
+    ch.onmessage = (ev: MessageEvent) => {
+      const d = ev.data as { type: string; optionId?: string };
+      if (d?.type === "vote" && d.optionId) {
+        setVotes((v) => ({ ...v, [d.optionId!]: (v[d.optionId!] ?? 0) + 1 }));
+      }
+      if (d?.type === "reset") setVotes({});
+    };
+    return () => {
+      ch.close();
+      chanRef.current = null;
+    };
+  }, [isPoll, element.liveKey, element.id]);
+
+  useEffect(() => {
+    if (!interactive) {
+      setPicked(null);
+      setVotes({});
+    }
   }, [interactive, element.id]);
+
+  const total = Object.values(votes).reduce((a, b) => a + b, 0);
+  const castVote = (optionId: string) => {
+    if (!interactive || picked) return;
+    setPicked(optionId);
+    setVotes((v) => ({ ...v, [optionId]: (v[optionId] ?? 0) + 1 }));
+    chanRef.current?.postMessage({ type: "vote", optionId });
+  };
+  const resetPoll = () => {
+    setPicked(null);
+    setVotes({});
+    chanRef.current?.postMessage({ type: "reset" });
+  };
+
   return (
     <div
       onMouseDown={(e) => interactive && e.stopPropagation()}
@@ -426,6 +465,74 @@ function QuizRender({ element, interactive }: { element: QuizElement; interactiv
       <div style={{ fontSize: "max(20px, 5%)", fontWeight: 800, lineHeight: 1.2 }}>
         {element.question}
       </div>
+      {isPoll ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: "3%", flex: 1 }}>
+          {element.options.map((opt) => {
+            const count = votes[opt.id] ?? 0;
+            const pct = total ? Math.round((count / total) * 100) : 0;
+            const mine = picked === opt.id;
+            return (
+              <button
+                key={opt.id}
+                disabled={!interactive || !!picked}
+                onClick={() => castVote(opt.id)}
+                style={{
+                  position: "relative",
+                  flex: 1,
+                  overflow: "hidden",
+                  background: "rgba(255,255,255,0.06)",
+                  color: element.fgColor,
+                  border: `2px solid ${mine ? element.accentColor : "rgba(255,255,255,0.18)"}`,
+                  borderRadius: 12,
+                  padding: "0 16px",
+                  fontSize: "max(15px, 3%)",
+                  fontWeight: 600,
+                  textAlign: "left",
+                  cursor: interactive && !picked ? "pointer" : "default",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 8,
+                }}
+              >
+                <span
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: `${pct}%`,
+                    background: element.accentColor,
+                    opacity: 0.28,
+                    transition: "width 420ms cubic-bezier(0.16,1,0.3,1)",
+                  }}
+                />
+                <span style={{ position: "relative" }}>{opt.text}</span>
+                <span style={{ position: "relative", fontVariantNumeric: "tabular-nums" }}>
+                  {pct}% · {count}
+                </span>
+              </button>
+            );
+          })}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              fontSize: "max(12px, 2.2%)",
+              opacity: 0.7,
+            }}
+          >
+            <span>{total} vote{total === 1 ? "" : "s"} · live</span>
+            {interactive && (
+              <span
+                onClick={resetPoll}
+                style={{ cursor: "pointer", textDecoration: "underline" }}
+              >
+                reset
+              </span>
+            )}
+          </div>
+        </div>
+      ) : (
       <div style={{ display: "grid", gap: "3%", flex: 1, gridTemplateColumns: "1fr 1fr" }}>
         {element.options.map((opt) => {
           const isPicked = picked === opt.id;
@@ -467,6 +574,7 @@ function QuizRender({ element, interactive }: { element: QuizElement; interactiv
           );
         })}
       </div>
+      )}
     </div>
   );
 }
