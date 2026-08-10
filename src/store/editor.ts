@@ -11,7 +11,7 @@ export type ElementBase = {
 };
 
 export type ElementAnimation = "none" | "fade-up" | "pop" | "glitch";
-export type SlideTransition = "none" | "fade" | "slide" | "glitch" | "zoom" | "flip";
+export type SlideTransition = "none" | "fade" | "slide" | "glitch" | "zoom" | "flip" | "morph";
 export type BgFit = "cover" | "contain";
 
 export type TextElement = ElementBase & {
@@ -130,6 +130,10 @@ export type QuizElement = ElementBase & {
   bgColor: string;
   fgColor: string;
   accentColor: string;
+  /** "quiz" = right/wrong answer, "poll" = live audience vote with tallies */
+  mode?: "quiz" | "poll";
+  /** channel id used to sync live poll votes across open windows */
+  liveKey?: string;
 };
 
 export type ChartKind = "bar" | "line" | "area" | "pie" | "donut";
