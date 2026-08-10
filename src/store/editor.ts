@@ -643,9 +643,26 @@ export const newQuiz = (overrides: Partial<QuizElement> = {}): QuizElement => {
   };
 };
 
+export const newPoll = (overrides: Partial<QuizElement> = {}): QuizElement => {
+  const a = uid(), b = uid(), c = uid();
+  return {
+    ...newQuiz({
+      question: "Which one do you prefer?",
+      options: [
+        { id: a, text: "Option A" },
+        { id: b, text: "Option B" },
+        { id: c, text: "Option C" },
+      ],
+      correctId: a,
+      ...overrides,
+    }),
+    mode: "poll",
+    liveKey: uid(),
+  };
+};
+
 export const newChart = (
   chart: ChartKind = "bar",
-</dev/null
   overrides: Partial<ChartElement> = {},
 ): ChartElement => ({
   id: uid(),
