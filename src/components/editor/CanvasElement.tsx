@@ -46,7 +46,16 @@ function shapeEffectStyle(el: ShapeElement): React.CSSProperties {
 
 type Handle = "nw" | "ne" | "sw" | "se";
 
-export function CanvasElement({ element, scale }: { element: AnyElement; scale: number }) {
+export function CanvasElement({
+  element,
+  scale,
+  morph = false,
+}: {
+  element: AnyElement;
+  scale: number;
+  /** when true the node tweens position/size between slides (morph transition) */
+  morph?: boolean;
+}) {
   const { selectedId, select, update } = useEditor();
   const selected = selectedId === element.id;
   const ref = useRef<HTMLDivElement>(null);
@@ -200,6 +209,9 @@ export function CanvasElement({ element, scale }: { element: AnyElement; scale: 
         width: element.width,
         height: element.height,
         transform: `rotate(${element.rotation}deg)`,
+        transition: morph
+          ? "left 620ms cubic-bezier(0.22,1,0.36,1), top 620ms cubic-bezier(0.22,1,0.36,1), width 620ms cubic-bezier(0.22,1,0.36,1), height 620ms cubic-bezier(0.22,1,0.36,1), transform 620ms cubic-bezier(0.22,1,0.36,1), opacity 320ms ease"
+          : undefined,
         cursor: editing ? "text" : "move",
         outline: selected ? "3px solid #2b6bff" : "none",
         outlineOffset: "2px",
