@@ -63,9 +63,9 @@ export function applyLayout(
     let ry = M;
     return els.map((e) => {
       if (isTextish(e)) {
-        const n = place(e, M, ly, half, e.height);
+        const n = { ...place(e, M, ly, half, e.height), align: "left" as const } as AnyElement;
         ly += e.height + gap;
-        return { ...n, align: "left" as const };
+        return n;
       }
       const n = place(e, M * 2 + half, ry, half, e.height);
       ry += e.height + gap;
