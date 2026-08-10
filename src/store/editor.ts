@@ -863,6 +863,76 @@ export const useEditor = create<State>((set, get) => {
 
     setTool: (tool) => set({ tool }),
     setCanvasSize: (canvasW, canvasH) => set({ canvasW, canvasH }),
+
+    // Magic resize: reflow every slide into a new canvas ratio, keeping
+    // relative composition (centres stay put, sizes/type scale uniformly).
+    magicResize: (w, h) => {
+      const { canvasW: ow, canvasH: oh, pages, currentIndex } = get();
+      if (w === ow && h === oh) return;
+      pushHistory();
+      const sx = w / ow;
+      const sy = h / oh;
+      const s = Math.min(sx, sy);
+      const next = pages.map((p) => ({
+        ...p,
+        elements: p.elements.map((e) => {
+          const cx = (e.x + e.width / 2) * sx;
+          const cy = (e.y + e.height / 2) * sy;
+          const width = Math.max(8, e.width * s);
+          const height = Math.max(8, e.height * s);
+          const scaled: AnyElement = {
+            ...e,
+            width,
+            height,
+            x: Math.round(Math.max(0, Math.min(w - width, cx - width / 2))),
+            y: Math.round(Math.max(0, Math.min(h - height, cy - height / 2))),
+          } as AnyElement;
+          if (scaled.type === "text") {
+            return { ...scaled, fontSize: Math.max(8, Math.round(scaled.fontSize * s)) };
+          }
+          return scaled;
+        }),
+      }));
+      set({ ...syncCurrent(next, currentIndex), canvasW: w, canvasH: h, selectedId: null });
+    },
+
+    applyBrandKit: (kit, scope) => {
+      pushHistory();
+      const { pages, currentIndex } = get();
+      const paint = (p: Page): Page => ({
+        ...p,
+        bgColor: kit.bg,
+        elements: p.elements.map((e): AnyElement => {
+          if (e.type === "text") {
+            const heading = e.fontSize >= 48;
+            return {
+              ...e,
+              color: heading ? kit.text : kit.text,
+              fontFamily: heading ? kit.headingFont : kit.bodyFont,
+            };
+          }
+          if (e.type === "shape") {
+            return { ...e, fill: e.fill === kit.primary ? kit.secondary : kit.primary };
+          }
+          if (e.type === "icon") return { ...e, color: kit.accent };
+          if (e.type === "quiz") {
+            return { ...e, accentColor: kit.accent, fgColor: kit.text, bgColor: kit.bg };
+          }
+          if (e.type === "button") {
+            return { ...e, bgColor: kit.primary, fgColor: kit.text };
+          }
+          if (e.type === "ui") {
+            return { ...e, accentColor: kit.accent, fontFamily: kit.bodyFont };
+          }
+          if (e.type === "chart") {
+            return { ...e, colors: [kit.primary, kit.secondary, kit.accent], fgColor: kit.text };
+          }
+          return e;
+        }),
+      });
+      const next = scope === "deck" ? pages.map(paint) : pages.map((p, i) => (i === currentIndex ? paint(p) : p));
+      set({ ...syncCurrent(next, currentIndex), selectedId: null });
+    },
     setPresenting: (presenting) => set({ presenting }),
     setGuides: (guides) => set({ guides }),
     copySelected: () => {
