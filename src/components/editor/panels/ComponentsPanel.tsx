@@ -38,10 +38,10 @@ const REAL_UI_KINDS: Array<{ kind: UiKind; label: string; Icon: typeof Square }>
   { kind: "notification", label: "Toast", Icon: Bell },
   { kind: "taskbar", label: "Window taskbar", Icon: PanelBottom },
   { kind: "vtabs", label: "Vertical tabs", Icon: PanelLeft },
-  { kind: "kdePanel", label: "KDE panel", Icon: LayoutPanelTop },
-  { kind: "kdeFiles", label: "Dolphin files", Icon: FolderOpen },
-  { kind: "kdeRunner", label: "KRunner", Icon: Terminal },
-  { kind: "kdeSettings", label: "KDE settings", Icon: SlidersHorizontal },
+  { kind: "kdePanel", label: "Desktop panel", Icon: LayoutPanelTop },
+  { kind: "kdeFiles", label: "File manager", Icon: FolderOpen },
+  { kind: "kdeRunner", label: "Command runner", Icon: Terminal },
+  { kind: "kdeSettings", label: "System settings", Icon: SlidersHorizontal },
 ];
 
 const STYLES = Object.keys(UI_STYLE_THEMES) as UiStyle[];
