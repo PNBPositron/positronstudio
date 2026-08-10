@@ -82,9 +82,20 @@ export function PresentationMode() {
 
   if (!presenting) return null;
 
-  const transition = page.transition && page.transition !== "none"
+  const morphing = page.transition === "morph";
+  const transition = page.transition && page.transition !== "none" && !morphing
     ? `slide-transition-${page.transition}`
     : "";
+  // Morph matches elements across slides so shared shapes/text tween instead of cutting.
+  const morphKey = (el: (typeof page.elements)[number], i: number) => {
+    if (!morphing) return el.id;
+    if (el.type === "text") return `t:${el.text.slice(0, 40)}`;
+    if (el.type === "image") return `i:${el.src.slice(-40)}`;
+    if (el.type === "shape") return `s:${el.shape}:${el.fill}`;
+    if (el.type === "ui") return `u:${el.kind}`;
+    if (el.type === "chart") return `c:${el.chart}`;
+    return `${el.type}:${i}`;
+  };
   const ratio = canvasW / canvasH;
   const tW = ratio >= 1 ? 96 : 96 * ratio;
   const tH = ratio >= 1 ? 96 / ratio : 96;
@@ -134,7 +145,7 @@ export function PresentationMode() {
           className="brutal-shadow-lg relative shrink-0"
         >
           <div
-            key={`slide-${currentIndex}`}
+            key={morphing ? "slide-morph" : `slide-${currentIndex}`}
             className={`absolute left-0 top-0 overflow-hidden border border-teal ${transition}`}
             style={{
               width: canvasW,
@@ -146,10 +157,11 @@ export function PresentationMode() {
               backgroundRepeat: "no-repeat",
               transform: `scale(${scale})`,
               transformOrigin: "top left",
+              transition: morphing ? "background-color 620ms ease" : undefined,
             }}
           >
-            {page.elements.map((el) => (
-              <CanvasElement key={el.id} element={el} scale={scale} />
+            {page.elements.map((el, i) => (
+              <CanvasElement key={morphKey(el, i)} element={el} scale={scale} morph={morphing} />
             ))}
           </div>
         </div>

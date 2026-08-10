@@ -6,7 +6,7 @@ import {
   PanelBottom, PanelLeft, LayoutPanelTop, FolderOpen, SlidersHorizontal, Terminal,
 } from "lucide-react";
 import {
-  useEditor, newQuiz, newChart, newButton, newEmbed, newUi, toEmbedSrc,
+  useEditor, newQuiz, newPoll, newChart, newButton, newEmbed, newUi, toEmbedSrc,
   UI_STYLE_THEMES, chartStylePatch, solidThemeBg, type ChartKind, type ButtonAction, type UiKind, type UiStyle,
 } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
@@ -38,10 +38,10 @@ const REAL_UI_KINDS: Array<{ kind: UiKind; label: string; Icon: typeof Square }>
   { kind: "notification", label: "Toast", Icon: Bell },
   { kind: "taskbar", label: "Window taskbar", Icon: PanelBottom },
   { kind: "vtabs", label: "Vertical tabs", Icon: PanelLeft },
-  { kind: "kdePanel", label: "KDE panel", Icon: LayoutPanelTop },
-  { kind: "kdeFiles", label: "Dolphin files", Icon: FolderOpen },
-  { kind: "kdeRunner", label: "KRunner", Icon: Terminal },
-  { kind: "kdeSettings", label: "KDE settings", Icon: SlidersHorizontal },
+  { kind: "kdePanel", label: "Desktop panel", Icon: LayoutPanelTop },
+  { kind: "kdeFiles", label: "File manager", Icon: FolderOpen },
+  { kind: "kdeRunner", label: "Command runner", Icon: Terminal },
+  { kind: "kdeSettings", label: "System settings", Icon: SlidersHorizontal },
 ];
 
 const STYLES = Object.keys(UI_STYLE_THEMES) as UiStyle[];
@@ -142,6 +142,15 @@ export function ComponentsPanel() {
         className="brutal-border-2 brutal-press flex w-full items-center justify-center gap-2 bg-blue px-3 py-2 font-display text-[11px] tracking-[0.2em] text-ink"
       >
         <HelpCircle className="h-3.5 w-3.5" strokeWidth={2.5} /> ADD QUIZ
+      </button>
+      <button
+        onClick={() => {
+          const t = UI_STYLE_THEMES[style];
+          add(newPoll({ bgColor: solidThemeBg(style), fgColor: t.fg, accentColor: t.accent }));
+        }}
+        className="brutal-border-2 brutal-press flex w-full items-center justify-center gap-2 bg-surface px-3 py-2 font-display text-[11px] tracking-[0.2em] text-teal hover:border-teal"
+      >
+        <HelpCircle className="h-3.5 w-3.5" strokeWidth={2.5} /> ADD LIVE POLL
       </button>
       <div className="grid grid-cols-2 gap-2">
         {([

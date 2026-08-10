@@ -1,21 +1,41 @@
 import { useState } from "react";
+import { Wand2 } from "lucide-react";
 import { useEditor, CANVAS_PRESETS } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
 
 export function SizePanel() {
-  const { canvasW, canvasH, setCanvasSize } = useEditor();
+  const { canvasW, canvasH, setCanvasSize, magicResize } = useEditor();
   const [w, setW] = useState(canvasW);
   const [h, setH] = useState(canvasH);
+  const [magic, setMagic] = useState(true);
+  const resize = (nw: number, nh: number) => (magic ? magicResize(nw, nh) : setCanvasSize(nw, nh));
 
   const apply = () => {
     const cw = Math.max(100, Math.min(8000, Math.round(w)));
     const ch = Math.max(100, Math.min(8000, Math.round(h)));
-    setCanvasSize(cw, ch);
+    resize(cw, ch);
   };
 
   return (
     <div className="space-y-4">
       <PanelHeader title="Canvas Size" />
+
+      <button
+        onClick={() => setMagic((v) => !v)}
+        className={`brutal-border-2 brutal-press flex w-full items-center gap-2 px-2 py-2 text-left ${
+          magic ? "border-teal bg-blue-deep text-teal glow-blue" : "bg-surface text-teal/70"
+        }`}
+      >
+        <Wand2 className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-[10px] uppercase tracking-[0.18em]">
+            Magic resize {magic ? "on" : "off"}
+          </span>
+          <span className="block font-mono text-[9px] opacity-70">
+            reflow every slide into the new ratio
+          </span>
+        </span>
+      </button>
 
       <div>
         <div className="mb-2 font-display text-[10px] uppercase tracking-[0.2em] text-teal/80">
@@ -32,7 +52,7 @@ export function SizePanel() {
               <button
                 key={p.name}
                 onClick={() => {
-                  setCanvasSize(p.w, p.h);
+                  resize(p.w, p.h);
                   setW(p.w);
                   setH(p.h);
                 }}

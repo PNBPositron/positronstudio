@@ -79,6 +79,7 @@ export function PagesBar() {
           <option value="zoom">zoom</option>
           <option value="flip">flip</option>
           <option value="glitch">glitch</option>
+          <option value="morph">morph</option>
         </select>
       </div>
       <span className="font-mono text-[10px] text-teal/60">
