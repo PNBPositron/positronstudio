@@ -3,7 +3,7 @@ import { applyLayout, SUGGESTIONS } from "@/lib/designer";
 import { PanelHeader } from "./TextPanel";
 
 export function DesignerPanel() {
-  const { pages, currentIndex, canvasW, canvasH, setPageElements } = useEditor();
+  const { pages, currentIndex, canvasW, canvasH, loadTemplate } = useEditor();
   const page = pages[currentIndex];
   const els = page?.elements ?? [];
 
@@ -22,7 +22,7 @@ export function DesignerPanel() {
             <button
               key={s.id}
               disabled={els.length === 0}
-              onClick={() => setPageElements(currentIndex, laid)}
+              onClick={() => loadTemplate(laid)}
               className="brutal-border-2 brutal-press bg-surface p-2 text-left text-teal/80 hover:border-teal hover:text-teal disabled:opacity-40"
             >
               <div

@@ -1,7 +1,7 @@
 import { useSettings, DEFAULT_BRAND_KIT, type BrandKit } from "@/store/settings";
 import { useEditor } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
-import { FONT_OPTIONS } from "./TextPanel";
+import { FONTS } from "./TextPanel";
 
 const SWATCHES: Array<{ key: keyof BrandKit; label: string }> = [
   { key: "primary", label: "Primary" },
@@ -52,8 +52,8 @@ export function BrandKitPanel() {
             onChange={(e) => setBrandKit({ headingFont: e.target.value })}
             className="brutal-border-2 w-full bg-surface px-1.5 py-1.5 font-mono text-[10px] text-teal focus:border-teal focus:outline-none"
           >
-            {FONT_OPTIONS.map((f) => (
-              <option key={f} value={f}>{f}</option>
+            {FONTS.map((f) => (
+              <option key={f.family} value={f.family}>{f.family}</option>
             ))}
           </select>
         </label>
@@ -66,8 +66,8 @@ export function BrandKitPanel() {
             onChange={(e) => setBrandKit({ bodyFont: e.target.value })}
             className="brutal-border-2 w-full bg-surface px-1.5 py-1.5 font-mono text-[10px] text-teal focus:border-teal focus:outline-none"
           >
-            {FONT_OPTIONS.map((f) => (
-              <option key={f} value={f}>{f}</option>
+            {FONTS.map((f) => (
+              <option key={f.family} value={f.family}>{f.family}</option>
             ))}
           </select>
         </label>
