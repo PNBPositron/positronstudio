@@ -143,6 +143,15 @@ export function ComponentsPanel() {
       >
         <HelpCircle className="h-3.5 w-3.5" strokeWidth={2.5} /> ADD QUIZ
       </button>
+      <button
+        onClick={() => {
+          const t = UI_STYLE_THEMES[style];
+          add(newPoll({ bgColor: solidThemeBg(style), fgColor: t.fg, accentColor: t.accent }));
+        }}
+        className="brutal-border-2 brutal-press flex w-full items-center justify-center gap-2 bg-surface px-3 py-2 font-display text-[11px] tracking-[0.2em] text-teal hover:border-teal"
+      >
+        <HelpCircle className="h-3.5 w-3.5" strokeWidth={2.5} /> ADD LIVE POLL
+      </button>
       <div className="grid grid-cols-2 gap-2">
         {([
           { label: "NEXT →", action: "next-slide" },
