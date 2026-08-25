@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useEditor } from "@/store/editor";
 import { useSettings, springEasing, type PanelId } from "@/store/settings";
-import { useUi } from "@/store/ui";
-import { LayoutTemplate, Type, Shapes, Upload, SlidersHorizontal, Bot, Blocks, Settings } from "lucide-react";
+import { LayoutTemplate, Type, Shapes, Upload, SlidersHorizontal, Bot, Blocks } from "lucide-react";
 import { TemplatesPanel } from "./panels/TemplatesPanel";
 import { TextPanel } from "./panels/TextPanel";
 import { ShapesPanel } from "./panels/ShapesPanel";
@@ -10,7 +9,6 @@ import { UploadsPanel } from "./panels/UploadsPanel";
 import { DesignPanel } from "./panels/DesignPanel";
 import { AiChatPanel } from "./panels/AiChatPanel";
 import { ComponentsPanel } from "./panels/ComponentsPanel";
-import { SettingsDialog } from "./SettingsDialog";
 
 const TOOLS = [
   { id: "templates", label: "Templates", icon: LayoutTemplate },
@@ -25,8 +23,6 @@ const TOOLS = [
 export function Sidebar() {
   const { tool, setTool } = useEditor();
   const { panels, aiEnabled, panelDurationMs, panelStiffness, reduceMotion, editorTheme } = useSettings();
-  const settingsOpen = useUi((s) => s.settingsOpen);
-  const setSettingsOpen = useUi((s) => s.setSettingsOpen);
   const [hovering, setHovering] = useState(false);
   const panelOpen = hovering;
   const [systemReduced, setSystemReduced] = useState(false);
@@ -91,15 +87,6 @@ export function Sidebar() {
             </button>
           );
         })}
-        <button
-          onClick={() => setSettingsOpen(true)}
-          title="Settings"
-          aria-label="Settings"
-          className="mt-auto flex flex-col items-center gap-1 border border-teal/20 bg-surface px-1 py-3 text-[10px] font-bold uppercase tracking-[0.15em] text-teal/70 transition-colors duration-200 hover:border-teal/60 hover:bg-surface-2 hover:text-teal"
-        >
-          <Settings className="h-5 w-5" strokeWidth={2} />
-          Settings
-        </button>
       </nav>
       <div
         aria-hidden={!panelOpen}
@@ -118,7 +105,6 @@ export function Sidebar() {
         {tool === "uploads" && <UploadsPanel />}
         {tool === "design" && <DesignPanel />}
       </div>
-      {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
     </aside>
   );
 }

@@ -60,6 +60,9 @@ export function CanvasElement({
   const selected = selectedId === element.id;
   const ref = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const presenting = useEditor.getState().presenting;
+  const interactive = presenting && (element.type === "text" || element.type === "image" || element.type === "shape");
 
   const linkActive = element.type === "text" && !!element.href && useEditor.getState().presenting;
 
@@ -191,6 +194,14 @@ export function CanvasElement({
     <div
       ref={ref}
       onMouseDown={onDragStart}
+      onMouseEnter={() => interactive && setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={(e) => {
+        if (!interactive || editing) return;
+        e.stopPropagation();
+        const state = useEditor.getState();
+        if (state.currentIndex < state.pages.length - 1) state.setCurrentPage(state.currentIndex + 1);
+      }}
       onDoubleClick={(e) => {
         if (element.type === "text") {
           e.stopPropagation();
@@ -208,7 +219,7 @@ export function CanvasElement({
         top: element.y,
         width: element.width,
         height: element.height,
-        transform: `rotate(${element.rotation}deg)`,
+        transform: `rotate(${element.rotation}deg)${hovered ? " scale(1.035)" : ""}`,
         transition: morph
           ? "left 620ms cubic-bezier(0.22,1,0.36,1), top 620ms cubic-bezier(0.22,1,0.36,1), width 620ms cubic-bezier(0.22,1,0.36,1), height 620ms cubic-bezier(0.22,1,0.36,1), transform 620ms cubic-bezier(0.22,1,0.36,1), opacity 320ms ease"
           : undefined,

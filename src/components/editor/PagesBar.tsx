@@ -1,16 +1,54 @@
 import { useEditor, type SlideTransition } from "@/store/editor";
-import { Plus, Copy, Trash2, Play } from "lucide-react";
+import { useState } from "react";
+import { Plus, Copy, Trash2, Play, X } from "lucide-react";
 
 export function PagesBar() {
   const { pages, currentIndex, setCurrentPage, addPage, duplicatePage, removePage, canvasW, canvasH, setTransition, setPresenting } =
     useEditor();
   const currentTransition: SlideTransition = pages[currentIndex]?.transition ?? "none";
+  const [workspaces, setWorkspaces] = useState(["Untitled workspace"]);
+  const [activeWorkspace, setActiveWorkspace] = useState(0);
   const ratio = canvasW / canvasH;
   const thumbW = ratio >= 1 ? 96 : 96 * ratio;
   const thumbH = ratio >= 1 ? 96 / ratio : 96;
 
   return (
-    <div className="flex items-center gap-2 border-t border-teal/30 bg-ink px-3 py-2">
+    <div className="flex flex-col border-t border-teal/30 bg-ink">
+      <div className="flex items-center gap-1 overflow-x-auto border-b border-teal/20 px-3 py-1.5">
+        <span className="mr-2 shrink-0 font-display text-[9px] tracking-[0.2em] text-teal/50">WORKSPACES</span>
+        {workspaces.map((workspace, index) => (
+          <button
+            key={`${workspace}-${index}`}
+            onClick={() => setActiveWorkspace(index)}
+            className={`group flex shrink-0 items-center gap-2 border px-3 py-1 font-mono text-[10px] transition-colors ${
+              index === activeWorkspace ? "border-teal bg-surface text-teal" : "border-transparent text-teal/50 hover:border-teal/40 hover:text-teal"
+            }`}
+          >
+            {workspace}
+            {workspaces.length > 1 && (
+              <X
+                className="h-3 w-3 opacity-50 hover:opacity-100"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setWorkspaces((current) => current.filter((_, item) => item !== index));
+                  setActiveWorkspace((current) => Math.min(current, workspaces.length - 2));
+                }}
+              />
+            )}
+          </button>
+        ))}
+        <button
+          title="New workspace"
+          onClick={() => {
+            setWorkspaces((current) => [...current, `Workspace ${current.length + 1}`]);
+            setActiveWorkspace(workspaces.length);
+          }}
+          className="brutal-press flex shrink-0 items-center gap-1 border border-teal/30 px-2 py-1 font-display text-[9px] tracking-[0.12em] text-teal hover:border-teal"
+        >
+          <Plus className="h-3 w-3" /> NEW
+        </button>
+      </div>
+      <div className="flex items-center gap-2 px-3 py-2">
       <span className="font-display text-[10px] tracking-[0.2em] text-teal/70">PAGES</span>
       <div className="flex flex-1 items-center gap-2 overflow-x-auto py-1">
         {pages.map((p, i) => {
@@ -92,6 +130,7 @@ export function PagesBar() {
         <Play className="h-3.5 w-3.5 fill-ink" strokeWidth={3} />
         PRESENT
       </button>
+      </div>
     </div>
   );
 }

@@ -2,29 +2,16 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // Text models users can pick in Settings. Keep in sync with AI_MODELS in src/store/settings.ts.
-const ALLOWED_TEXT_MODELS = [
-  "google/gemini-3.6-flash",
-  "google/gemini-3.1-flash-lite",
-  "google/gemini-3.1-pro-preview",
-  "google/gemini-2.5-pro",
-  "openai/gpt-5.6-terra",
-  "openai/gpt-5.6-luna",
-  "openai/gpt-5.5",
-  "openai/gpt-5.4-mini",
-  // OpenRouter free tier (requires OPENROUTER_API_KEY)
-  "openrouter/openai/gpt-oss-20b:free",
-  "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
-  "openrouter/google/gemma-4-31b-it:free",
-];
-const DEFAULT_TEXT_MODEL = "google/gemini-3.6-flash";
+const ALLOWED_TEXT_MODELS = ["openrouter/z-ai/glm-5.2:free"];
+const DEFAULT_TEXT_MODEL = "openrouter/z-ai/glm-5.2:free";
 
 function pickModel(m?: string) {
   return typeof m === "string" && ALLOWED_TEXT_MODELS.includes(m) ? m : DEFAULT_TEXT_MODEL;
 }
 
-// GPT-5.6 models require reasoning_effort to be set explicitly.
-function reasoningFor(model: string) {
-  return model.startsWith("openai/gpt-5.6") ? { reasoning_effort: "none" as const } : {};
+  // The editor uses the single free GLM model through OpenRouter.
+function reasoningFor(_model: string) {
+  return {};
 }
 
 const OR_PREFIX = "openrouter/";
@@ -36,16 +23,16 @@ async function chatComplete(
   extra: Record<string, unknown> = {},
 ): Promise<string> {
   const or = model.startsWith(OR_PREFIX);
-  const apiKey = or ? process.env.OPENROUTER_API_KEY : process.env.LOVABLE_API_KEY;
+  const apiKey = or ? process.env.OPENROUTER_API_KEY : process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     throw new Error(
       or
         ? "OpenRouter is not configured yet — add an OPENROUTER_API_KEY to use free models."
-        : "Missing LOVABLE_API_KEY",
+        : "Missing OPENROUTER_API_KEY",
     );
   }
   const res = await fetch(
-    or ? "https://openrouter.ai/api/v1/chat/completions" : "https://ai.gateway.lovable.dev/v1/chat/completions",
+    or ? "https://openrouter.ai/api/v1/chat/completions" : "https://openrouter.ai/api/v1/chat/completions",
     {
       method: "POST",
       headers: {
@@ -321,13 +308,13 @@ export const suggestIcons = createServerFn({ method: "POST" })
     return { prompt: data.prompt.slice(0, 300), count };
   })
   .handler(async ({ data }): Promise<{ icons: string[] }> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const key = process.env.OPENROUTER_API_KEY;
+    if (!key) throw new Error("Missing OPENROUTER_API_KEY");
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
+        model: "z-ai/glm-5.2:free",
         messages: [
           {
             role: "system",
@@ -384,18 +371,18 @@ export const generate3DScene = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }): Promise<Ai3DScene> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const key = process.env.OPENROUTER_API_KEY;
+    if (!key) throw new Error("Missing OPENROUTER_API_KEY");
     const sys = `Design a 3D composition on a ${data.width}×${data.height}px canvas using ONLY spheres (planets, orbs, bubbles).
 Compose 3-7 spheres, varied sizes (80-700px), thoughtful color harmony.
 Coordinates absolute, must stay inside bounds.
 Return JSON only: { "bg": "#hex", "models": Array<{ "shape":"sphere", "x", "y", "width", "height", "color", "spinSpeed"?, "tiltX"?, "tiltY"? }> }.
 spinSpeed: 0-30 seconds (0 = static). Always set "shape" to "sphere".`;
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "z-ai/glm-5.2:free",
         messages: [
           { role: "system", content: sys },
           { role: "user", content: `Theme: ${data.prompt}` },
@@ -547,8 +534,8 @@ export const translateTexts = createServerFn({ method: "POST" })
     return { texts, target };
   })
   .handler(async ({ data }): Promise<{ translations: string[] }> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const key = process.env.OPENROUTER_API_KEY;
+    if (!key) throw new Error("Missing OPENROUTER_API_KEY");
     if (data.texts.length === 0) return { translations: [] };
 
     const sys = `You are a professional translator. Translate each string in the input array into ${data.target}.
@@ -559,11 +546,11 @@ Rules:
 - If a string is empty or already in ${data.target}, return it unchanged.
 Return ONLY JSON: { "translations": string[] } with exactly ${data.texts.length} entries.`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "z-ai/glm-5.2:free",
         messages: [
           { role: "system", content: sys },
           { role: "user", content: JSON.stringify({ texts: data.texts }) },
@@ -610,8 +597,8 @@ export const generateAiAsset = createServerFn({ method: "POST" })
     return { prompt: data.prompt.slice(0, 1000), size, model, quality };
   })
   .handler(async ({ data }): Promise<{ dataUrl: string }> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const key = process.env.OPENROUTER_API_KEY;
+    if (!key) throw new Error("Missing OPENROUTER_API_KEY");
     const isGemini = data.model.startsWith("google/");
     const body = isGemini
       ? {
@@ -720,8 +707,8 @@ export const importTemplateFromFile = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }): Promise<AiDeck> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const key = process.env.OPENROUTER_API_KEY;
+    if (!key) throw new Error("Missing OPENROUTER_API_KEY");
 
     const sys = `${buildSystem(data.width, data.height, data.style, true)}
 
@@ -733,9 +720,9 @@ Rules:
 - Reinterpret the layout — do not copy the original layout. Use the style brief above.
 - If the source has charts/images, replace them with iconography or shapes that evoke the same idea.`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({
         model: "google/gemini-2.5-pro",
         messages: [
