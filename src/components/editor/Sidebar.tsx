@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useEditor } from "@/store/editor";
 import { useSettings, springEasing, type PanelId } from "@/store/settings";
-import { LayoutTemplate, Type, Shapes, Upload, SlidersHorizontal, Bot, Blocks } from "lucide-react";
+import { LayoutTemplate, Type, Shapes, Upload, SlidersHorizontal, Bot, Blocks, Settings } from "lucide-react";
+import { useUi } from "@/store/ui";
 import { TemplatesPanel } from "./panels/TemplatesPanel";
 import { TextPanel } from "./panels/TextPanel";
 import { ShapesPanel } from "./panels/ShapesPanel";
@@ -22,6 +23,7 @@ const TOOLS = [
 
 export function Sidebar() {
   const { tool, setTool } = useEditor();
+  const setSettingsOpen = useUi((s) => s.setSettingsOpen);
   const { panels, aiEnabled, panelDurationMs, panelStiffness, reduceMotion, editorTheme } = useSettings();
   const [hovering, setHovering] = useState(false);
   const panelOpen = hovering;
@@ -73,7 +75,7 @@ export function Sidebar() {
                 setTool(t.id);
                 setHovering(true);
               }}
-              className={`group relative flex flex-col items-center gap-1 px-1 py-3 text-[10px] font-bold uppercase tracking-[0.15em] transition-all ${
+              className={`group relative flex flex-col items-center gap-0.5 px-1 py-2 text-[9px] font-bold uppercase tracking-[0.1em] transition-all ${
                 active
                   ? "bg-blue-deep text-teal border border-teal glow-blue"
                   : "border border-teal/20 bg-surface text-teal/70 hover:text-teal hover:border-teal/60 hover:bg-surface-2"
@@ -86,9 +88,19 @@ export function Sidebar() {
               {t.label}
             </button>
           );
-        })}
-      </nav>
-      <div
+  })}
+  <button
+    type="button"
+    onClick={() => setSettingsOpen(true)}
+    title="Settings"
+    aria-label="Settings"
+    className="mt-auto flex flex-col items-center gap-0.5 border border-teal/20 bg-surface px-1 py-2 text-[9px] font-bold uppercase tracking-[0.1em] text-teal/70 hover:border-teal/60 hover:bg-surface-2 hover:text-teal"
+  >
+    <Settings className="h-4 w-4" strokeWidth={2} />
+    SETTINGS
+  </button>
+  </nav>
+  <div
         aria-hidden={!panelOpen}
         style={{ transition: panelTransition }}
         className={`absolute left-20 top-0 z-40 h-full w-72 origin-left overflow-y-auto border-r border-teal/30 bg-paper p-4 shadow-2xl will-change-[transform,opacity,filter] ${

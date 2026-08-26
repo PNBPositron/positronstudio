@@ -1,13 +1,33 @@
-import { useEditor, type SlideTransition } from "@/store/editor";
+import { useEditor, type Page, type SlideTransition } from "@/store/editor";
 import { useState } from "react";
 import { Plus, Copy, Trash2, Play, X } from "lucide-react";
 
+type WorkspaceSnapshot = { name: string; pages: Page[]; canvasW: number; canvasH: number; currentIndex: number };
+
 export function PagesBar() {
-  const { pages, currentIndex, setCurrentPage, addPage, duplicatePage, removePage, canvasW, canvasH, setTransition, setPresenting } =
-    useEditor();
-  const currentTransition: SlideTransition = pages[currentIndex]?.transition ?? "none";
-  const [workspaces, setWorkspaces] = useState(["Untitled workspace"]);
-  const [activeWorkspace, setActiveWorkspace] = useState(0);
+ const { pages, currentIndex, setCurrentPage, addPage, duplicatePage, removePage, canvasW, canvasH, setTransition, setPresenting, loadPages, setCanvasSize, newDesign } =
+ useEditor();
+ const currentTransition: SlideTransition = pages[currentIndex]?.transition ?? "none";
+ const [workspaces, setWorkspaces] = useState<WorkspaceSnapshot[]>([{ name: "Untitled workspace", pages, canvasW, canvasH, currentIndex }]);
+ const [activeWorkspace, setActiveWorkspace] = useState(0);
+
+ const snapshot = (): WorkspaceSnapshot => ({ name: workspaces[activeWorkspace]?.name ?? "Untitled workspace", pages: useEditor.getState().pages, canvasW: useEditor.getState().canvasW, canvasH: useEditor.getState().canvasH, currentIndex: useEditor.getState().currentIndex });
+ const switchWorkspace = (index: number) => {
+   if (index === activeWorkspace) return;
+   const next = workspaces[index];
+   if (!next) return;
+   setWorkspaces((items) => items.map((item, i) => i === activeWorkspace ? snapshot() : item));
+   loadPages(next.pages);
+   setCanvasSize(next.canvasW, next.canvasH);
+   setCurrentPage(Math.min(next.currentIndex, next.pages.length - 1));
+   setActiveWorkspace(index);
+ };
+ const createWorkspace = () => {
+   const nextIndex = workspaces.length;
+   setWorkspaces((items) => [...items.map((item, i) => i === activeWorkspace ? snapshot() : item), { name: `Workspace ${nextIndex + 1}`, pages: [], canvasW: 1280, canvasH: 720, currentIndex: 0 }]);
+   newDesign();
+   setActiveWorkspace(nextIndex);
+ };
   const ratio = canvasW / canvasH;
   const thumbW = ratio >= 1 ? 96 : 96 * ratio;
   const thumbH = ratio >= 1 ? 96 / ratio : 96;
@@ -19,19 +39,28 @@ export function PagesBar() {
         {workspaces.map((workspace, index) => (
           <button
             key={`${workspace}-${index}`}
-            onClick={() => setActiveWorkspace(index)}
+            onClick={() => switchWorkspace(index)}
             className={`group flex shrink-0 items-center gap-2 border px-3 py-1 font-mono text-[10px] transition-colors ${
               index === activeWorkspace ? "border-teal bg-surface text-teal" : "border-transparent text-teal/50 hover:border-teal/40 hover:text-teal"
             }`}
           >
-            {workspace}
+{workspace.name}
             {workspaces.length > 1 && (
               <X
                 className="h-3 w-3 opacity-50 hover:opacity-100"
                 onClick={(event) => {
                   event.stopPropagation();
-                  setWorkspaces((current) => current.filter((_, item) => item !== index));
-                  setActiveWorkspace((current) => Math.min(current, workspaces.length - 2));
+setWorkspaces((current) => current.filter((_, item) => item !== index));
+ if (index === activeWorkspace) {
+   const fallback = index > 0 ? index - 1 : 0;
+   const next = workspaces[fallback === index ? 1 : fallback];
+   if (next) {
+     loadPages(next.pages);
+     setCanvasSize(next.canvasW, next.canvasH);
+     setCurrentPage(Math.min(next.currentIndex, next.pages.length - 1));
+   }
+   setActiveWorkspace(fallback);
+ } else if (index < activeWorkspace) setActiveWorkspace((current) => current - 1);
                 }}
               />
             )}
@@ -39,10 +68,7 @@ export function PagesBar() {
         ))}
         <button
           title="New workspace"
-          onClick={() => {
-            setWorkspaces((current) => [...current, `Workspace ${current.length + 1}`]);
-            setActiveWorkspace(workspaces.length);
-          }}
+onClick={createWorkspace}
           className="brutal-press flex shrink-0 items-center gap-1 border border-teal/30 px-2 py-1 font-display text-[9px] tracking-[0.12em] text-teal hover:border-teal"
         >
           <Plus className="h-3 w-3" /> NEW

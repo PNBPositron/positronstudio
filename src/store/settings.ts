@@ -49,6 +49,7 @@ type SettingsState = {
   panelDurationMs: number;
   panelStiffness: number; // 0 = soft ease, 100 = springy overshoot
   reduceMotion: boolean; // force-disable panel motion
+  interactiveHover: boolean;
   brandKit: BrandKit;
   setBrandKit: (patch: Partial<BrandKit>) => void;
   resetBrandKit: () => void;
@@ -59,6 +60,7 @@ type SettingsState = {
   setPanelDurationMs: (v: number) => void;
   setPanelStiffness: (v: number) => void;
   setReduceMotion: (v: boolean) => void;
+  setInteractiveHover: (v: boolean) => void;
   resetMotion: () => void;
   togglePanel: (id: PanelId) => void;
   resetPanels: () => void;
@@ -110,6 +112,7 @@ export const useSettings = create<SettingsState>()(
       panelDurationMs: DEFAULT_PANEL_DURATION,
       panelStiffness: DEFAULT_PANEL_STIFFNESS,
       reduceMotion: true,
+      interactiveHover: true,
       brandKit: { ...DEFAULT_BRAND_KIT },
       setBrandKit: (patch) => set((s) => ({ brandKit: { ...s.brandKit, ...patch } })),
       resetBrandKit: () => set({ brandKit: { ...DEFAULT_BRAND_KIT } }),
@@ -119,8 +122,9 @@ export const useSettings = create<SettingsState>()(
       setEditorTheme: (editorTheme) => set({ editorTheme }),
       setPanelDurationMs: (panelDurationMs) => set({ panelDurationMs }),
       setPanelStiffness: (panelStiffness) => set({ panelStiffness }),
-      setReduceMotion: (reduceMotion) => set({ reduceMotion }),
-      resetMotion: () =>
+  setReduceMotion: (reduceMotion) => set({ reduceMotion }),
+  setInteractiveHover: (interactiveHover) => set({ interactiveHover }),
+  resetMotion: () =>
         set({
           panelDurationMs: DEFAULT_PANEL_DURATION,
           panelStiffness: DEFAULT_PANEL_STIFFNESS,
@@ -141,6 +145,7 @@ export const useSettings = create<SettingsState>()(
       migrate: (state) => ({
         ...(state as SettingsState),
         reduceMotion: true,
+        interactiveHover: (state as SettingsState)?.interactiveHover ?? true,
         brandKit: { ...DEFAULT_BRAND_KIT, ...((state as SettingsState)?.brandKit ?? {}) },
       }),
     },
