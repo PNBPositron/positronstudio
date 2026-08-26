@@ -66,7 +66,7 @@ export function Sidebar() {
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
-      <nav className="flex w-20 flex-col gap-2 border-r border-teal/30 bg-ink p-2">
+      <nav className="flex w-16 flex-col gap-1.5 border-r border-teal/30 bg-ink p-1.5">
         {visible.map((t) => {
           const Icon = t.icon;
           const active = tool === t.id;
@@ -77,7 +77,7 @@ export function Sidebar() {
                 setTool(t.id);
                 setHovering(true);
               }}
-              className={`group relative flex flex-col items-center gap-1 px-1 py-3 text-[10px] font-bold uppercase tracking-[0.15em] transition-all ${
+              className={`group relative flex flex-col items-center gap-0.5 px-0.5 py-2 text-[8px] font-bold uppercase tracking-[0.08em] transition-all ${
                 active
                   ? "bg-blue-deep text-teal border border-teal glow-blue"
                   : "border border-teal/20 bg-surface text-teal/70 hover:text-teal hover:border-teal/60 hover:bg-surface-2"
