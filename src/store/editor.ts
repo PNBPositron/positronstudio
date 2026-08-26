@@ -8,18 +8,9 @@ export type ElementBase = {
   height: number;
   rotation: number;
   animation?: ElementAnimation;
-  interaction?: ElementInteraction;
 };
 
 export type ElementAnimation = "none" | "fade-up" | "pop" | "glitch";
-export type ElementHoverEffect = "none" | "lift" | "glow" | "tilt" | "pulse";
-export type ElementClickAction = "none" | "link" | "next-slide" | "prev-slide";
-
-export type ElementInteraction = {
-  hover?: ElementHoverEffect;
-  click?: ElementClickAction;
-  href?: string;
-};
 export type SlideTransition = "none" | "fade" | "slide" | "glitch" | "zoom" | "flip" | "morph";
 export type BgFit = "cover" | "contain";
 

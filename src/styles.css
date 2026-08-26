@@ -334,13 +334,3 @@
 .el-anim-fade-up { animation: el-fade-up 520ms cubic-bezier(.2,.8,.2,1) both; }
 .el-anim-pop     { animation: el-pop 480ms cubic-bezier(.2,.8,.2,1) both; }
 .el-anim-glitch  { animation: el-glitch 600ms steps(8, end) both; }
-.el-hover-lift { transition: transform 180ms ease, box-shadow 180ms ease; }
-.el-hover-lift:hover { transform: translateY(-6px); }
-.el-hover-glow { transition: filter 180ms ease; }
-.el-hover-glow:hover { filter: drop-shadow(0 0 10px var(--color-teal)); }
-.el-hover-tilt { transition: transform 180ms ease; }
-.el-hover-tilt:hover { transform: rotate(-2deg) scale(1.02); }
-.el-hover-pulse:hover { animation: el-pop 520ms ease-in-out; }
-@media (prefers-reduced-motion: reduce) {
-  .el-anim-fade-up, .el-anim-pop, .el-anim-glitch, .el-hover-lift, .el-hover-glow, .el-hover-tilt, .el-hover-pulse { animation: none; transition: none; transform: none; }
-}

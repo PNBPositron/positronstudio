@@ -1,4 +1,4 @@
-import { useEditor, DEFAULT_FILTERS, UI_STYLE_THEMES, chartStylePatch, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption, type ChartElement, type ButtonElement, type ChartKind, type ButtonAction, type UiStyle, type ElementAnimation, type ElementHoverEffect, type ElementClickAction } from "@/store/editor";
+import { useEditor, DEFAULT_FILTERS, UI_STYLE_THEMES, chartStylePatch, type ImageFilters, type ElementShadow, type ShapeGradient, type QuizElement, type QuizOption, type ChartElement, type ButtonElement, type ChartKind, type ButtonAction, type UiStyle } from "@/store/editor";
 import { Copy, Trash2, ArrowUp, ArrowDown, Layers, RotateCcw, Plus, Check } from "lucide-react";
 import { FONTS } from "./panels/TextPanel";
 
@@ -40,20 +40,6 @@ export function PropertiesPanel() {
       </div>
 
       <div className="space-y-4 p-4">
-        <Field label="Animation / interaction">
-          <div className="grid grid-cols-2 gap-1.5">
-            <select value={el.animation ?? "none"} onChange={(e) => update(el.id, { animation: e.target.value as ElementAnimation })} className="brutal-border-2 bg-surface p-2 font-mono text-[10px] text-teal">
-              <option value="none">No entrance</option><option value="fade-up">Fade up</option><option value="pop">Pop</option><option value="glitch">Glitch</option>
-            </select>
-            <select value={el.interaction?.hover ?? "none"} onChange={(e) => update(el.id, { interaction: { ...el.interaction, hover: e.target.value as ElementHoverEffect } })} className="brutal-border-2 bg-surface p-2 font-mono text-[10px] text-teal">
-              <option value="none">No hover</option><option value="lift">Lift</option><option value="glow">Glow</option><option value="tilt">Tilt</option><option value="pulse">Pulse</option>
-            </select>
-          </div>
-          <select value={el.interaction?.click ?? "none"} onChange={(e) => update(el.id, { interaction: { ...el.interaction, click: e.target.value as ElementClickAction } })} className="brutal-border-2 mt-1.5 w-full bg-surface p-2 font-mono text-[10px] text-teal">
-            <option value="none">No click action</option><option value="link">Open link</option><option value="next-slide">Next slide</option><option value="prev-slide">Previous slide</option>
-          </select>
-          {el.interaction?.click === "link" && <input value={el.interaction.href ?? ""} onChange={(e) => update(el.id, { interaction: { ...el.interaction, href: e.target.value } })} placeholder="https://..." className="brutal-border-2 mt-1.5 w-full bg-surface p-2 font-mono text-[10px] text-teal" />}
-        </Field>
         {el.type === "ui" && (
           <>
             <Field label="Style">

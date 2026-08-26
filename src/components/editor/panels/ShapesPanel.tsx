@@ -1,38 +1,23 @@
 import { useEditor, newShape, type ShapeKind } from "@/store/editor";
 import { PanelHeader } from "./TextPanel";
 import { shapePathD } from "../ShapeRender";
-import {
-  ArrowRight,
-  Cloud,
-  Diamond,
-  Heart,
-  Hexagon,
-  Lightbulb,
-  MessageSquare,
-  Pentagon,
-  Plus,
-  RectangleHorizontal,
-  Shapes as ShapesIcon,
-  Star,
-  Triangle,
-} from "lucide-react";
 
-const SHAPES: { kind: ShapeKind; label: string; icon: typeof RectangleHorizontal }[] = [
-  { kind: "rect", label: "Rectangle", icon: RectangleHorizontal },
-  { kind: "circle", label: "Circle", icon: ShapesIcon },
-  { kind: "triangle", label: "Triangle", icon: Triangle },
-  { kind: "star", label: "Star", icon: Star },
-  { kind: "arrow", label: "Arrow", icon: ArrowRight },
-  { kind: "heart", label: "Heart", icon: Heart },
-  { kind: "diamond", label: "Diamond", icon: Diamond },
-  { kind: "hexagon", label: "Hexagon", icon: Hexagon },
-  { kind: "pentagon", label: "Pentagon", icon: Pentagon },
-  { kind: "parallelogram", label: "Parallelogram", icon: RectangleHorizontal },
-  { kind: "trapezoid", label: "Trapezoid", icon: RectangleHorizontal },
-  { kind: "cross", label: "Cross", icon: Plus },
-  { kind: "lightning", label: "Lightning", icon: Lightbulb },
-  { kind: "cloud", label: "Cloud", icon: Cloud },
-  { kind: "speech", label: "Speech", icon: MessageSquare },
+const SHAPES: { kind: ShapeKind; label: string }[] = [
+  { kind: "rect", label: "Rectangle" },
+  { kind: "circle", label: "Circle" },
+  { kind: "triangle", label: "Triangle" },
+  { kind: "star", label: "Star" },
+  { kind: "arrow", label: "Arrow" },
+  { kind: "heart", label: "Heart" },
+  { kind: "diamond", label: "Diamond" },
+  { kind: "hexagon", label: "Hexagon" },
+  { kind: "pentagon", label: "Pentagon" },
+  { kind: "parallelogram", label: "Parallelogram" },
+  { kind: "trapezoid", label: "Trapezoid" },
+  { kind: "cross", label: "Cross" },
+  { kind: "lightning", label: "Lightning" },
+  { kind: "cloud", label: "Cloud" },
+  { kind: "speech", label: "Speech" },
 ];
 
 const FILLS = ["#7df9ff", "#ff0080"];
@@ -68,10 +53,7 @@ export function ShapesPanel() {
               className="brutal-border-2 brutal-press grid h-20 place-items-center bg-surface hover:border-teal"
               title={s.label}
             >
-              <span className="flex flex-col items-center gap-1 text-teal">
-                <s.icon className="size-5" aria-hidden="true" />
-                <ShapePreview kind={s.kind} fill={fill} />
-              </span>
+              <ShapePreview kind={s.kind} fill={fill} />
             </button>
           )),
         )}

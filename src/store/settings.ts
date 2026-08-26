@@ -73,9 +73,19 @@ export const springEasing = (stiffness: number) => {
   return `cubic-bezier(0.16, ${(1 + k * 0.85).toFixed(3)}, ${(0.4 - k * 0.15).toFixed(3)}, 1)`;
 };
 
-export const AI_MODELS = [
-  { id: "openrouter/z-ai/glm-4.5-air:free", label: "GLM-4.5 Air (free)", hint: "z.ai · OpenRouter" },
-] as const;
+export const AI_MODELS: Array<{ id: string; label: string; hint: string }> = [
+  { id: "google/gemini-3.6-flash", label: "Gemini 3.6 Flash", hint: "fast · balanced (default)" },
+  { id: "google/gemini-3.1-flash-lite", label: "Gemini 3.1 Flash Lite", hint: "cheapest · quickest" },
+  { id: "google/gemini-3.1-pro-preview", label: "Gemini 3.1 Pro", hint: "deepest reasoning" },
+  { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro", hint: "strong multimodal" },
+  { id: "openai/gpt-5.6-terra", label: "GPT-5.6 Terra", hint: "balanced openai" },
+  { id: "openai/gpt-5.6-luna", label: "GPT-5.6 Luna", hint: "fast openai" },
+  { id: "openai/gpt-5.5", label: "GPT-5.5", hint: "frontier quality" },
+  { id: "openai/gpt-5.4-mini", label: "GPT-5.4 Mini", hint: "cheap openai" },
+  { id: "openrouter/openai/gpt-oss-20b:free", label: "GPT-OSS 20B (free)", hint: "openrouter · free" },
+  { id: "openrouter/nvidia/nemotron-3-super-120b-a12b:free", label: "Nemotron 3 Super 120B (free)", hint: "openrouter · free" },
+  { id: "openrouter/google/gemma-4-31b-it:free", label: "Gemma 4 31B (free)", hint: "openrouter · free" },
+];
 
 export const DEFAULT_AI_MODEL = AI_MODELS[0].id;
 

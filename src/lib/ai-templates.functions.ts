@@ -2,8 +2,21 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // Text models users can pick in Settings. Keep in sync with AI_MODELS in src/store/settings.ts.
-const ALLOWED_TEXT_MODELS: string[] = ["openrouter/z-ai/glm-4.5-air:free"];
-const DEFAULT_TEXT_MODEL = ALLOWED_TEXT_MODELS[0];
+const ALLOWED_TEXT_MODELS = [
+  "google/gemini-3.6-flash",
+  "google/gemini-3.1-flash-lite",
+  "google/gemini-3.1-pro-preview",
+  "google/gemini-2.5-pro",
+  "openai/gpt-5.6-terra",
+  "openai/gpt-5.6-luna",
+  "openai/gpt-5.5",
+  "openai/gpt-5.4-mini",
+  // OpenRouter free tier (requires OPENROUTER_API_KEY)
+  "openrouter/openai/gpt-oss-20b:free",
+  "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+  "openrouter/google/gemma-4-31b-it:free",
+];
+const DEFAULT_TEXT_MODEL = "google/gemini-3.6-flash";
 
 function pickModel(m?: string) {
   return typeof m === "string" && ALLOWED_TEXT_MODELS.includes(m) ? m : DEFAULT_TEXT_MODEL;
