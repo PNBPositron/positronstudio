@@ -85,6 +85,7 @@ export const AI_MODELS: Array<{ id: string; label: string; hint: string }> = [
   { id: "openrouter/openai/gpt-oss-20b:free", label: "GPT-OSS 20B (free)", hint: "openrouter · free" },
   { id: "openrouter/nvidia/nemotron-3-super-120b-a12b:free", label: "Nemotron 3 Super 120B (free)", hint: "openrouter · free" },
   { id: "openrouter/google/gemma-4-31b-it:free", label: "Gemma 4 31B (free)", hint: "openrouter · free" },
+  { id: "huggingface/Qwen/Qwen2.5-72B-Instruct", label: "Qwen 2.5 72B", hint: "Hugging Face · instruction tuned" },
 ];
 
 export const DEFAULT_AI_MODEL = AI_MODELS[0].id;
