@@ -13,7 +13,7 @@ import { ComponentsPanel } from "./panels/ComponentsPanel";
 import { SettingsDialog } from "./SettingsDialog";
 
 const TOOLS = [
-  { id: "templates", label: "Templates", icon: LayoutTemplate },
+  { id: "templates", label: "Home", icon: LayoutTemplate },
   { id: "ai", label: "AI Edit", icon: Bot },
   { id: "text", label: "Text", icon: Type },
   { id: "components", label: "Components", icon: Blocks },
@@ -27,9 +27,8 @@ export function Sidebar() {
   const { panels, aiEnabled, panelDurationMs, panelStiffness, reduceMotion, editorTheme } = useSettings();
   const settingsOpen = useUi((s) => s.settingsOpen);
   const setSettingsOpen = useUi((s) => s.setSettingsOpen);
-  const [hovering, setHovering] = useState(false);
-  const panelOpen = hovering;
   const [systemReduced, setSystemReduced] = useState(false);
+  const panelOpen = true;
 
   useEffect(() => {
     document.documentElement.dataset.editorTheme = editorTheme;
@@ -63,8 +62,6 @@ export function Sidebar() {
   return (
     <aside
       className="relative flex h-full"
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
     >
       <nav className="flex w-16 flex-col gap-1.5 border-r border-teal/30 bg-ink p-1.5">
         {visible.map((t) => {
@@ -75,7 +72,6 @@ export function Sidebar() {
               key={t.id}
               onClick={() => {
                 setTool(t.id);
-                setHovering(true);
               }}
               className={`group relative flex flex-col items-center gap-0.5 px-0.5 py-2 text-[8px] font-bold uppercase tracking-[0.08em] transition-all ${
                 active
@@ -104,7 +100,7 @@ export function Sidebar() {
       <div
         aria-hidden={!panelOpen}
         style={{ transition: panelTransition }}
-        className={`absolute left-20 top-0 z-40 h-full w-72 origin-left overflow-y-auto border-r border-teal/30 bg-paper p-4 shadow-2xl will-change-[transform,opacity,filter] ${
+        className={`absolute left-16 top-0 z-40 h-full w-72 origin-left overflow-y-auto border-r border-teal/30 bg-paper p-4 shadow-2xl will-change-[transform,opacity,filter] ${
           panelOpen
             ? `translate-x-0 opacity-100 ${noMotion ? "" : "scale-x-100 blur-0"}`
             : `pointer-events-none -translate-x-[106%] opacity-0 ${noMotion ? "" : "scale-x-[0.97] blur-[2px]"}`

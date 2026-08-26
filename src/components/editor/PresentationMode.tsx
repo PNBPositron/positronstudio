@@ -145,7 +145,7 @@ export function PresentationMode() {
           className="brutal-shadow-lg relative shrink-0"
         >
           <div
-            key={morphing ? "slide-morph" : `slide-${currentIndex}`}
+            key={`slide-${currentIndex}-${morphing ? "morph" : page.transition ?? "none"}`}
             className={`absolute left-0 top-0 overflow-hidden border border-teal ${transition}`}
             style={{
               width: canvasW,
