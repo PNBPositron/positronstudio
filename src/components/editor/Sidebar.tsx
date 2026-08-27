@@ -2,23 +2,22 @@ import { useEffect, useState } from "react";
 import { useEditor } from "@/store/editor";
 import { useSettings, springEasing, type PanelId } from "@/store/settings";
 import { useUi } from "@/store/ui";
-import { LayoutTemplate, Type, Shapes, Upload, SlidersHorizontal, Bot, Blocks, Settings } from "lucide-react";
+import { LayoutTemplate, Type, SlidersHorizontal, Bot, Blocks, Settings } from "lucide-react";
 import { TemplatesPanel } from "./panels/TemplatesPanel";
 import { TextPanel } from "./panels/TextPanel";
-import { ShapesPanel } from "./panels/ShapesPanel";
-import { UploadsPanel } from "./panels/UploadsPanel";
+
 import { DesignPanel } from "./panels/DesignPanel";
 import { AiChatPanel } from "./panels/AiChatPanel";
 import { ComponentsPanel } from "./panels/ComponentsPanel";
+import { ElementsPanel } from "./panels/ElementsPanel";
 import { SettingsDialog } from "./SettingsDialog";
 
 const TOOLS = [
   { id: "templates", label: "Templates", icon: LayoutTemplate },
   { id: "ai", label: "AI Edit", icon: Bot },
   { id: "text", label: "Text", icon: Type },
-  { id: "components", label: "Components", icon: Blocks },
-  { id: "shapes", label: "Shapes", icon: Shapes },
-  { id: "uploads", label: "Uploads", icon: Upload },
+  { id: "presets", label: "Presets", icon: Blocks },
+  { id: "elements", label: "Elements", icon: LayoutTemplate },
   { id: "design", label: "Design", icon: SlidersHorizontal },
 ] as const;
 
@@ -113,9 +112,8 @@ export function Sidebar() {
         {tool === "templates" && <TemplatesPanel />}
         {tool === "ai" && aiEnabled && <AiChatPanel />}
         {tool === "text" && <TextPanel />}
-        {tool === "components" && <ComponentsPanel />}
-        {tool === "shapes" && <ShapesPanel />}
-        {tool === "uploads" && <UploadsPanel />}
+        {tool === "presets" && <ComponentsPanel />}
+        {tool === "elements" && <ElementsPanel />}
         {tool === "design" && <DesignPanel />}
       </div>
       {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}

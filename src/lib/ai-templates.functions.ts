@@ -3,7 +3,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // Text models users can pick in Settings. Keep in sync with AI_MODELS in src/store/settings.ts.
 const ALLOWED_TEXT_MODELS = [
-  "google/gemini-3.6-flash",
+  "openrouter/openai/gpt-oss-20b:free",
+  "huggingface/Qwen/Qwen2.5-72B-Instruct",
+  "huggingface/google/gemma-3-27b-it",
   "google/gemini-3.1-flash-lite",
   "google/gemini-3.1-pro-preview",
   "google/gemini-2.5-pro",
