@@ -5,18 +5,16 @@ export type PanelId =
   | "templates"
   | "ai"
   | "text"
-  | "components"
-  | "shapes"
-  | "uploads"
+  | "presets"
+  | "elements"
   | "design";
 
 export const PANEL_LABELS: Record<PanelId, string> = {
   templates: "Templates",
   ai: "AI Edit",
   text: "Text",
-  components: "Components",
-  shapes: "Shapes",
-  uploads: "Uploads",
+  presets: "Presets",
+  elements: "Elements",
   design: "Design",
 };
 
@@ -76,28 +74,31 @@ export const springEasing = (stiffness: number) => {
 };
 
 export const AI_MODELS: Array<{ id: string; label: string; hint: string }> = [
-  { id: "openrouter/z-ai/glm-5.2:free", label: "GLM 5.2 (free)", hint: "Z.ai · OpenRouter free tier" },
+  { id: "openrouter/openai/gpt-oss-20b:free", label: "OpenRouter Free", hint: "fast · free router" },
+  { id: "huggingface/Qwen/Qwen2.5-72B-Instruct", label: "Qwen 2.5 72B", hint: "Hugging Face · instruction tuned" },
+  { id: "huggingface/google/gemma-3-27b-it", label: "Gemma 3 27B", hint: "Hugging Face · fast structured generation" },
 ];
 
 export const DEFAULT_AI_MODEL = "openrouter/z-ai/glm-5.2:free";
 
 export const EDITOR_THEMES: Array<{ id: string; label: string; hint: string }> = [
-  { id: "cyber", label: "Cyber", hint: "teal neon on ink (default)" },
+  { id: "everest", label: "Everest", hint: "white and blue (default)" },
+  { id: "custom", label: "Custom", hint: "your brand palette" },
+  { id: "cyber", label: "Cyber", hint: "teal neon on ink" },
   { id: "glass", label: "Glass", hint: "soft frosted greys" },
   { id: "neobrutalist", label: "Neobrutalist", hint: "paper white + hot accents" },
   { id: "matrix", label: "Matrix", hint: "green terminal" },
   { id: "midnight", label: "Midnight", hint: "deep indigo dark" },
 ];
 
-export const DEFAULT_EDITOR_THEME = "cyber";
+export const DEFAULT_EDITOR_THEME = "everest";
 
 const ALL_ON: Record<PanelId, boolean> = {
   templates: true,
   ai: true,
   text: true,
-  components: true,
-  shapes: true,
-  uploads: true,
+  presets: true,
+  elements: true,
   design: true,
 };
 

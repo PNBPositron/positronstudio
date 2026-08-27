@@ -2,8 +2,25 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // Text models users can pick in Settings. Keep in sync with AI_MODELS in src/store/settings.ts.
-const ALLOWED_TEXT_MODELS = ["openrouter/z-ai/glm-5.2:free"];
-const DEFAULT_TEXT_MODEL = "openrouter/z-ai/glm-5.2:free";
+const ALLOWED_TEXT_MODELS = [
+  "openrouter/openai/gpt-oss-20b:free",
+  "huggingface/Qwen/Qwen2.5-72B-Instruct",
+  "huggingface/google/gemma-3-27b-it",
+  "google/gemini-3.1-flash-lite",
+  "google/gemini-3.1-pro-preview",
+  "google/gemini-2.5-pro",
+  "openai/gpt-5.6-terra",
+  "openai/gpt-5.6-luna",
+  "openai/gpt-5.5",
+  "openai/gpt-5.4-mini",
+  // OpenRouter free tier (requires OPENROUTER_API_KEY)
+  "openrouter/openai/gpt-oss-20b:free",
+  "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+  "openrouter/google/gemma-4-31b-it:free",
+  "huggingface/Qwen/Qwen2.5-72B-Instruct",
+];
+const DEFAULT_TEXT_MODEL = "google/gemini-3.6-flash";
+const HF_PREFIX = "huggingface/";
 
 function pickModel(m?: string) {
   return typeof m === "string" && ALLOWED_TEXT_MODELS.includes(m) ? m : DEFAULT_TEXT_MODEL;
@@ -23,24 +40,35 @@ async function chatComplete(
   extra: Record<string, unknown> = {},
 ): Promise<string> {
   const or = model.startsWith(OR_PREFIX);
-  const apiKey = or ? process.env.OPENROUTER_API_KEY : process.env.OPENROUTER_API_KEY;
+  const hf = model.startsWith(HF_PREFIX);
+  const apiKey = hf
+    ? process.env.HUGGINGFACE_ACCESS_TOKEN
+    : or
+      ? process.env.OPENROUTER_API_KEY
+      : process.env.LOVABLE_API_KEY;
   if (!apiKey) {
     throw new Error(
-      or
-        ? "OpenRouter is not configured yet — add an OPENROUTER_API_KEY to use free models."
-        : "Missing OPENROUTER_API_KEY",
+      hf
+        ? "Hugging Face is not configured yet — add a HUGGINGFACE_ACCESS_TOKEN."
+        : or
+          ? "OpenRouter is not configured yet — add an OPENROUTER_API_KEY to use free models."
+          : "Missing LOVABLE_API_KEY",
     );
   }
   const res = await fetch(
-    or ? "https://openrouter.ai/api/v1/chat/completions" : "https://openrouter.ai/api/v1/chat/completions",
+    hf
+      ? "https://router.huggingface.co/v1/chat/completions"
+      : or
+        ? "https://openrouter.ai/api/v1/chat/completions"
+        : "https://ai.gateway.lovable.dev/v1/chat/completions",
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(or ? { Authorization: `Bearer ${apiKey}` } : { "Lovable-API-Key": apiKey }),
+        ...(hf || or ? { Authorization: `Bearer ${apiKey}` } : { "Lovable-API-Key": apiKey }),
       },
       body: JSON.stringify({
-        model: or ? model.slice(OR_PREFIX.length) : model,
+        model: hf ? model.slice(HF_PREFIX.length) : or ? model.slice(OR_PREFIX.length) : model,
         ...(or ? {} : reasoningFor(model)),
         messages,
         ...extra,
